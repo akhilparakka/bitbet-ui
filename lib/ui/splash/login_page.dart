@@ -28,73 +28,76 @@ class LoginPage extends StatelessWidget {
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: bottomloginUI(),
-          ),
+          bottomloginUI(),
         ],
+
+        // child:
       ),
     );
   }
 
-  Widget bottomloginUI() => SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              "assets/Logo/spotify-white-icon.svg",
-              width: 50,
-              height: 50,
+  Widget bottomloginUI() => Container(
+    padding: EdgeInsets.only(bottom: 50),
+    width: double.infinity,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          "assets/Logo/spotify-white-icon.svg",
+          width: 50,
+          height: 50,
+        ),
+        msPacer(),
+        Text(
+          "Millions of songs. \nFree on Spotify.",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        msPacer(),
+        OblongButton(
+          mIconPath: "assets/Logo/google-icon.svg",
+          text: "Continue with Google",
+          bgColor: const Color(0xFF1F1F1F),
+          textColor: Colors.white,
+          borderColor: const Color(0xFF3C4043),
+          mWidth: 280,
+          mHeight: 48,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          iconSize: 18,
+          onTap: () {},
+        ),
+        msPacer(),
+        OblongButton(
+          mIconPath: "assets/Logo/google-icon.svg",
+          text: "Continue with Wallet",
+          bgColor: const Color(0xFF1F1F1F),
+          textColor: Colors.white,
+          borderColor: const Color(0xFF3C4043),
+          mWidth: 280,
+          mHeight: 48,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          iconSize: 18,
+          onTap: () {},
+        ),
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            "Login",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
-            msPacer(),
-            Text(
-              "Millions of songs. \nFree on Spotify.",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 25,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            msPacer(),
-            OblongButton(
-              mIconPath: "assets/Logo/google-icon.svg",
-              text: "Continue with Google",
-              bgColor: const Color(0xFF1F1F1F),
-              textColor: Colors.white,
-              borderColor: const Color(0xFF3C4043),
-              mWidth: 280,
-              mHeight: 48,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              iconSize: 18,
-              onTap: () {},
-            ),
-            msPacer(),
-            OblongButton(
-              mIconPath: "assets/Logo/google-icon.svg",
-              text: "Continue with Wallet",
-              bgColor: const Color(0xFF1F1F1F),
-              textColor: Colors.white,
-              borderColor: const Color(0xFF3C4043),
-              mWidth: 280,
-              mHeight: 48,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              iconSize: 18,
-              onTap: () {},
-            ),
-            msPacer(),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                "Login",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            )}
+          ),
+        ),
+      ],
+    ),
+  );
+}

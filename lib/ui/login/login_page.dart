@@ -1,5 +1,6 @@
 import 'package:better/domain/app_colors.dart';
 import 'package:better/domain/ui_heloper.dart';
+import 'package:better/domain/app_routes.dart';
 import 'package:flutter/material.dart';
 import "package:better/ui/custom_widgets/oblong_button.dart";
 import 'package:flutter_svg/flutter_svg.dart';
@@ -41,7 +42,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
-      // Initialize the modal with proper configuration
       _appKitModal = ReownAppKitModal(
         context: context,
         appKit: _appKit!,
@@ -55,10 +55,9 @@ class _LoginPageState extends State<LoginPage> {
           ],
           showMainWallets: true,
         ),
-        // Add required namespaces for EVM chains
         requiredNamespaces: {
           'eip155': RequiredNamespace(
-            chains: ['eip155:1'], // Ethereum mainnet
+            chains: ['eip155:1'],
             methods: [
               'eth_sendTransaction',
               'personal_sign',
@@ -68,14 +67,9 @@ class _LoginPageState extends State<LoginPage> {
             events: ['chainChanged', 'accountsChanged'],
           ),
         },
-        // Add optional namespaces for additional chains
         optionalNamespaces: {
           'eip155': RequiredNamespace(
-            chains: [
-              'eip155:137', // Polygon
-              'eip155:10', // Optimism
-              'eip155:42161', // Arbitrum
-            ],
+            chains: ['eip155:137', 'eip155:10', 'eip155:42161'],
             methods: [
               'eth_sendTransaction',
               'personal_sign',
@@ -87,24 +81,19 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
-      // Set up event listeners
       _appKitModal!.onModalConnect.subscribe(_onWalletConnect);
       _appKitModal!.onModalDisconnect.subscribe(_onWalletDisconnect);
       _appKitModal!.onModalError.subscribe(_onWalletError);
 
-      // Initialize the modal
       await _appKitModal!.init();
 
-      debugPrint('WalletConnect initialized successfully');
       setState(() {
         _isInitialized = true;
       });
     } catch (e) {
-      debugPrint('Failed to initialize WalletConnect: $e');
       setState(() {
         _isInitialized = false;
       });
-      // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to initialize wallet connection: $e')),
@@ -115,22 +104,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onWalletConnect(ModalConnect? event) {
     debugPrint('Wallet connected successfully!');
-    debugPrint('Session: ${_appKitModal?.session}');
-
-    // Navigate to your main app or show success
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Wallet connected successfully!')));
-
-    // Navigate to next screen
-    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
   }
 
   void _onWalletDisconnect(ModalDisconnect? event) {
     debugPrint('Wallet disconnected');
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Wallet disconnected')));
   }
 
   void _onWalletError(ModalError? event) {
@@ -143,26 +121,20 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _connectWallet() async {
     if (!_isInitialized) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wallet connection is still initializing...')),
+        const SnackBar(
+          content: Text('Wallet connection is still initializing...'),
+        ),
       );
       return;
     }
 
     try {
       if (_appKitModal!.isConnected) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Wallet already connected!')));
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
         return;
       }
-
-      debugPrint('Opening wallet connection modal...');
-
       await _appKitModal!.openModalView();
-
-      debugPrint('Modal opened successfully');
     } catch (e) {
-      debugPrint('Error opening wallet modal: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Connection error: ${e.toString()}')),
       );
@@ -170,9 +142,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleGoogleLogin() {
-    // Implement Google OAuth login here
     debugPrint('Google login tapped');
-    // You can also open WalletConnect with Google social login
     _connectWallet();
   }
 
@@ -204,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget bottomloginUI() => Container(
-    padding: EdgeInsets.only(bottom: 50),
+    padding: const EdgeInsets.only(bottom: 50),
     width: double.infinity,
     child: Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -216,7 +186,7 @@ class _LoginPageState extends State<LoginPage> {
           height: 50,
         ),
         msPacer(),
-        Text(
+        const Text(
           "Millions of songs. \nFree on Spotify.",
           style: TextStyle(
             color: Colors.white,
@@ -233,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
           text: "Continue with Google",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
-          borderColor: const Color(0xFF3C4043),
+          borderColor: Color(0xFF3C4043),
           mWidth: 280,
           mHeight: 48,
           fontSize: 14,
@@ -247,7 +217,7 @@ class _LoginPageState extends State<LoginPage> {
           text: _isInitialized ? "Continue with Wallet" : "",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
-          borderColor: const Color(0xFF3C4043),
+          borderColor: Color(0xFF3C4043),
           mWidth: 280,
           mHeight: 48,
           fontSize: 14,
@@ -256,14 +226,12 @@ class _LoginPageState extends State<LoginPage> {
           onTap: _isInitialized ? _connectWallet : null,
           isLoading: !_isInitialized,
         ),
-
         msPacer(),
         TextButton(
           onPressed: () {
-            // Handle regular login
             debugPrint('Login tapped');
           },
-          child: Text(
+          child: const Text(
             "Login",
             style: TextStyle(
               color: Colors.white,
@@ -272,34 +240,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-
-        // Show connection status
-        if (_appKitModal?.isConnected == true)
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Column(
-              children: [
-                Text(
-                  'Wallet Connected Successfully!',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                TextButton(
-                  onPressed: () async {
-                    await _appKitModal!.disconnect();
-                  },
-                  child: Text(
-                    'Disconnect',
-                    style: TextStyle(color: Colors.red, fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     ),
   );

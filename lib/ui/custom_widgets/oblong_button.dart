@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OblongButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final double mWidth;
   final double mHeight;
   final Color bgColor;
@@ -14,6 +14,7 @@ class OblongButton extends StatelessWidget {
   final double iconSize;
   final Color? borderColor;
   final double borderWidth;
+  final bool isLoading; // 👈 NEW
 
   const OblongButton({
     super.key,
@@ -29,12 +30,13 @@ class OblongButton extends StatelessWidget {
     this.iconSize = 20,
     this.borderColor,
     this.borderWidth = 1,
+    this.isLoading = false, // 👈 default false
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap, // disable tap while loading
       borderRadius: BorderRadius.circular(25),
       child: Container(
         width: mWidth,
@@ -46,38 +48,40 @@ class OblongButton extends StatelessWidget {
               ? Border.all(color: borderColor!, width: borderWidth)
               : null,
         ),
-        child: mIconPath != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12.0),
-                    child: SvgPicture.asset(
-                      mIconPath!,
-                      width: iconSize,
-                      height: iconSize,
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (mIconPath != null && text.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: SvgPicture.asset(
+                          mIconPath!,
+                          width: iconSize,
+                          height: iconSize,
+                        ),
+                      ),
+                    Text(
+                      text,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: fontSize,
+                        fontWeight: fontWeight,
+                      ),
                     ),
-                  ),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: fontSize,
-                      fontWeight: fontWeight,
-                    ),
-                  ),
-                ],
-              )
-            : Center(
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: fontSize,
-                    fontWeight: fontWeight,
-                  ),
+                  ],
                 ),
-              ),
+        ),
       ),
     );
   }

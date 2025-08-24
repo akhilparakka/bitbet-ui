@@ -1,4 +1,4 @@
-import 'package:better/ui/splash/login_page.dart';
+import 'package:better/ui/login/login_page.dart';
 import 'package:better/ui/splash/splash_page.dart';
 import 'package:flutter/material.dart';
 

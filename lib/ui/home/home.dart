@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better/domain/app_colors.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -17,7 +17,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.secondaryBlackColor,
       body: Material(
-        // Ensure Material context for inkwell
         color: AppColors.secondaryBlackColor,
         child: Stack(
           children: [
@@ -92,10 +91,10 @@ class CustomNavigationSidebar extends StatelessWidget {
   final Function(String) onSectionChanged;
 
   const CustomNavigationSidebar({
-    Key? key,
+    super.key,
     required this.selectedSection,
     required this.onSectionChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +133,7 @@ class CustomNavigationSidebar extends StatelessWidget {
           child: InkWell(
             onTap: () => onSectionChanged(section),
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 4),
+              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 18),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -182,7 +181,7 @@ class CustomNavigationSidebar extends StatelessWidget {
 class CustomHeader extends StatelessWidget {
   final String title;
 
-  const CustomHeader({Key? key, required this.title}) : super(key: key);
+  const CustomHeader({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

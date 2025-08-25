@@ -87,14 +87,16 @@ class _LoginPageState extends State<LoginPage> {
 
       await _appKitModal!.init();
 
-      setState(() {
-        _isInitialized = true;
-      });
-    } catch (e) {
-      setState(() {
-        _isInitialized = false;
-      });
       if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to initialize wallet connection: $e')),
         );
@@ -103,41 +105,61 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onWalletConnect(ModalConnect? event) {
-    debugPrint('Wallet connected successfully!');
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
+    debugPrint('Wallet connected successfully! Event: $event');
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else {
+      debugPrint('Widget not mounted, cannot navigate to home');
+    }
   }
 
   void _onWalletDisconnect(ModalDisconnect? event) {
-    debugPrint('Wallet disconnected');
+    debugPrint('Wallet disconnected: $event');
   }
 
   void _onWalletError(ModalError? event) {
     debugPrint('Wallet error: ${event?.message}');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(event?.message ?? 'Connection error')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(event?.message ?? 'Connection error')),
+      );
+    }
   }
 
   Future<void> _connectWallet() async {
     if (!_isInitialized) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Wallet connection is still initializing...'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Wallet connection is still initializing...'),
+          ),
+        );
+      }
       return;
     }
 
     try {
       if (_appKitModal!.isConnected) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        debugPrint('Already connected, navigating to home');
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
         return;
       }
+      debugPrint('Opening WalletConnect modal');
       await _appKitModal!.openModalView();
+      // Check connection status after modal closes
+      if (_appKitModal!.isConnected && mounted) {
+        debugPrint('Connection confirmed after modal, navigating to home');
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connection error: ${e.toString()}')),
-      );
+      debugPrint('Connection error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connection error: ${e.toString()}')),
+        );
+      }
     }
   }
 

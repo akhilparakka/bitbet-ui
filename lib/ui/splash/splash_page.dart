@@ -115,14 +115,14 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _onWalletConnect(ModalConnect? event) {
-    debugPrint('Wallet connected successfully!');
+    debugPrint('Wallet connected successfully! Event: $event');
     if (mounted) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
     }
   }
 
   void _onWalletDisconnect(ModalDisconnect? event) {
-    debugPrint('Wallet disconnected');
+    debugPrint('Wallet disconnected: $event');
   }
 
   void _onWalletError(ModalError? event) {
@@ -140,18 +140,22 @@ class _SplashPageState extends State<SplashPage> {
       if (mounted) {
         if (!_isInitialized) {
           // Not initialized, navigate to LoginPage
+          debugPrint('Not initialized, navigating to login');
           Navigator.pushReplacementNamed(context, AppRoutes.login);
           return;
         }
         try {
           if (_appKitModal!.isConnected) {
             // Already connected, navigate to HomePage
+            debugPrint('Already connected in SplashPage, navigating to home');
             Navigator.pushReplacementNamed(context, AppRoutes.home);
           } else {
             // Not connected, navigate to LoginPage
+            debugPrint('Not connected in SplashPage, navigating to login');
             Navigator.pushReplacementNamed(context, AppRoutes.login);
           }
         } catch (e) {
+          debugPrint('Connection check error: $e');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -180,17 +184,32 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.blackColor,
-      body: Center(
-        child: AnimatedContainer(
-          duration: const Duration(seconds: 1),
-          width: width,
-          height: height,
-          child: SvgPicture.asset(
-            "assets/Logo/spotify-icon.svg",
-            width: width,
-            height: height,
+      body: Stack(
+        children: [
+          Center(
+            child: AnimatedContainer(
+              duration: const Duration(seconds: 1),
+              width: width,
+              height: height,
+              child: SvgPicture.asset(
+                "assets/Logo/spotify-icon.svg",
+                width: width,
+                height: height,
+              ),
+            ),
           ),
-        ),
+          if (!_isInitialized)
+            const Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 32.0),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  strokeWidth: 3.0,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

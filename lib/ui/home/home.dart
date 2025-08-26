@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better/domain/app_colors.dart';
+import 'package:better/ui/home/sections/all_games_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,14 +11,43 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String selectedSection = 'Appearance';
+  String selectedSection = 'All Games';
+
+  final Map<String, Widget> _sectionWidgets = {
+    'All Games': const AllGamesSection(),
+    'Favorites': const Text(
+      "Favorites Section\nYour favorite games appear here",
+      style: TextStyle(color: Colors.white, fontSize: 18),
+      textAlign: TextAlign.center,
+    ),
+    'My Bets': const Text(
+      "My Bets Section\nTrack your betting history and active bets",
+      style: TextStyle(color: Colors.white, fontSize: 18),
+      textAlign: TextAlign.center,
+    ),
+    'Discover': const Text(
+      "Discover Section\nFind new and trending games",
+      style: TextStyle(color: Colors.white, fontSize: 18),
+      textAlign: TextAlign.center,
+    ),
+    'Leaderboards': const Text(
+      "Leaderboards Section\nSee top players and rankings",
+      style: TextStyle(color: Colors.white, fontSize: 18),
+      textAlign: TextAlign.center,
+    ),
+    'Profile': const Text(
+      "Profile Section\nManage your account and settings",
+      style: TextStyle(color: Colors.white, fontSize: 18),
+      textAlign: TextAlign.center,
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryBlackColor,
+      backgroundColor: const Color(0xFF181818), // Matte black for Scaffold
       body: Material(
-        color: AppColors.secondaryBlackColor,
+        color: const Color(0xFF181818), // Match Scaffold background
         child: Stack(
           children: [
             Row(
@@ -34,41 +64,39 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     children: [
                       CustomHeader(title: selectedSection),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.all(20),
-                          child: _buildContentForSection(selectedSection),
-                        ),
-                      ),
+                      Expanded(child: _buildContentForSection(selectedSection)),
                     ],
                   ),
                 ),
               ],
             ),
             Positioned(
-              top: 93,
-              left: 33,
+              top: 85,
+              left: 20,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
                     print('Settings icon pressed!');
                   },
-                  customBorder: CircleBorder(),
-                  splashColor: Colors.white.withOpacity(0.3),
-                  highlightColor: Colors.white.withOpacity(0.1),
+                  customBorder: const CircleBorder(),
+                  splashColor: Colors.white.withValues(alpha: .3),
+                  highlightColor: Colors.white.withValues(alpha: .1),
                   child: Container(
                     width: 44,
                     height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondaryBlackColor.withOpacity(0.8),
+                    decoration: const BoxDecoration(
+                      color: Color(
+                        0xFF181818,
+                      ), // Matte black for Settings Button
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: SvgPicture.asset(
                         "assets/svg/settings.svg",
-                        width: 25,
-                        height: 25,
+                        width: 20,
+                        height: 20,
+                        color: Colors.white, // Ensure icon is visible
                       ),
                     ),
                   ),
@@ -82,7 +110,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildContentForSection(String section) {
-    return Container();
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child:
+          _sectionWidgets[section] ??
+          Center(
+            child: Text(
+              "Section '$section' not found",
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+    );
   }
 }
 
@@ -96,24 +135,31 @@ class CustomNavigationSidebar extends StatelessWidget {
     required this.onSectionChanged,
   });
 
+  static const List<Map<String, String>> _navData = [
+    {'name': 'All Games', 'icon': 'assets/svg/games.svg'},
+    {'name': 'Favorites', 'icon': 'assets/svg/favorites.svg'},
+    {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
+    {'name': 'Discover', 'icon': 'assets/svg/discover.svg'},
+    {'name': 'Leaderboards', 'icon': 'assets/svg/leaderboard.svg'},
+    {'name': 'Profile', 'icon': 'assets/svg/user.svg'},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 80,
-      color: AppColors.secondaryBlackColor,
+      width: 60,
+      color: const Color(0xFF181818), // Matte black for Sidebar
       child: Column(
         children: [
-          SizedBox(height: 150),
+          const SizedBox(height: 150),
           Expanded(
             child: ListView(
-              children: [
-                _buildNavItem('Appearance', context),
-                _buildNavItem('Player', context),
-                _buildNavItem('Quick picks', context),
-                _buildNavItem('Discover', context),
-                _buildNavItem('Bettings', context),
-                _buildNavItem('Library', context),
-              ],
+              children: _navData
+                  .map(
+                    (item) =>
+                        _buildNavItem(item['name']!, item['icon']!, context),
+                  )
+                  .toList(),
             ),
           ),
         ],
@@ -121,35 +167,47 @@ class CustomNavigationSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(String section, BuildContext context) {
+  Widget _buildNavItem(String section, String iconPath, BuildContext context) {
     bool isSelected = selectedSection == section;
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(
+        vertical: 4,
+      ), // Minimal vertical margin
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            splashColor: Colors.white.withValues(alpha: 0.05),
+            highlightColor: Colors.white.withValues(alpha: 0.02),
             onTap: () => onSectionChanged(section),
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 18),
+              padding: const EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 4,
+              ), // Reduced padding
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center, // Center content
                 children: [
-                  AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
-                    width: isSelected ? 20 : 0,
-                    height: 15,
-                    child: isSelected
-                        ? SvgPicture.asset(
-                            "assets/svg/settings.svg",
-                            width: 20,
-                            height: 20,
-                          )
-                        : null,
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 4,
+                    ), // Minimal spacing from left edge
+                    child: SizedBox(
+                      width: 15,
+                      height: 15,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 300),
+                        opacity: isSelected ? 1.0 : 0.0,
+                        child: SvgPicture.asset(iconPath, color: Colors.white),
+                      ),
+                    ),
                   ),
-                  SizedBox(width: 0),
+                  const SizedBox(
+                    width: 1,
+                  ), // Minimal spacing between icon and label
                   Expanded(
                     child: Center(
                       child: RotatedBox(
@@ -159,9 +217,9 @@ class CustomNavigationSidebar extends StatelessWidget {
                           style: TextStyle(
                             color: isSelected
                                 ? Colors.white
-                                : Color(0xFF666666),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w300,
+                                : const Color(0xFF666666),
+                            fontSize:
+                                12, // Slightly smaller font for better fit
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -187,14 +245,16 @@ class CustomHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 150,
-      padding: EdgeInsets.fromLTRB(60, 80, 20, 20),
-      decoration: BoxDecoration(color: AppColors.secondaryBlackColor),
+      padding: const EdgeInsets.fromLTRB(60, 80, 20, 20),
+      decoration: const BoxDecoration(
+        color: Color(0xFF181818), // Matte black for Header
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.w400,

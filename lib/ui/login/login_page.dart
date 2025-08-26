@@ -2,7 +2,7 @@ import 'package:better/domain/app_colors.dart';
 import 'package:better/domain/ui_heloper.dart';
 import 'package:better/domain/app_routes.dart';
 import 'package:flutter/material.dart';
-import "package:better/ui/custom_widgets/oblong_button.dart";
+import 'package:better/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _initializeWalletConnect() async {
     final projectId = dotenv.env['WALLETCONNECT_PROJECT_ID'] ?? '';
     try {
+      // Create ReownAppKit instance
       _appKit = ReownAppKit(
         core: ReownCore(projectId: projectId, logLevel: LogLevel.error),
         metadata: PairingMetadata(
@@ -42,6 +43,21 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
+      // Check for existing session before full initialization
+      if (_appKit!.core.pairing.getPairings().isNotEmpty) {
+        debugPrint('Existing WalletConnect session found, checking connection');
+        _appKitModal = ReownAppKitModal(context: context, appKit: _appKit!);
+        await _appKitModal!.init();
+        if (_appKitModal!.isConnected) {
+          debugPrint('Already connected, navigating to home');
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, AppRoutes.home);
+          }
+          return;
+        }
+      }
+
+      // Full initialization if no existing session
       _appKitModal = ReownAppKitModal(
         context: context,
         appKit: _appKit!,
@@ -93,6 +109,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } catch (e) {
+      debugPrint('Initialization error: $e');
       if (mounted) {
         setState(() {
           _isInitialized = false;
@@ -148,7 +165,6 @@ class _LoginPageState extends State<LoginPage> {
       }
       debugPrint('Opening WalletConnect modal');
       await _appKitModal!.openModalView();
-      // Check connection status after modal closes
       if (_appKitModal!.isConnected && mounted) {
         debugPrint('Connection confirmed after modal, navigating to home');
         Navigator.pushReplacementNamed(context, AppRoutes.home);
@@ -225,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
           text: "Continue with Google",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
-          borderColor: Color(0xFF3C4043),
+          borderColor: const Color(0xFF3C4043),
           mWidth: 280,
           mHeight: 48,
           fontSize: 14,
@@ -239,7 +255,7 @@ class _LoginPageState extends State<LoginPage> {
           text: _isInitialized ? "Continue with Wallet" : "",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
-          borderColor: Color(0xFF3C4043),
+          borderColor: const Color(0xFF3C4043),
           mWidth: 280,
           mHeight: 48,
           fontSize: 14,

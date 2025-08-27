@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:better/domain/app_colors.dart';
 import 'package:better/ui/home/sections/all_games_section.dart';
 
 class HomePage extends StatefulWidget {

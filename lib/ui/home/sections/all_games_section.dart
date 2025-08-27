@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/providers/odds_provider.dart'; // Adjust path as needed
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -8,50 +10,7 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
-  final List<Map<String, dynamic>> quickPicks = [
-    {
-      'homeTeam': 'Man City',
-      'awayTeam': 'Liverpool',
-      'homeTeamLogo': 'assets/images/man_city.png',
-      'awayTeamLogo': 'assets/images/liverpool.png',
-      'league': 'Premier League',
-      'odds': {'home': '2.10', 'draw': '3.50', 'away': '1.80'},
-      'isLive': false,
-      'isFavorite': true,
-    },
-    {
-      'homeTeam': 'Lakers',
-      'awayTeam': 'Warriors',
-      'homeTeamLogo': 'assets/images/lakers.png',
-      'awayTeamLogo': 'assets/images/warriors.png',
-      'league': 'NBA',
-      'odds': {'home': '1.95', 'away': '1.85'},
-      'isLive': true,
-      'isFavorite': false,
-    },
-    {
-      'homeTeam': 'Real Madrid',
-      'awayTeam': 'Barcelona',
-      'homeTeamLOGO': 'assets/images/real_madrid.png',
-      'awayTeamLogo': 'assets/images/barcelona.png',
-      'league': 'La Liga',
-      'odds': {'home': '2.25', 'draw': '3.20', 'away': '2.90'},
-      'isLive': false,
-      'isFavorite': false,
-    },
-    {
-      'homeTeam': 'Celtics',
-      'awayTeam': 'Heat',
-      'homeTeamLogo': 'assets/images/celtics.png',
-      'awayTeamLogo': 'assets/images/heat.png',
-      'league': 'NBA',
-      'odds': {'home': '1.75', 'away': '2.05'},
-      'isLive': false,
-      'isFavorite': false,
-    },
-  ];
-
-  // Sample data for related leagues/tournaments
+  // Sample data for related leagues/tournaments (unchanged)
   final List<Map<String, dynamic>> relatedLeagues = [
     {
       'name': 'Premier League',
@@ -66,7 +25,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     {'name': 'NBA Finals', 'image': 'assets/images/nba.png', 'season': '2024'},
   ];
 
-  // Sample data for similar sports/categories
+  // Sample data for similar sports/categories (unchanged)
   final List<Map<String, dynamic>> similarSports = [
     {'name': 'Tennis', 'image': 'assets/images/tennis.png'},
     {'name': 'Baseball', 'image': 'assets/images/baseball.png'},
@@ -98,10 +57,28 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Quick picks list
-                  ...quickPicks
-                      .map((match) => _buildQuickPickItem(match))
-                      .toList(),
+                  // Quick picks list from API
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final oddsAsync = ref.watch(
+                        oddsProvider('soccer_epl'),
+                      ); // Adjust sportKey as needed
+                      return oddsAsync.when(
+                        data: (matches) => Column(
+                          children: matches
+                              .map((match) => _buildQuickPickItem(match))
+                              .toList(),
+                        ),
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                        error: (error, stack) => Text(
+                          'Error: $error',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    },
+                  ),
 
                   const SizedBox(height: 40),
 
@@ -120,7 +97,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ),
           ),
 
-          // Related leagues horizontal scroll
+          // Related leagues horizontal scroll (unchanged)
           SliverToBoxAdapter(
             child: Container(
               color: const Color(0xFF181818), // Matte black for Popular Leagues
@@ -136,7 +113,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ),
           ),
 
-          // Similar sports section
+          // Similar sports section (unchanged)
           SliverToBoxAdapter(
             child: Container(
               color: const Color(0xFF181818), // Matte black for Other Sports
@@ -159,12 +136,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ),
           ),
 
-          // Similar sports horizontal scroll
+          // Similar sports horizontal scroll (unchanged)
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(
-                0xFF181818,
-              ), // Matte black for Other Sports (continued)
+              color: const Color(0xFF181818), // Matte black for Other Sports
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -274,13 +249,13 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (match['odds']['home'] != null)
+                if (match['odds']['home'] != 'N/A')
                   _buildOddsChip(match['odds']['home']),
-                if (match['odds']['draw'] != null) ...[
+                if (match['odds']['draw'] != 'N/A') ...[
                   const SizedBox(width: 2),
                   _buildOddsChip(match['odds']['draw']),
                 ],
-                if (match['odds']['away'] != null) ...[
+                if (match['odds']['away'] != 'N/A') ...[
                   const SizedBox(width: 2),
                   _buildOddsChip(match['odds']['away']),
                 ],
@@ -291,7 +266,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           // Favorite icon
           GestureDetector(
             onTap: () {
-              // Toggle favorite
+              // Toggle favorite (implement later)
             },
             child: Icon(
               match['isFavorite'] ? Icons.star : Icons.star_border,

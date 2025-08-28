@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:better/ui/home/sections/all_games_section.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,8 +10,43 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String selectedSection = 'All Games';
+  late AnimationController _slideController;
+  late Animation<Offset> _outAnimation;
+  late Animation<Offset> _inAnimation;
+  bool _isAnimating = false;
+  String? _outgoingSection;
+
+  @override
+  void initState() {
+    super.initState();
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    // Animation for outgoing content (slides up and disappears)
+    _outAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -1),
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Animation for incoming content (slides up from bottom)
+    _inAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start with content visible
+    _slideController.value = 1.0;
+  }
 
   final Map<String, Widget> _sectionWidgets = {
     'All Games': const AllGamesSection(),
@@ -53,11 +89,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 CustomNavigationSidebar(
                   selectedSection: selectedSection,
-                  onSectionChanged: (section) {
-                    setState(() {
-                      selectedSection = section;
-                    });
-                  },
+                  onSectionChanged: _onSectionChanged,
                 ),
                 Expanded(
                   child: Column(
@@ -109,15 +141,63 @@ class _HomePageState extends State<HomePage> {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child:
-          _sectionWidgets[section] ??
-          Center(
-            child: Text(
-              "Section '$section' not found",
-              style: const TextStyle(color: Colors.red, fontSize: 16),
-            ),
-          ),
+      child: AnimatedBuilder(
+        animation: _slideController,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              // Outgoing section - slides up and out
+              if (_outgoingSection != null && _isAnimating)
+                Transform.translate(
+                  offset: Offset(0, -_slideController.value * MediaQuery.of(context).size.height),
+                  child: _sectionWidgets[_outgoingSection!],
+                ),
+
+              // Incoming section - follows the outgoing section
+              Transform.translate(
+                offset: _isAnimating && _outgoingSection != null
+                  ? Offset(0, (1.0 - _slideController.value) * MediaQuery.of(context).size.height)
+                  : Offset.zero,
+                child: _sectionWidgets[section] ??
+                    Center(
+                      child: Text(
+                        "Section '$section' not found",
+                        style: const TextStyle(color: Colors.red, fontSize: 16),
+                      ),
+                    ),
+              ),
+            ],
+          );
+        },
+      ),
     );
+  }
+
+  Future<void> _onSectionChanged(String section) async {
+    if (_isAnimating || selectedSection == section) return;
+
+    setState(() {
+      _isAnimating = true;
+      _outgoingSection = selectedSection;
+      selectedSection = section;
+    });
+
+    // Reset animation to start
+    _slideController.value = 0.0;
+
+    // Animate both outgoing and incoming content simultaneously
+    await _slideController.animateTo(1.0, duration: const Duration(milliseconds: 500));
+
+    setState(() {
+      _isAnimating = false;
+      _outgoingSection = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _slideController.dispose();
+    super.dispose();
   }
 }
 

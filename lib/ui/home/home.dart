@@ -72,30 +72,27 @@ class _HomePageState extends State<HomePage> {
             Positioned(
               top: 85,
               left: 20,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    print('Settings icon pressed!');
-                  },
-                  customBorder: const CircleBorder(),
-                  splashColor: Colors.white.withValues(alpha: .3),
-                  highlightColor: Colors.white.withValues(alpha: .1),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: const BoxDecoration(
-                      color: Color(
-                        0xFF181818,
-                      ), // Matte black for Settings Button
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        "assets/svg/settings.svg",
-                        width: 20,
-                        height: 20,
-                        color: Colors.white, // Ensure icon is visible
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22), // Half of 44 for perfect circle
+                child: Material(
+                  color: const Color(0xFF181818),
+                  child: InkWell(
+                    onTap: () {
+                      print('Settings icon pressed!');
+                    },
+                    customBorder: const CircleBorder(),
+                    splashColor: Colors.white.withValues(alpha: 0.05),
+                    highlightColor: Colors.white.withValues(alpha: 0.02),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          "assets/svg/settings.svg",
+                          width: 20,
+                          height: 20,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -109,7 +106,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildContentForSection(String section) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
       child:
@@ -245,9 +242,7 @@ class CustomHeader extends StatelessWidget {
     return Container(
       height: 150,
       padding: const EdgeInsets.fromLTRB(60, 80, 20, 20),
-      decoration: const BoxDecoration(
-        color: Color(0xFF181818), // Matte black for Header
-      ),
+      decoration: const BoxDecoration(color: Color(0xFF181818)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [

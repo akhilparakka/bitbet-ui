@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/providers/odds_provider.dart'; // Adjust path as needed
+import '../../../domain/providers/odds_provider.dart';
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -10,7 +10,6 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
-  // Sample data for related leagues/tournaments (unchanged)
   final List<Map<String, dynamic>> relatedLeagues = [
     {
       'name': 'Premier League',
@@ -25,7 +24,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     {'name': 'NBA Finals', 'image': 'assets/images/nba.png', 'season': '2024'},
   ];
 
-  // Sample data for similar sports/categories (unchanged)
   final List<Map<String, dynamic>> similarSports = [
     {'name': 'Tennis', 'image': 'assets/images/tennis.png'},
     {'name': 'Baseball', 'image': 'assets/images/baseball.png'},
@@ -35,42 +33,40 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF181818), // Matte black for AllGamesSection
+      color: const Color(0xFF181818),
       child: CustomScrollView(
         slivers: [
-          // Quick picks section
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818), // Matte black for Quick Picks
+              color: const Color(0xFF181818),
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Quick picks header
-                  const Text(
-                    'Quick picks',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Quick picks list from API
+                   const SizedBox(height: 20), // Increased spacing above heading
+                   const Text(
+                     'Quick picks',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                   const SizedBox(height: 24), // Increased spacing below heading for more breathing room
                   Consumer(
                     builder: (context, ref, child) {
-                      final oddsAsync = ref.watch(
-                        oddsProvider('soccer_epl'),
-                      ); // Adjust sportKey as needed
+                      final oddsAsync = ref.watch(oddsProvider('soccer_epl'));
                       return oddsAsync.when(
                         data: (matches) => Column(
                           children: matches
                               .map((match) => _buildQuickPickItem(match))
                               .toList(),
                         ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
+                         loading: () => Column(
+                          children: List.generate(
+                            4,
+                            (index) => _buildQuickPickSkeleton(),
+                          ),
                         ),
                         error: (error, stack) => Text(
                           'Error: $error',
@@ -79,28 +75,24 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       );
                     },
                   ),
-
-                  const SizedBox(height: 40),
-
-                  // Related leagues section
-                  const Text(
-                    'Popular leagues',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                   const SizedBox(height: 20),
+                   const SizedBox(height: 20), // Match spacing with Quick picks
+                   const Text(
+                     'Popular leagues',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                   const SizedBox(height: 16), // Keep consistent spacing to items
                 ],
               ),
             ),
           ),
-
-          // Related leagues horizontal scroll (unchanged)
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818), // Matte black for Popular Leagues
+              color: const Color(0xFF181818),
               height: 200,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -112,34 +104,30 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               ),
             ),
           ),
-
-          // Similar sports section (unchanged)
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818), // Matte black for Other Sports
+              color: const Color(0xFF181818),
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Other sports',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                   const SizedBox(height: 20), // Match spacing with other sections
+                   const Text(
+                     'Other sports',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                   const SizedBox(height: 16), // Consistent spacing to items
                 ],
               ),
             ),
           ),
-
-          // Similar sports horizontal scroll (unchanged)
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818), // Matte black for Other Sports
+              color: const Color(0xFF181818),
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -151,7 +139,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               ),
             ),
           ),
-
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
@@ -161,10 +148,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   Widget _buildQuickPickItem(Map<String, dynamic> match) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
+      constraints: const BoxConstraints(minHeight: 70),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Team logos
           Stack(
             children: [
               Container(
@@ -196,7 +183,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ],
           ),
           const SizedBox(width: 12),
-          // Match details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,8 +194,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -239,39 +223,185 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         ),
                       ),
                     ],
+                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        if (match['odds']['home'] != 'N/A')
+                          _buildOddsChip(match['odds']['home']),
+                        if (match['odds']['draw'] != 'N/A') ...[
+                          const SizedBox(width: 4),
+                          _buildOddsChip(match['odds']['draw']),
+                        ],
+                        if (match['odds']['away'] != 'N/A') ...[
+                          const SizedBox(width: 4),
+                          _buildOddsChip(match['odds']['away']),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          // Odds preview with Flexible to prevent overflow
-          Flexible(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (match['odds']['home'] != 'N/A')
-                  _buildOddsChip(match['odds']['home']),
-                if (match['odds']['draw'] != 'N/A') ...[
-                  const SizedBox(width: 2),
-                  _buildOddsChip(match['odds']['draw']),
-                ],
-                if (match['odds']['away'] != 'N/A') ...[
-                  const SizedBox(width: 2),
-                  _buildOddsChip(match['odds']['away']),
-                ],
-              ],
-            ),
-          ),
           const SizedBox(width: 12),
-          // Favorite icon
           GestureDetector(
-            onTap: () {
-              // Toggle favorite (implement later)
-            },
+            onTap: () {},
             child: Icon(
               match['isFavorite'] ? Icons.star : Icons.star_border,
               color: match['isFavorite'] ? Colors.blue : Colors.grey[600],
               size: 18,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickPickSkeleton() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      constraints: const BoxConstraints(minHeight: 70),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.grey[700]!,
+                        Colors.grey[800]!,
+                        Colors.grey[700]!,
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
+                ),
+              ),
+              // Space for potential live indicator
+              Positioned(
+                top: -2,
+                right: -2,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[700],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 16,
+                  width: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(4),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.grey[700]!,
+                        Colors.grey[800]!,
+                        Colors.grey[700]!,
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      height: 14,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(4),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.grey[700]!,
+                            Colors.grey[800]!,
+                            Colors.grey[700]!,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Space for potential LIVE badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      width: 30,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: List.generate(
+                        3,
+                        (index) => Container(
+                          margin: const EdgeInsets.only(right: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          width: 24,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.grey[700]!,
+                                Colors.grey[800]!,
+                                Colors.grey[700]!,
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
             ),
           ),
         ],

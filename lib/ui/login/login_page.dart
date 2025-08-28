@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
         core: ReownCore(projectId: projectId, logLevel: LogLevel.error),
         metadata: PairingMetadata(
           name: 'Better App',
-          description: 'Music streaming app with Web3 integration',
+          description: 'Sports betting app with Web3 integration',
           url: 'https://better-app.com',
           icons: ['https://better-app.com/assets/Logo/walletconnect.svg'],
           redirect: Redirect(
@@ -219,13 +219,14 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(
-          "assets/Logo/spotify-white-icon.svg",
+          "assets/svg/games.svg",
           width: 50,
           height: 50,
+          color: Colors.white,
         ),
         msPacer(),
         const Text(
-          "Millions of songs. \nFree on Spotify.",
+          "Better odds. \nSmarter betting.",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

@@ -17,6 +17,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<Offset> _inAnimation;
   bool _isAnimating = false;
   String? _outgoingSection;
+  bool _slideUp = true; // true = slide up (new from bottom), false = slide down (new from top)
 
   @override
   void initState() {
@@ -47,6 +48,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Start with content visible
     _slideController.value = 1.0;
   }
+
+  final List<String> _navOrder = [
+    'All Games',
+    'Favorites',
+    'My Bets',
+    'Discover',
+    'Leaderboards',
+    'Profile',
+  ];
 
   final Map<String, Widget> _sectionWidgets = {
     'All Games': const AllGamesSection(),
@@ -144,19 +154,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _slideController,
         builder: (context, child) {
+          final screenHeight = MediaQuery.of(context).size.height;
+
           return Stack(
             children: [
-              // Outgoing section - slides up and out
+              // Outgoing section
               if (_outgoingSection != null && _isAnimating)
                 Transform.translate(
-                  offset: Offset(0, -_slideController.value * MediaQuery.of(context).size.height),
+                  offset: _slideUp
+                    ? Offset(0, -_slideController.value * screenHeight) // Slide up and out
+                    : Offset(0, _slideController.value * screenHeight), // Slide down and out
                   child: _sectionWidgets[_outgoingSection!],
                 ),
 
-              // Incoming section - follows the outgoing section
+              // Incoming section
               Transform.translate(
                 offset: _isAnimating && _outgoingSection != null
-                  ? Offset(0, (1.0 - _slideController.value) * MediaQuery.of(context).size.height)
+                  ? _slideUp
+                    ? Offset(0, (1.0 - _slideController.value) * screenHeight) // Slide up from bottom
+                    : Offset(0, - (1.0 - _slideController.value) * screenHeight) // Slide down from top
                   : Offset.zero,
                 child: _sectionWidgets[section] ??
                     Center(
@@ -176,6 +192,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _onSectionChanged(String section) async {
     if (_isAnimating || selectedSection == section) return;
 
+    // Determine animation direction based on navigation order
+    final currentIndex = _navOrder.indexOf(selectedSection);
+    final newIndex = _navOrder.indexOf(section);
+    _slideUp = newIndex > currentIndex; // true = slide up (new from bottom), false = slide down (new from top)
+
     setState(() {
       _isAnimating = true;
       _outgoingSection = selectedSection;
@@ -186,7 +207,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _slideController.value = 0.0;
 
     // Animate both outgoing and incoming content simultaneously
-    await _slideController.animateTo(1.0, duration: const Duration(milliseconds: 500));
+    await _slideController.animateTo(1.0, duration: const Duration(milliseconds: 300));
 
     setState(() {
       _isAnimating = false;
@@ -267,19 +288,24 @@ class CustomNavigationSidebar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center, // Center content
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 4,
-                    ), // Minimal spacing from left edge
-                    child: SizedBox(
-                      width: 15,
-                      height: 15,
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 300),
-                        opacity: isSelected ? 1.0 : 0.0,
-                        child: SvgPicture.asset(iconPath, color: Colors.white),
-                      ),
-                    ),
+                   Padding(
+                     padding: const EdgeInsets.only(
+                       left: 8,
+                     ), // Spacing from left edge
+                     child: AnimatedContainer(
+                       duration: const Duration(milliseconds: 300),
+                       width: 15,
+                       height: 15,
+                       transform: Matrix4.translationValues(
+                         isSelected ? 0 : -20, // Slide from left (-20px) to position (0)
+                         0,
+                         0,
+                       ),
+                       child: SvgPicture.asset(
+                         iconPath,
+                         color: isSelected ? Colors.white : Colors.transparent,
+                       ),
+                     ),
                   ),
                   const SizedBox(
                     width: 1,

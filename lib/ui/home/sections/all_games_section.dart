@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/odds_provider.dart';
+import '../../../domain/providers/leagues_provider.dart';
 import '../../game_details_page.dart';
 
 class AllGamesSection extends StatefulWidget {
@@ -11,19 +12,7 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
-  final List<Map<String, dynamic>> relatedLeagues = [
-    {
-      'name': 'Premier League',
-      'image': 'assets/images/premier_league.png',
-      'season': '2024',
-    },
-    {
-      'name': 'Champions League',
-      'image': 'assets/images/champions_league.png',
-      'season': '2024',
-    },
-    {'name': 'NBA Finals', 'image': 'assets/images/nba.png', 'season': '2024'},
-  ];
+  // Removed hardcoded relatedLeagues - now using leaguesProvider
 
   final List<Map<String, dynamic>> similarSports = [
     {'name': 'Tennis', 'image': 'assets/images/tennis.png'},
@@ -94,12 +83,33 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             child: Container(
               color: const Color(0xFF181818),
               height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: relatedLeagues.length,
-                itemBuilder: (context, index) {
-                  return _buildLeagueCard(relatedLeagues[index]);
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final leaguesAsync = ref.watch(leaguesProvider);
+                  return leaguesAsync.when(
+                    data: (leagues) => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: leagues.length,
+                      itemBuilder: (context, index) {
+                        return _buildLeagueCard(leagues[index]);
+                      },
+                    ),
+                    loading: () => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: 3,
+                      itemBuilder: (context, index) {
+                        return _buildLeagueCardSkeleton();
+                      },
+                    ),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        'Error loading leagues: $error',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
@@ -483,6 +493,71 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Text(
             league['season'],
             style: TextStyle(color: Colors.grey[400], fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeagueCardSkeleton() {
+    return Container(
+      width: 140,
+      margin: const EdgeInsets.only(right: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 16,
+            width: 120,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(4),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 14,
+            width: 80,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(4),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
         ],
       ),

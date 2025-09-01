@@ -17,7 +17,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<Offset> _inAnimation;
   bool _isAnimating = false;
   String? _outgoingSection;
-  bool _slideUp = true; // true = slide up (new from bottom), false = slide down (new from top)
+  bool _slideUp =
+      true; // true = slide up (new from bottom), false = slide down (new from top)
 
   @override
   void initState() {
@@ -28,22 +29,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     // Animation for outgoing content (slides up and disappears)
-    _outAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, -1),
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOut,
-    ));
+    _outAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(0, -1))
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
+        );
 
     // Animation for incoming content (slides up from bottom)
-    _inAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOut,
-    ));
+    _inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
+        );
 
     // Start with content visible
     _slideController.value = 1.0;
@@ -115,7 +110,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               top: 85,
               left: 20,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(22), // Half of 44 for perfect circle
+                borderRadius: BorderRadius.circular(
+                  22,
+                ), // Half of 44 for perfect circle
                 child: Material(
                   color: const Color(0xFF181818),
                   child: InkWell(
@@ -125,7 +122,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     customBorder: const CircleBorder(),
                     splashColor: Colors.white.withValues(alpha: 0.05),
                     highlightColor: Colors.white.withValues(alpha: 0.02),
-                    child: Container(
+                    child: SizedBox(
                       width: 44,
                       height: 44,
                       child: Center(
@@ -162,19 +159,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               if (_outgoingSection != null && _isAnimating)
                 Transform.translate(
                   offset: _slideUp
-                    ? Offset(0, -_slideController.value * screenHeight) // Slide up and out
-                    : Offset(0, _slideController.value * screenHeight), // Slide down and out
+                      ? Offset(
+                          0,
+                          -_slideController.value * screenHeight,
+                        ) // Slide up and out
+                      : Offset(
+                          0,
+                          _slideController.value * screenHeight,
+                        ), // Slide down and out
                   child: _sectionWidgets[_outgoingSection!],
                 ),
 
               // Incoming section
               Transform.translate(
                 offset: _isAnimating && _outgoingSection != null
-                  ? _slideUp
-                    ? Offset(0, (1.0 - _slideController.value) * screenHeight) // Slide up from bottom
-                    : Offset(0, - (1.0 - _slideController.value) * screenHeight) // Slide down from top
-                  : Offset.zero,
-                child: _sectionWidgets[section] ??
+                    ? _slideUp
+                          ? Offset(
+                              0,
+                              (1.0 - _slideController.value) * screenHeight,
+                            ) // Slide up from bottom
+                          : Offset(
+                              0,
+                              -(1.0 - _slideController.value) * screenHeight,
+                            ) // Slide down from top
+                    : Offset.zero,
+                child:
+                    _sectionWidgets[section] ??
                     Center(
                       child: Text(
                         "Section '$section' not found",
@@ -195,7 +205,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Determine animation direction based on navigation order
     final currentIndex = _navOrder.indexOf(selectedSection);
     final newIndex = _navOrder.indexOf(section);
-    _slideUp = newIndex > currentIndex; // true = slide up (new from bottom), false = slide down (new from top)
+    _slideUp =
+        newIndex >
+        currentIndex; // true = slide up (new from bottom), false = slide down (new from top)
 
     setState(() {
       _isAnimating = true;
@@ -207,7 +219,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _slideController.value = 0.0;
 
     // Animate both outgoing and incoming content simultaneously
-    await _slideController.animateTo(1.0, duration: const Duration(milliseconds: 300));
+    await _slideController.animateTo(
+      1.0,
+      duration: const Duration(milliseconds: 300),
+    );
 
     setState(() {
       _isAnimating = false;
@@ -245,7 +260,7 @@ class CustomNavigationSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 60,
-      color: const Color(0xFF181818), // Matte black for Sidebar
+      color: const Color(0xFF181818),
       child: Column(
         children: [
           const SizedBox(height: 150),
@@ -288,24 +303,26 @@ class CustomNavigationSidebar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center, // Center content
                 children: [
-                   Padding(
-                     padding: const EdgeInsets.only(
-                       left: 8,
-                     ), // Spacing from left edge
-                     child: AnimatedContainer(
-                       duration: const Duration(milliseconds: 300),
-                       width: 15,
-                       height: 15,
-                       transform: Matrix4.translationValues(
-                         isSelected ? 0 : -20, // Slide from left (-20px) to position (0)
-                         0,
-                         0,
-                       ),
-                       child: SvgPicture.asset(
-                         iconPath,
-                         color: isSelected ? Colors.white : Colors.transparent,
-                       ),
-                     ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 8,
+                    ), // Spacing from left edge
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 15,
+                      height: 15,
+                      transform: Matrix4.translationValues(
+                        isSelected
+                            ? 0
+                            : -20, // Slide from left (-20px) to position (0)
+                        0,
+                        0,
+                      ),
+                      child: SvgPicture.asset(
+                        iconPath,
+                        color: isSelected ? Colors.white : Colors.transparent,
+                      ),
+                    ),
                   ),
                   const SizedBox(
                     width: 1,

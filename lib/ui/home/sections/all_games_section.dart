@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/odds_provider.dart';
+import '../../game_details_page.dart';
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -43,16 +44,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const SizedBox(height: 20), // Increased spacing above heading
-                   const Text(
-                     'Quick picks',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w600,
-                     ),
-                   ),
-                   const SizedBox(height: 24), // Increased spacing below heading for more breathing room
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Quick picks',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Consumer(
                     builder: (context, ref, child) {
                       final oddsAsync = ref.watch(oddsProvider('soccer_epl'));
@@ -62,7 +63,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               .map((match) => _buildQuickPickItem(match))
                               .toList(),
                         ),
-                         loading: () => Column(
+                        loading: () => Column(
                           children: List.generate(
                             4,
                             (index) => _buildQuickPickSkeleton(),
@@ -75,17 +76,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       );
                     },
                   ),
-                   const SizedBox(height: 20),
-                   const SizedBox(height: 20), // Match spacing with Quick picks
-                   const Text(
-                     'Popular leagues',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w500,
-                     ),
-                   ),
-                   const SizedBox(height: 16), // Keep consistent spacing to items
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Popular leagues',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -111,16 +111,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const SizedBox(height: 20), // Match spacing with other sections
-                   const Text(
-                     'Other sports',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w500,
-                     ),
-                   ),
-                   const SizedBox(height: 16), // Consistent spacing to items
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Other sports',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -149,110 +149,136 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       constraints: const BoxConstraints(minHeight: 70),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.sports_soccer,
-                  color: Colors.grey[600],
-                  size: 20,
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // Navigate to game details page with fade animation
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const GameDetailsPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 200), // Quick and smooth
               ),
-              if (match['isLive'])
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
+            );
+          },
+          splashColor: Colors.white.withValues(alpha: 0.1),
+          highlightColor: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${match['homeTeam']} vs ${match['awayTeam']}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
+                Stack(
                   children: [
-                    Text(
-                      match['league'],
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.sports_soccer,
+                        color: Colors.grey[600],
+                        size: 20,
+                      ),
                     ),
-                    if (match['isLive']) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'LIVE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
+                    if (match['isLive'])
+                      Positioned(
+                        top: -2,
+                        right: -2,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
                           ),
                         ),
                       ),
-                    ],
-                    const SizedBox(width: 8),
-                    Row(
-                      children: [
-                        if (match['odds']['home'] != 'N/A')
-                          _buildOddsChip(match['odds']['home']),
-                        if (match['odds']['draw'] != 'N/A') ...[
-                          const SizedBox(width: 4),
-                          _buildOddsChip(match['odds']['draw']),
-                        ],
-                        if (match['odds']['away'] != 'N/A') ...[
-                          const SizedBox(width: 4),
-                          _buildOddsChip(match['odds']['away']),
-                        ],
-                      ],
-                    ),
                   ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${match['homeTeam']} vs ${match['awayTeam']}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            match['league'],
+                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                          ),
+                          if (match['isLive']) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'LIVE',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(width: 8),
+                          Row(
+                            children: [
+                              if (match['odds']['home'] != 'N/A')
+                                _buildOddsChip(match['odds']['home']),
+                              if (match['odds']['draw'] != 'N/A') ...[
+                                const SizedBox(width: 4),
+                                _buildOddsChip(match['odds']['draw']),
+                              ],
+                              if (match['odds']['away'] != 'N/A') ...[
+                                const SizedBox(width: 4),
+                                _buildOddsChip(match['odds']['away']),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () {},
+                  child: Icon(
+                    match['isFavorite'] ? Icons.star : Icons.star_border,
+                    color: match['isFavorite'] ? Colors.blue : Colors.grey[600],
+                    size: 18,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () {},
-            child: Icon(
-              match['isFavorite'] ? Icons.star : Icons.star_border,
-              color: match['isFavorite'] ? Colors.blue : Colors.grey[600],
-              size: 18,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

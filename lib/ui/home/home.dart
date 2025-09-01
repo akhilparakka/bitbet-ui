@@ -17,8 +17,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<Offset> _inAnimation;
   bool _isAnimating = false;
   String? _outgoingSection;
-  bool _slideUp =
-      true; // true = slide up (new from bottom), false = slide down (new from top)
+  bool _slideUp = true;
 
   @override
   void initState() {
@@ -28,19 +27,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    // Animation for outgoing content (slides up and disappears)
     _outAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(0, -1))
         .animate(
           CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
         );
 
-    // Animation for incoming content (slides up from bottom)
     _inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
         .animate(
           CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
         );
 
-    // Start with content visible
     _slideController.value = 1.0;
   }
 
@@ -85,9 +81,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF181818), // Matte black for Scaffold
+      backgroundColor: const Color(0xFF181818),
       body: Material(
-        color: const Color(0xFF181818), // Match Scaffold background
+        color: const Color(0xFF181818),
         child: Stack(
           children: [
             Row(
@@ -110,9 +106,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               top: 85,
               left: 20,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  22,
-                ), // Half of 44 for perfect circle
+                borderRadius: BorderRadius.circular(22),
                 child: Material(
                   color: const Color(0xFF181818),
                   child: InkWell(
@@ -155,22 +149,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
           return Stack(
             children: [
-              // Outgoing section
               if (_outgoingSection != null && _isAnimating)
                 Transform.translate(
                   offset: _slideUp
-                      ? Offset(
-                          0,
-                          -_slideController.value * screenHeight,
-                        ) // Slide up and out
-                      : Offset(
-                          0,
-                          _slideController.value * screenHeight,
-                        ), // Slide down and out
+                      ? Offset(0, -_slideController.value * screenHeight)
+                      : Offset(0, _slideController.value * screenHeight),
                   child: _sectionWidgets[_outgoingSection!],
                 ),
 
-              // Incoming section
               Transform.translate(
                 offset: _isAnimating && _outgoingSection != null
                     ? _slideUp
@@ -181,7 +167,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           : Offset(
                               0,
                               -(1.0 - _slideController.value) * screenHeight,
-                            ) // Slide down from top
+                            )
                     : Offset.zero,
                 child:
                     _sectionWidgets[section] ??
@@ -202,12 +188,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _onSectionChanged(String section) async {
     if (_isAnimating || selectedSection == section) return;
 
-    // Determine animation direction based on navigation order
     final currentIndex = _navOrder.indexOf(selectedSection);
     final newIndex = _navOrder.indexOf(section);
-    _slideUp =
-        newIndex >
-        currentIndex; // true = slide up (new from bottom), false = slide down (new from top)
+    _slideUp = newIndex > currentIndex;
 
     setState(() {
       _isAnimating = true;
@@ -215,10 +198,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       selectedSection = section;
     });
 
-    // Reset animation to start
     _slideController.value = 0.0;
 
-    // Animate both outgoing and incoming content simultaneously
     await _slideController.animateTo(
       1.0,
       duration: const Duration(milliseconds: 300),
@@ -283,9 +264,7 @@ class CustomNavigationSidebar extends StatelessWidget {
     bool isSelected = selectedSection == section;
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 4,
-      ), // Minimal vertical margin
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Material(
@@ -295,26 +274,19 @@ class CustomNavigationSidebar extends StatelessWidget {
             highlightColor: Colors.white.withValues(alpha: 0.02),
             onTap: () => onSectionChanged(section),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 15,
-                horizontal: 4,
-              ), // Reduced padding
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 4),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center, // Center content
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-                    ), // Spacing from left edge
+                    padding: const EdgeInsets.only(left: 8),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 15,
                       height: 15,
                       transform: Matrix4.translationValues(
-                        isSelected
-                            ? 0
-                            : -20, // Slide from left (-20px) to position (0)
+                        isSelected ? 0 : -20,
                         0,
                         0,
                       ),
@@ -324,9 +296,7 @@ class CustomNavigationSidebar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    width: 1,
-                  ), // Minimal spacing between icon and label
+                  const SizedBox(width: 1),
                   Expanded(
                     child: Center(
                       child: RotatedBox(
@@ -337,8 +307,7 @@ class CustomNavigationSidebar extends StatelessWidget {
                             color: isSelected
                                 ? Colors.white
                                 : const Color(0xFF666666),
-                            fontSize:
-                                12, // Slightly smaller font for better fit
+                            fontSize: 12,
                           ),
                           textAlign: TextAlign.center,
                         ),

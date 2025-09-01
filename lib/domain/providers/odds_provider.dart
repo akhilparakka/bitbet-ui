@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/odds_api_service.dart';
 
 final oddsApiServiceProvider = Provider<OddsApiService>((ref) {
-  const apiKey = 'cc0bc16a0969a604d1b9e3a729fc98a9';
-  return OddsApiService(apiKey: apiKey);
+  // No API key needed for the new endpoint
+  return OddsApiService(apiKey: '');
 });
 
 final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((

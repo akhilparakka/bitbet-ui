@@ -139,24 +139,26 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 padding: const EdgeInsets.all(20),
                 sliver: sportsAsync.when(
                   data: (sports) => SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      childAspectRatio: 1.2,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 1.2,
+                        ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _buildSportCard(sports[index]),
                       childCount: sports.length,
                     ),
                   ),
                   loading: () => SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      childAspectRatio: 1.2,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 1.2,
+                        ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _buildSportCardSkeleton(),
                       childCount: 9,
@@ -194,14 +196,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             // Navigate to game details page with fade animation
             Navigator.of(context).push(
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const GameDetailsPage(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 200), // Quick and smooth
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const GameDetailsPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                transitionDuration: const Duration(
+                  milliseconds: 200,
+                ), // Quick and smooth
               ),
             );
           },
@@ -261,7 +264,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         children: [
                           Text(
                             match['league'],
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 12,
+                            ),
                           ),
                           if (match['isLive']) ...[
                             const SizedBox(width: 6),
@@ -412,7 +418,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     const SizedBox(width: 6),
                     // Space for potential LIVE badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       width: 30,
                       height: 14,
                       decoration: BoxDecoration(
@@ -426,7 +435,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         3,
                         (index) => Container(
                           margin: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
                           width: 24,
                           height: 16,
                           decoration: BoxDecoration(

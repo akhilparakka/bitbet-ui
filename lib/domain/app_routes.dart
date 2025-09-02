@@ -1,6 +1,6 @@
-import 'package:better/ui/home/home.dart';
-import 'package:better/ui/login/login_page.dart';
-import 'package:better/ui/splash/splash_page.dart';
+import 'package:bitbet/ui/home/home.dart';
+import 'package:bitbet/ui/login/login_page.dart';
+import 'package:bitbet/ui/splash/splash_page.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {

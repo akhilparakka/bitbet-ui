@@ -1,8 +1,8 @@
-import 'package:better/domain/app_colors.dart';
-import 'package:better/domain/ui_heloper.dart';
-import 'package:better/domain/app_routes.dart';
+import 'package:bitbet/domain/app_colors.dart';
+import 'package:bitbet/domain/ui_heloper.dart';
+import 'package:bitbet/domain/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:better/ui/custom_widgets/oblong_button.dart';
+import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -32,13 +32,13 @@ class _LoginPageState extends State<LoginPage> {
       _appKit = ReownAppKit(
         core: ReownCore(projectId: projectId, logLevel: LogLevel.error),
         metadata: PairingMetadata(
-          name: 'Better App',
+          name: 'BitBet App',
           description: 'Sports betting app with Web3 integration',
-          url: 'https://better-app.com',
-          icons: ['https://better-app.com/assets/Logo/walletconnect.svg'],
+          url: 'https://bitbet-app.com',
+          icons: ['https://bitbet-app.com/assets/Logo/walletconnect.svg'],
           redirect: Redirect(
-            native: 'better://',
-            universal: 'https://better-app.com',
+            native: 'bitbet://',
+            universal: 'https://bitbet-app.com',
           ),
         ),
       );
@@ -226,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         msPacer(),
         const Text(
-          "Better odds. \nSmarter betting.",
+          "bitbet odds. \nSmarter betting.",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

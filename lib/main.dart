@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better/domain/app_routes.dart';
+import 'package:bitbet/domain/app_routes.dart';
 
 void main() async {
   await dotenv.load();
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Better - Sports Betting',
+      title: 'BitBet - Sports Betting',
       theme: ThemeData(
         fontFamily: "montserrat",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

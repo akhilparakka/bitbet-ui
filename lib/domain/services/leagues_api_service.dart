@@ -5,17 +5,16 @@ class LeaguesApiService {
   final String _baseUrl = 'http://localhost:3000';
 
   Future<List<Map<String, dynamic>>> fetchLeagues() async {
-    // Try to fetch from API first
     try {
       final url = Uri.parse('$_baseUrl/popular_leagues');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        // Try different possible response structures
         List<dynamic> leaguesData = [];
 
-        if (responseData['data'] != null && responseData['data']['leagues'] != null) {
+        if (responseData['data'] != null &&
+            responseData['data']['leagues'] != null) {
           leaguesData = responseData['data']['leagues'];
         } else if (responseData['leagues'] != null) {
           leaguesData = responseData['leagues'];
@@ -26,10 +25,10 @@ class LeaguesApiService {
         return leaguesData.map<Map<String, dynamic>>((league) {
           final name = league['sport_title'] ?? 'Unknown League';
           final sport = league['sport_group'] ?? 'Unknown Sport';
-          final season = '2024'; // Default season since it's not in the API response
+          final season = '2024';
 
-          // Generate image path based on league name
-          final imagePath = 'assets/images/${name.toLowerCase().replaceAll(" ", "_").replaceAll("-", "_").replaceAll("'", "")}.png';
+          final imagePath =
+              'assets/images/${name.toLowerCase().replaceAll(" ", "_").replaceAll("-", "_").replaceAll("'", "")}.png';
 
           return {
             'name': name,
@@ -40,6 +39,7 @@ class LeaguesApiService {
         }).toList();
       }
     } catch (e) {
+      print(e);
       // API call failed, continue to fallback
     }
 

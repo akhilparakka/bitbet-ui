@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:better/domain/app_colors.dart';
-import 'package:better/domain/app_routes.dart';
+import 'package:bitbet/domain/app_colors.dart';
+import 'package:bitbet/domain/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -33,13 +33,13 @@ class _SplashPageState extends State<SplashPage> {
       _appKit = ReownAppKit(
         core: ReownCore(projectId: projectId, logLevel: LogLevel.error),
         metadata: PairingMetadata(
-          name: 'Better App',
+          name: 'bitbet App',
           description: 'Music streaming app with Web3 integration',
-          url: 'https://better-app.com',
-          icons: ['https://better-app.com/assets/Logo/walletconnect.svg'],
+          url: 'https://bitbet-app.com',
+          icons: ['https://bitbet-app.com/assets/Logo/walletconnect.svg'],
           redirect: Redirect(
-            native: 'better://',
-            universal: 'https://better-app.com',
+            native: 'bitbet://',
+            universal: 'https://bitbet-app.com',
           ),
         ),
       );

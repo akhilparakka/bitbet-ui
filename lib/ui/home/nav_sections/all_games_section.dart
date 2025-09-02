@@ -19,14 +19,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       color: const Color(0xFF181818),
       child: CustomScrollView(
         slivers: [
+          // Quick picks header
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818),
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
                   const Text(
                     'Quick picks',
                     style: TextStyle(
@@ -35,30 +35,49 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final oddsAsync = ref.watch(oddsProvider('soccer_epl'));
-                      return oddsAsync.when(
-                        data: (matches) => Column(
-                          children: matches
-                              .map((match) => _buildQuickPickItem(match))
-                              .toList(),
-                        ),
-                        loading: () => Column(
-                          children: List.generate(
-                            4,
-                            (index) => _buildQuickPickSkeleton(),
-                          ),
-                        ),
-                        error: (error, stack) => Text(
-                          'Error: $error',
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+
+          // Quick picks content
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final oddsAsync = ref.watch(oddsProvider('soccer_epl'));
+                  return oddsAsync.when(
+                    data: (matches) => Column(
+                      children: matches
+                          .map((match) => _buildQuickPickItem(match))
+                          .toList(),
+                    ),
+                    loading: () => Column(
+                      children: List.generate(
+                        4,
+                        (index) => _buildQuickPickSkeleton(),
+                      ),
+                    ),
+                    error: (error, stack) => Text(
+                      'Error: $error',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // Popular leagues header
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
                   const Text(
                     'Popular leagues',
                     style: TextStyle(
@@ -67,14 +86,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
           ),
+
+          // Popular leagues content
           SliverToBoxAdapter(
-            child: Container(
-              color: const Color(0xFF181818),
+            child: SizedBox(
               height: 200,
               child: Consumer(
                 builder: (context, ref, child) {
@@ -107,14 +127,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               ),
             ),
           ),
+
+          // Other sports header
           SliverToBoxAdapter(
             child: Container(
-              color: const Color(0xFF181818),
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
                   const Text(
                     'Other sports',
                     style: TextStyle(
@@ -123,58 +144,64 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 4),
                 ],
               ),
             ),
           ),
-          Consumer(
-            builder: (context, ref, child) {
-              final sportsAsync = ref.watch(sportsProvider);
-              return SliverPadding(
-                padding: const EdgeInsets.all(20),
-                sliver: sportsAsync.when(
-                  data: (sports) => SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 1.2,
-                        ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildSportCard(sports[index]),
-                      childCount: sports.length,
+
+          // Other sports content
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 170,
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final sportsAsync = ref.watch(sportsProvider);
+                  return sportsAsync.when(
+                    data: (sports) => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        top: 0,
+                        right: 20,
+                        bottom: 0,
+                      ),
+                      itemCount: sports.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          child: _buildSportCard(sports[index]),
+                        );
+                      },
                     ),
-                  ),
-                  loading: () => SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 1.2,
-                        ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildSportCardSkeleton(),
-                      childCount: 9,
+                    loading: () => ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        top: 0,
+                        right: 20,
+                        bottom: 0,
+                      ),
+                      itemCount: 6,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          child: _buildSportCardSkeleton(),
+                        );
+                      },
                     ),
-                  ),
-                  error: (error, stack) => SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: Text(
-                          'Error loading sports: $error',
-                          style: const TextStyle(color: Colors.red),
-                        ),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        'Error loading sports: $error',
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ),
           ),
+
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
@@ -335,19 +362,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 decoration: BoxDecoration(
                   color: Colors.grey[800],
                   borderRadius: BorderRadius.circular(8),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.grey[700]!,
-                        Colors.grey[800]!,
-                        Colors.grey[700]!,
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.grey[700]!,
+                      Colors.grey[800]!,
+                      Colors.grey[700]!,
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
                 ),
               ),
@@ -598,78 +620,66 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   }
 
   Widget _buildSportCard(Map<String, dynamic> sport) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.sports, color: Colors.grey[600], size: 28),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            shape: BoxShape.circle,
           ),
-          const SizedBox(height: 12),
-          Text(
-            sport['name'],
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          child: Icon(Icons.sports, color: Colors.grey[600], size: 40),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          sport['name'],
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
           ),
-        ],
-      ),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
   Widget _buildSportCardSkeleton() {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Colors.grey[700]!,
-                  Colors.grey[800]!,
-                  Colors.grey[700]!,
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [Colors.grey[700]!, Colors.grey[800]!, Colors.grey[700]!],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
           ),
-          const SizedBox(height: 12),
-          Container(
-            height: 16,
-            width: 65,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(4),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.grey[700]!,
-                  Colors.grey[800]!,
-                  Colors.grey[700]!,
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 16,
+          width: 65,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(4),
+            gradient: LinearGradient(
+              colors: [Colors.grey[700]!, Colors.grey[800]!, Colors.grey[700]!],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

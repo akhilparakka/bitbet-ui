@@ -39,7 +39,7 @@ class LeaguesApiService {
         }).toList();
       }
     } catch (e) {
-      print(e);
+      // print(e);
       // API call failed, continue to fallback
     }
 

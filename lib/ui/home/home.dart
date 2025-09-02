@@ -7,14 +7,12 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String selectedSection = 'All Games';
   late AnimationController _slideController;
-  late Animation<Offset> _outAnimation;
-  late Animation<Offset> _inAnimation;
   bool _isAnimating = false;
   String? _outgoingSection;
   bool _slideUp = true;
@@ -26,16 +24,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-
-    _outAnimation = Tween<Offset>(begin: Offset.zero, end: const Offset(0, -1))
-        .animate(
-          CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
-        );
-
-    _inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
-        );
 
     _slideController.value = 1.0;
   }
@@ -111,7 +99,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: const Color(0xFF181818),
                   child: InkWell(
                     onTap: () {
-                      print('Settings icon pressed!');
+                      // print('Settings icon pressed!');
                     },
                     customBorder: const CircleBorder(),
                     splashColor: Colors.white.withValues(alpha: 0.05),
@@ -124,7 +112,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           "assets/svg/settings.svg",
                           width: 20,
                           height: 20,
-                          color: Colors.white,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
@@ -292,7 +283,15 @@ class CustomNavigationSidebar extends StatelessWidget {
                       ),
                       child: SvgPicture.asset(
                         iconPath,
-                        color: isSelected ? Colors.white : Colors.transparent,
+                        colorFilter: isSelected
+                            ? const ColorFilter.mode(
+                                Colors.white,
+                                BlendMode.srcIn,
+                              )
+                            : const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.srcIn,
+                              ),
                       ),
                     ),
                   ),

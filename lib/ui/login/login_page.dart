@@ -199,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.blackColor.withOpacity(0.3),
+                  AppColors.blackColor.withValues(alpha: 0.3),
                   AppColors.blackColor,
                 ],
               ),
@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
           "assets/svg/games.svg",
           width: 50,
           height: 50,
-          color: Colors.white,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         ),
         msPacer(),
         const Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
+import '../../../domain/providers/sports_provider.dart';
 import '../../game_details_page.dart';
 
 class AllGamesSection extends StatefulWidget {
@@ -14,11 +15,7 @@ class AllGamesSection extends StatefulWidget {
 class _AllGamesSectionState extends State<AllGamesSection> {
   // Removed hardcoded relatedLeagues - now using leaguesProvider
 
-  final List<Map<String, dynamic>> similarSports = [
-    {'name': 'Tennis', 'image': 'assets/images/tennis.png'},
-    {'name': 'Baseball', 'image': 'assets/images/baseball.png'},
-    {'name': 'Hockey', 'image': 'assets/images/hockey.png'},
-  ];
+  // Removed hardcoded similarSports - now using sportsProvider
 
   @override
   Widget build(BuildContext context) {
@@ -135,19 +132,50 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Container(
-              color: const Color(0xFF181818),
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: similarSports.length,
-                itemBuilder: (context, index) {
-                  return _buildSportCard(similarSports[index]);
-                },
-              ),
-            ),
+          Consumer(
+            builder: (context, ref, child) {
+              final sportsAsync = ref.watch(sportsProvider);
+              return SliverPadding(
+                padding: const EdgeInsets.all(20),
+                sliver: sportsAsync.when(
+                  data: (sports) => SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
+                      childAspectRatio: 1.2,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildSportCard(sports[index]),
+                      childCount: sports.length,
+                    ),
+                  ),
+                  loading: () => SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
+                      childAspectRatio: 1.2,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildSportCardSkeleton(),
+                      childCount: 9,
+                    ),
+                  ),
+                  error: (error, stack) => SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: Text(
+                          'Error loading sports: $error',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -566,28 +594,74 @@ class _AllGamesSectionState extends State<AllGamesSection> {
 
   Widget _buildSportCard(Map<String, dynamic> sport) {
     return Container(
-      width: 80,
-      margin: const EdgeInsets.only(right: 16),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               color: Colors.grey[800],
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.sports, color: Colors.grey[600], size: 32),
+            child: Icon(Icons.sports, color: Colors.grey[600], size: 28),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             sport['name'],
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSportCardSkeleton() {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 16,
+            width: 65,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(4),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey[700]!,
+                  Colors.grey[800]!,
+                  Colors.grey[700]!,
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
         ],
       ),

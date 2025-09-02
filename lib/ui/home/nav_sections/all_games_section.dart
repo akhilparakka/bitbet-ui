@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
-import '../../game_details_page.dart';
+import '../game_details/game_details_page.dart';
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -13,10 +13,6 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
-  // Removed hardcoded relatedLeagues - now using leaguesProvider
-
-  // Removed hardcoded similarSports - now using sportsProvider
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -193,7 +189,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Navigate to game details page with fade animation
             Navigator.of(context).push(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
@@ -202,9 +197,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     (context, animation, secondaryAnimation, child) {
                       return FadeTransition(opacity: animation, child: child);
                     },
-                transitionDuration: const Duration(
-                  milliseconds: 200,
-                ), // Quick and smooth
+                transitionDuration: const Duration(milliseconds: 200),
               ),
             );
           },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:bitbet/ui/home/sections/all_games_section.dart';
+import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {

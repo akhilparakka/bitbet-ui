@@ -1,9 +1,15 @@
- import 'package:bitbet/domain/app_colors.dart';
- import 'package:bitbet/domain/ui_heloper.dart';
- import 'package:bitbet/domain/app_routes.dart';
- import 'package:flutter/material.dart';
- import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
- import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:io';
+
+import 'package:bitbet/domain/app_colors.dart';
+import 'package:bitbet/domain/ui_heloper.dart';
+import 'package:bitbet/domain/app_routes.dart';
+import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3auth_flutter/enums.dart';
+import 'package:web3auth_flutter/input.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,9 +19,56 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  void _handleLogin() {
-    debugPrint('Login tapped');
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
+  @override
+  void initState() {
+    super.initState();
+    _initWeb3Auth();
+  }
+
+  Future<void> _initWeb3Auth() async {
+    Uri redirectUrl;
+    if (Platform.isAndroid) {
+      redirectUrl = Uri.parse('w3a://com.example.bitbet');
+    } else if (Platform.isIOS) {
+      redirectUrl = Uri.parse('com.example.bitbet://auth');
+    } else {
+      throw Exception('Unsupported platform');
+    }
+
+    await Web3AuthFlutter.init(
+      Web3AuthOptions(
+        clientId:
+            "BDFPlNSKK8hPNsO8zyFCp59ll1SUrEq9oaXCzHTAXNA1RifyvsnrXWthdSpug_HDq619GOAv_OwsqXKRB-MnhEQ",
+        network: Network.sapphire_devnet,
+        redirectUrl: redirectUrl,
+      ),
+    );
+
+    await Web3AuthFlutter.initialize();
+  }
+
+  Future<void> _loginGoogle() async {
+    debugPrint("Starting Google login...");
+    try {
+      final res = await Web3AuthFlutter.login(
+        LoginParams(loginProvider: Provider.google),
+      );
+
+      // await Web3AuthFlutter.getPrivKey();
+      debugPrint("Login successful!");
+      debugPrint("User Info: ${res.userInfo}");
+      debugPrint("Email: ${res.userInfo?.email}");
+      debugPrint("Name: ${res.userInfo?.name}");
+      debugPrint("Private Key: ${res.privKey}");
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('privateKey', res.privKey ?? "");
+      if (!mounted) return;
+      debugPrint("Navigating to home...");
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      debugPrint("Navigation completed.");
+    } catch (e) {
+      debugPrint("Google login error: $e");
+    }
   }
 
   @override
@@ -71,6 +124,7 @@ class _LoginPageState extends State<LoginPage> {
         msPacer(),
         msPacer(),
         msPacer(),
+        // Google Login Button
         OblongButton(
           mIconPath: "assets/Logo/google-icon.svg",
           text: "Continue with Google",
@@ -82,11 +136,12 @@ class _LoginPageState extends State<LoginPage> {
           fontSize: 14,
           fontWeight: FontWeight.w500,
           iconSize: 18,
-          onTap: _handleLogin,
+          onTap: _loginGoogle,
         ),
         msPacer(),
+        // GitHub Login Button
         OblongButton(
-          text: "Continue with Wallet",
+          text: "Continue with GitHub",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
           borderColor: const Color(0xFF3C4043),
@@ -94,12 +149,12 @@ class _LoginPageState extends State<LoginPage> {
           mHeight: 48,
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          onTap: _handleLogin,
+          onTap: () => {},
         ),
         msPacer(),
         TextButton(
           onPressed: () {
-            debugPrint('Login tapped');
+            debugPrint('Manual login tapped');
           },
           child: const Text(
             "Login",
@@ -113,6 +168,4 @@ class _LoginPageState extends State<LoginPage> {
       ],
     ),
   );
-
-
 }

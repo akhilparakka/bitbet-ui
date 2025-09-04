@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bitbet/domain/app_colors.dart';
 import 'package:bitbet/domain/ui_heloper.dart';
 import 'package:bitbet/domain/app_routes.dart';
@@ -19,35 +17,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool isGoogleLoading = false;
+
   @override
   void initState() {
     super.initState();
-    _initWeb3Auth();
   }
 
-  Future<void> _initWeb3Auth() async {
-    Uri redirectUrl;
-    if (Platform.isAndroid) {
-      redirectUrl = Uri.parse('w3a://com.example.bitbet');
-    } else if (Platform.isIOS) {
-      redirectUrl = Uri.parse('com.example.bitbet://auth');
-    } else {
-      throw Exception('Unsupported platform');
-    }
 
-    await Web3AuthFlutter.init(
-      Web3AuthOptions(
-        clientId:
-            "BDFPlNSKK8hPNsO8zyFCp59ll1SUrEq9oaXCzHTAXNA1RifyvsnrXWthdSpug_HDq619GOAv_OwsqXKRB-MnhEQ",
-        network: Network.sapphire_devnet,
-        redirectUrl: redirectUrl,
-      ),
-    );
-
-    await Web3AuthFlutter.initialize();
-  }
 
   Future<void> _loginGoogle() async {
+    setState(() {
+      isGoogleLoading = true;
+    });
     debugPrint("Starting Google login...");
     try {
       final res = await Web3AuthFlutter.login(
@@ -62,12 +44,18 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint("Private Key: ${res.privKey}");
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('privateKey', res.privKey ?? "");
+      setState(() {
+        isGoogleLoading = false;
+      });
       if (!mounted) return;
       debugPrint("Navigating to home...");
       Navigator.pushReplacementNamed(context, AppRoutes.home);
       debugPrint("Navigation completed.");
     } catch (e) {
       debugPrint("Google login error: $e");
+      setState(() {
+        isGoogleLoading = false;
+      });
     }
   }
 
@@ -136,6 +124,7 @@ class _LoginPageState extends State<LoginPage> {
           fontSize: 14,
           fontWeight: FontWeight.w500,
           iconSize: 18,
+          isLoading: isGoogleLoading,
           onTap: _loginGoogle,
         ),
         msPacer(),

@@ -1,11 +1,13 @@
 import 'package:bitbet/domain/app_colors.dart';
 import 'package:bitbet/domain/ui_heloper.dart';
 import 'package:bitbet/domain/app_routes.dart';
-import 'package:flutter/material.dart';
 import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:reown_appkit/reown_appkit.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3auth_flutter/enums.dart';
+import 'package:web3auth_flutter/input.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,173 +17,46 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  ReownAppKit? _appKit;
-  ReownAppKitModal? _appKitModal;
-  bool _isInitialized = false;
+  bool isGoogleLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeWalletConnect();
   }
 
-  Future<void> _initializeWalletConnect() async {
-    final projectId = dotenv.env['WALLETCONNECT_PROJECT_ID'] ?? '';
+
+
+  Future<void> _loginGoogle() async {
+    setState(() {
+      isGoogleLoading = true;
+    });
+    debugPrint("Starting Google login...");
     try {
-      // Create ReownAppKit instance
-      _appKit = ReownAppKit(
-        core: ReownCore(projectId: projectId, logLevel: LogLevel.error),
-        metadata: PairingMetadata(
-          name: 'BitBet App',
-          description: 'Sports betting app with Web3 integration',
-          url: 'https://bitbet-app.com',
-          icons: ['https://bitbet-app.com/assets/Logo/walletconnect.svg'],
-          redirect: Redirect(
-            native: 'bitbet://',
-            universal: 'https://bitbet-app.com',
-          ),
-        ),
+      final res = await Web3AuthFlutter.login(
+        LoginParams(loginProvider: Provider.google),
       );
 
-      // Check for existing session before full initialization
-      if (_appKit!.core.pairing.getPairings().isNotEmpty) {
-        debugPrint('Existing WalletConnect session found, checking connection');
-        _appKitModal = ReownAppKitModal(context: context, appKit: _appKit!);
-        await _appKitModal!.init();
-        if (_appKitModal!.isConnected) {
-          debugPrint('Already connected, navigating to home');
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, AppRoutes.home);
-          }
-          return;
-        }
-      }
-
-      // Full initialization if no existing session
-      _appKitModal = ReownAppKitModal(
-        context: context,
-        appKit: _appKit!,
-        featuresConfig: FeaturesConfig(
-          socials: [
-            AppKitSocialOption.Google,
-            AppKitSocialOption.Apple,
-            AppKitSocialOption.Discord,
-            AppKitSocialOption.X,
-            AppKitSocialOption.Email,
-          ],
-          showMainWallets: true,
-        ),
-        requiredNamespaces: {
-          'eip155': RequiredNamespace(
-            chains: ['eip155:1'],
-            methods: [
-              'eth_sendTransaction',
-              'personal_sign',
-              'eth_signTypedData',
-              'eth_signTypedData_v4',
-            ],
-            events: ['chainChanged', 'accountsChanged'],
-          ),
-        },
-        optionalNamespaces: {
-          'eip155': RequiredNamespace(
-            chains: ['eip155:137', 'eip155:10', 'eip155:42161'],
-            methods: [
-              'eth_sendTransaction',
-              'personal_sign',
-              'eth_signTypedData',
-              'eth_signTypedData_v4',
-            ],
-            events: ['chainChanged', 'accountsChanged'],
-          ),
-        },
-      );
-
-      _appKitModal!.onModalConnect.subscribe(_onWalletConnect);
-      _appKitModal!.onModalDisconnect.subscribe(_onWalletDisconnect);
-      _appKitModal!.onModalError.subscribe(_onWalletError);
-
-      await _appKitModal!.init();
-
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    } catch (e) {
-      debugPrint('Initialization error: $e');
-      if (mounted) {
-        setState(() {
-          _isInitialized = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to initialize wallet connection: $e')),
-        );
-      }
-    }
-  }
-
-  void _onWalletConnect(ModalConnect? event) {
-    debugPrint('Wallet connected successfully! Event: $event');
-    if (mounted) {
+      // await Web3AuthFlutter.getPrivKey();
+      debugPrint("Login successful!");
+      debugPrint("User Info: ${res.userInfo}");
+      debugPrint("Email: ${res.userInfo?.email}");
+      debugPrint("Name: ${res.userInfo?.name}");
+      debugPrint("Private Key: ${res.privKey}");
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('privateKey', res.privKey ?? "");
+      setState(() {
+        isGoogleLoading = false;
+      });
+      if (!mounted) return;
+      debugPrint("Navigating to home...");
       Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else {
-      debugPrint('Widget not mounted, cannot navigate to home');
-    }
-  }
-
-  void _onWalletDisconnect(ModalDisconnect? event) {
-    debugPrint('Wallet disconnected: $event');
-  }
-
-  void _onWalletError(ModalError? event) {
-    debugPrint('Wallet error: ${event?.message}');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(event?.message ?? 'Connection error')),
-      );
-    }
-  }
-
-  Future<void> _connectWallet() async {
-    if (!_isInitialized) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Wallet connection is still initializing...'),
-          ),
-        );
-      }
-      return;
-    }
-
-    try {
-      if (_appKitModal!.isConnected) {
-        debugPrint('Already connected, navigating to home');
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
-        }
-        return;
-      }
-      debugPrint('Opening WalletConnect modal');
-      await _appKitModal!.openModalView();
-      if (_appKitModal!.isConnected && mounted) {
-        debugPrint('Connection confirmed after modal, navigating to home');
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      }
+      debugPrint("Navigation completed.");
     } catch (e) {
-      debugPrint('Connection error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection error: ${e.toString()}')),
-        );
-      }
+      debugPrint("Google login error: $e");
+      setState(() {
+        isGoogleLoading = false;
+      });
     }
-  }
-
-  void _handleGoogleLogin() {
-    debugPrint('Google login tapped');
-    _connectWallet();
   }
 
   @override
@@ -237,6 +112,7 @@ class _LoginPageState extends State<LoginPage> {
         msPacer(),
         msPacer(),
         msPacer(),
+        // Google Login Button
         OblongButton(
           mIconPath: "assets/Logo/google-icon.svg",
           text: "Continue with Google",
@@ -248,12 +124,13 @@ class _LoginPageState extends State<LoginPage> {
           fontSize: 14,
           fontWeight: FontWeight.w500,
           iconSize: 18,
-          onTap: _handleGoogleLogin,
+          isLoading: isGoogleLoading,
+          onTap: _loginGoogle,
         ),
         msPacer(),
+        // GitHub Login Button
         OblongButton(
-          mIconPath: _isInitialized ? "assets/Logo/walletconnect.svg" : null,
-          text: _isInitialized ? "Continue with Wallet" : "",
+          text: "Continue with GitHub",
           bgColor: const Color(0xFF1F1F1F),
           textColor: Colors.white,
           borderColor: const Color(0xFF3C4043),
@@ -261,14 +138,12 @@ class _LoginPageState extends State<LoginPage> {
           mHeight: 48,
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          iconSize: 18,
-          onTap: _isInitialized ? _connectWallet : null,
-          isLoading: !_isInitialized,
+          onTap: () => {},
         ),
         msPacer(),
         TextButton(
           onPressed: () {
-            debugPrint('Login tapped');
+            debugPrint('Manual login tapped');
           },
           child: const Text(
             "Login",
@@ -282,12 +157,4 @@ class _LoginPageState extends State<LoginPage> {
       ],
     ),
   );
-
-  @override
-  void dispose() {
-    _appKitModal?.onModalConnect.unsubscribe(_onWalletConnect);
-    _appKitModal?.onModalDisconnect.unsubscribe(_onWalletDisconnect);
-    _appKitModal?.onModalError.unsubscribe(_onWalletError);
-    super.dispose();
-  }
 }

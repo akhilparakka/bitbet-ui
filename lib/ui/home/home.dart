@@ -20,6 +20,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    debugPrint("HomePage initState called");
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -204,6 +205,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    debugPrint("HomePage dispose called");
     _slideController.dispose();
     super.dispose();
   }

@@ -30,6 +30,14 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       isGoogleLoading = true;
     });
+
+    // Log existing address if available
+    final prefs = await SharedPreferences.getInstance();
+    String? existingAddress = prefs.getString('address');
+    if (existingAddress != null && existingAddress.isNotEmpty) {
+      debugPrint("Existing user address: $existingAddress");
+    }
+
     debugPrint("Starting Google login...");
     try {
       final res = await Web3AuthFlutter.login(
@@ -44,19 +52,29 @@ class _LoginPageState extends State<LoginPage> {
       final address = credentials.address;
       debugPrint("Address: $address");
 
-      // Save to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('privateKey', res.privKey ?? "");
-      await prefs.setString('address', address.toString());
-      debugPrint("Saved address to SharedPreferences: $address");
+       // Save to SharedPreferences
+       final prefs = await SharedPreferences.getInstance();
+       await prefs.setString('privateKey', res.privKey ?? "");
+       await prefs.setString('address', address.toString());
+       await prefs.setString('profileImage', res.userInfo?.profileImage ?? "");
+       await prefs.setString('email', res.userInfo?.email ?? "");
+       await prefs.setString('name', res.userInfo?.name ?? "");
+       debugPrint("Saved user data to SharedPreferences:");
+       debugPrint("  - Address: $address");
+       debugPrint("  - Profile Image: ${res.userInfo?.profileImage ?? 'null'}");
+       debugPrint("  - Email: ${res.userInfo?.email ?? 'null'}");
+       debugPrint("  - Name: ${res.userInfo?.name ?? 'null'}");
 
       // Call API to save user data
+      debugPrint("=== LOGIN: SAVING USER DATA ===");
+      debugPrint("Address to save: ${address.toString()}");
       final userService = UserApiService();
       final apiSuccess = await userService.saveUserData(
         publicKey: address.toString(),
         imageUrl: res.userInfo?.profileImage ?? '',
         address: address.toString(),
       );
+      debugPrint("API save result: $apiSuccess");
 
       setState(() {
         isGoogleLoading = false;

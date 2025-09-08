@@ -68,8 +68,6 @@ class GameDetailsPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 36),
-
-                // Odds Buttons (sleek pill style)
                 Row(
                   children: [
                     Expanded(

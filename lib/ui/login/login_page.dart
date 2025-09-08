@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
+import 'package:web3dart/web3dart.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,8 +25,6 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
   }
 
-
-
   Future<void> _loginGoogle() async {
     setState(() {
       isGoogleLoading = true;
@@ -36,12 +35,13 @@ class _LoginPageState extends State<LoginPage> {
         LoginParams(loginProvider: Provider.google),
       );
 
-      // await Web3AuthFlutter.getPrivKey();
       debugPrint("Login successful!");
       debugPrint("User Info: ${res.userInfo}");
       debugPrint("Email: ${res.userInfo?.email}");
       debugPrint("Name: ${res.userInfo?.name}");
       debugPrint("Private Key: ${res.privKey}");
+      final credentials = EthPrivateKey.fromHex(res.privKey!);
+      final address = credentials.address;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('privateKey', res.privKey ?? "");
       setState(() {

@@ -241,19 +241,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     Container(
                       width: 50,
                       height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF34495E).withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.sports_soccer,
-                        color: Colors.white.withOpacity(0.8),
-                        size: 20,
-                      ),
+                       decoration: BoxDecoration(
+                         color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
+                         borderRadius: BorderRadius.circular(8),
+                         border: Border.all(
+                           color: const Color(0xFF34495E).withValues(alpha: 0.3),
+                           width: 1,
+                         ),
+                       ),
+                       child: Icon(
+                         Icons.sports_soccer,
+                         color: Colors.white.withValues(alpha: 0.8),
+                         size: 20,
+                       ),
                     ),
                     if (match['isLive'])
                       Positioned(
@@ -363,19 +363,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               Container(
                 width: 50,
                 height: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C3E50).withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(8),
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF34495E).withOpacity(0.5),
-                      const Color(0xFF2C3E50).withOpacity(0.6),
-                      const Color(0xFF34495E).withOpacity(0.5),
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
+                 decoration: BoxDecoration(
+                   color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   borderRadius: BorderRadius.circular(8),
+                   gradient: LinearGradient(
+                     colors: [
+                       const Color(0xFF34495E).withValues(alpha: 0.5),
+                       const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                       const Color(0xFF34495E).withValues(alpha: 0.5),
+                     ],
+                     begin: Alignment.centerLeft,
+                     end: Alignment.centerRight,
+                   ),
+                 ),
               ),
               // Space for potential live indicator
               Positioned(
@@ -384,10 +384,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 child: Container(
                   width: 10,
                   height: 10,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF34495E).withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
+                   decoration: BoxDecoration(
+                     color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                     shape: BoxShape.circle,
+                   ),
                 ),
               ),
             ],
@@ -400,19 +400,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 Container(
                   height: 16,
                   width: 180,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2C3E50).withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF34495E).withOpacity(0.5),
-                        const Color(0xFF2C3E50).withOpacity(0.6),
-                        const Color(0xFF34495E).withOpacity(0.5),
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                  ),
+                   decoration: BoxDecoration(
+                     color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                     borderRadius: BorderRadius.circular(4),
+                     gradient: LinearGradient(
+                       colors: [
+                         const Color(0xFF34495E).withValues(alpha: 0.5),
+                         const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                         const Color(0xFF34495E).withValues(alpha: 0.5),
+                       ],
+                       begin: Alignment.centerLeft,
+                       end: Alignment.centerRight,
+                     ),
+                   ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -420,19 +420,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     Container(
                       height: 14,
                       width: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(4),
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF34495E).withOpacity(0.5),
-                            const Color(0xFF2C3E50).withOpacity(0.6),
-                            const Color(0xFF34495E).withOpacity(0.5),
-                          ],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                      ),
+                       decoration: BoxDecoration(
+                         color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                         borderRadius: BorderRadius.circular(4),
+                         gradient: LinearGradient(
+                           colors: [
+                             const Color(0xFF34495E).withValues(alpha: 0.5),
+                             const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                             const Color(0xFF34495E).withValues(alpha: 0.5),
+                           ],
+                           begin: Alignment.centerLeft,
+                           end: Alignment.centerRight,
+                         ),
+                       ),
                     ),
                     const SizedBox(width: 6),
                     // Space for potential LIVE badge
@@ -443,10 +443,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       ),
                       width: 30,
                       height: 14,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF34495E).withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                       decoration: BoxDecoration(
+                         color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                         borderRadius: BorderRadius.circular(4),
+                       ),
                     ),
                     const SizedBox(width: 8),
                     Row(
@@ -460,19 +460,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           ),
                           width: 24,
                           height: 16,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2C3E50).withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(4),
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF34495E).withOpacity(0.5),
-                                const Color(0xFF2C3E50).withOpacity(0.6),
-                                const Color(0xFF34495E).withOpacity(0.5),
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                          ),
+                           decoration: BoxDecoration(
+                             color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                             borderRadius: BorderRadius.circular(4),
+                             gradient: LinearGradient(
+                               colors: [
+                                 const Color(0xFF34495E).withValues(alpha: 0.5),
+                                 const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                                 const Color(0xFF34495E).withValues(alpha: 0.5),
+                               ],
+                               begin: Alignment.centerLeft,
+                               end: Alignment.centerRight,
+                             ),
+                           ),
                         ),
                       ),
                     ),
@@ -485,19 +485,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 18,
             height: 18,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withOpacity(0.6),
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withOpacity(0.5),
-                  const Color(0xFF2C3E50).withOpacity(0.6),
-                  const Color(0xFF34495E).withOpacity(0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               shape: BoxShape.circle,
+               gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                 ],
+                 begin: Alignment.centerLeft,
+                 end: Alignment.centerRight,
+               ),
+             ),
           ),
         ],
       ),
@@ -508,10 +508,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFF34495E).withOpacity(0.8),
+        color: const Color(0xFF34495E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: const Color(0xFF2C3E50).withOpacity(0.3),
+          color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -536,15 +536,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 140,
             height: 140,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withOpacity(0.6),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF34495E).withOpacity(0.4),
-                width: 1,
-              ),
-            ),
-            child: Icon(Icons.sports, color: Colors.white.withOpacity(0.7), size: 40),
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               borderRadius: BorderRadius.circular(8),
+               border: Border.all(
+                 color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                 width: 1,
+               ),
+             ),
+            child: Icon(Icons.sports, color: Colors.white.withValues(alpha: 0.7), size: 40),
           ),
           const SizedBox(height: 8),
           Text(
@@ -576,56 +576,56 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 140,
             height: 140,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withOpacity(0.6),
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withOpacity(0.5),
-                  const Color(0xFF2C3E50).withOpacity(0.6),
-                  const Color(0xFF34495E).withOpacity(0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               borderRadius: BorderRadius.circular(8),
+               gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                 ],
+                 begin: Alignment.centerLeft,
+                 end: Alignment.centerRight,
+               ),
+             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            height: 16,
-            width: 120,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withOpacity(0.6),
-              borderRadius: BorderRadius.circular(4),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withOpacity(0.5),
-                  const Color(0xFF2C3E50).withOpacity(0.6),
-                  const Color(0xFF34495E).withOpacity(0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
+           Container(
+             height: 16,
+             width: 120,
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               borderRadius: BorderRadius.circular(4),
+               gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                 ],
+                 begin: Alignment.centerLeft,
+                 end: Alignment.centerRight,
+               ),
+             ),
+           ),
           const SizedBox(height: 4),
-          Container(
-            height: 14,
-            width: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withOpacity(0.6),
-              borderRadius: BorderRadius.circular(4),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withOpacity(0.5),
-                  const Color(0xFF2C3E50).withOpacity(0.6),
-                  const Color(0xFF34495E).withOpacity(0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
+           Container(
+             height: 14,
+             width: 80,
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               borderRadius: BorderRadius.circular(4),
+               gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   const Color(0xFF34495E).withValues(alpha: 0.5),
+                 ],
+                 begin: Alignment.centerLeft,
+                 end: Alignment.centerRight,
+               ),
+             ),
+           ),
         ],
       ),
     );
@@ -638,15 +638,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         Container(
           width: 100,
           height: 100,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2C3E50).withOpacity(0.7),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF34495E).withOpacity(0.4),
-              width: 2,
-            ),
-          ),
-          child: Icon(Icons.sports, color: Colors.white.withOpacity(0.8), size: 40),
+           decoration: BoxDecoration(
+             color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
+             shape: BoxShape.circle,
+             border: Border.all(
+               color: const Color(0xFF34495E).withValues(alpha: 0.4),
+               width: 2,
+             ),
+           ),
+          child: Icon(Icons.sports, color: Colors.white.withValues(alpha: 0.8), size: 40),
         ),
         const SizedBox(height: 12),
         Text(
@@ -671,41 +671,41 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         Container(
           width: 100,
           height: 100,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2C3E50).withOpacity(0.6),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF34495E).withOpacity(0.3),
-              width: 2,
-            ),
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF2C3E50).withOpacity(0.5),
-                const Color(0xFF34495E).withOpacity(0.7),
-                const Color(0xFF2C3E50).withOpacity(0.5),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
+             decoration: BoxDecoration(
+               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+               shape: BoxShape.circle,
+               border: Border.all(
+                 color: const Color(0xFF34495E).withValues(alpha: 0.3),
+                 width: 2,
+               ),
+               gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF2C3E50).withValues(alpha: 0.5),
+                   const Color(0xFF34495E).withValues(alpha: 0.7),
+                   const Color(0xFF2C3E50).withValues(alpha: 0.5),
+                 ],
+                 begin: Alignment.centerLeft,
+                 end: Alignment.centerRight,
+               ),
+             ),
         ),
         const SizedBox(height: 12),
         Container(
           height: 16,
           width: 65,
-          decoration: BoxDecoration(
-            color: const Color(0xFF34495E).withOpacity(0.6),
-            borderRadius: BorderRadius.circular(4),
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF2C3E50).withOpacity(0.5),
-                const Color(0xFF34495E).withOpacity(0.7),
-                const Color(0xFF2C3E50).withOpacity(0.5),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
+           decoration: BoxDecoration(
+             color: const Color(0xFF34495E).withValues(alpha: 0.6),
+             borderRadius: BorderRadius.circular(4),
+             gradient: LinearGradient(
+               colors: [
+                 const Color(0xFF2C3E50).withValues(alpha: 0.5),
+                 const Color(0xFF34495E).withValues(alpha: 0.7),
+                 const Color(0xFF2C3E50).withValues(alpha: 0.5),
+               ],
+               begin: Alignment.centerLeft,
+               end: Alignment.centerRight,
+             ),
+           ),
         ),
       ],
     );

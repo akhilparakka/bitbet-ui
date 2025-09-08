@@ -1,6 +1,7 @@
 import 'package:bitbet/domain/app_colors.dart';
 import 'package:bitbet/domain/ui_heloper.dart';
 import 'package:bitbet/domain/app_routes.dart';
+import 'package:bitbet/domain/services/user_api_service.dart';
 import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -37,25 +38,76 @@ class _LoginPageState extends State<LoginPage> {
 
       debugPrint("Login successful!");
       debugPrint("User Info: ${res.userInfo}");
-      debugPrint("Email: ${res.userInfo?.email}");
-      debugPrint("Name: ${res.userInfo?.name}");
-      debugPrint("Private Key: ${res.privKey}");
+
+      // Get wallet credentials
       final credentials = EthPrivateKey.fromHex(res.privKey!);
       final address = credentials.address;
+      debugPrint("Address: $address");
+
+      // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('privateKey', res.privKey ?? "");
+
+      // Call API to save user data
+      final userService = UserApiService();
+      final apiSuccess = await userService.saveUserData(
+        publicKey: address.toString(),
+        imageUrl: res.userInfo?.profileImage ?? '',
+        address: address.toString(),
+      );
+
       setState(() {
         isGoogleLoading = false;
       });
+
       if (!mounted) return;
-      debugPrint("Navigating to home...");
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
-      debugPrint("Navigation completed.");
+
+      if (apiSuccess) {
+        debugPrint("API call successful, navigating to home...");
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        debugPrint("Navigation completed.");
+      } else {
+        // Show error dialog for API failure
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Login Error'),
+              content: const Text(
+                'Failed to save user data. Please try again.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      }
     } catch (e) {
       debugPrint("Google login error: $e");
       setState(() {
         isGoogleLoading = false;
       });
+
+      // Show error dialog for login failure
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Login Error'),
+            content: Text('Login failed: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 

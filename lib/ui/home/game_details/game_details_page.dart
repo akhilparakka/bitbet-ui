@@ -29,11 +29,11 @@ class GameDetailsPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 25,
-                        offset: const Offset(0, 12),
-                      ),
+                       BoxShadow(
+                         color: Colors.black.withValues(alpha: 0.4),
+                         blurRadius: 25,
+                         offset: const Offset(0, 12),
+                       ),
                     ],
                   ),
                   child: ClipRRect(
@@ -59,13 +59,13 @@ class GameDetailsPage extends StatelessWidget {
 
                 const SizedBox(height: 6),
 
-                Text(
-                  'Premier League - Matchday 10',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 16,
-                  ),
-                ),
+                 Text(
+                   'Premier League - Matchday 10',
+                   style: TextStyle(
+                     color: Colors.white.withValues(alpha: 0.6),
+                     fontSize: 16,
+                   ),
+                 ),
 
                 const SizedBox(height: 36),
                 Row(
@@ -81,13 +81,13 @@ class GameDetailsPage extends StatelessWidget {
                               Colors.green.shade600,
                             ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.green.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+                           boxShadow: [
+                             BoxShadow(
+                               color: Colors.green.withValues(alpha: 0.3),
+                               blurRadius: 12,
+                               offset: const Offset(0, 6),
+                             ),
+                           ],
                         ),
                         alignment: Alignment.center,
                         child: const Text(
@@ -109,13 +109,13 @@ class GameDetailsPage extends StatelessWidget {
                           gradient: LinearGradient(
                             colors: [Colors.redAccent, Colors.red.shade700],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+                           boxShadow: [
+                             BoxShadow(
+                               color: Colors.red.withValues(alpha: 0.3),
+                               blurRadius: 12,
+                               offset: const Offset(0, 6),
+                             ),
+                           ],
                         ),
                         alignment: Alignment.center,
                         child: const Text(
@@ -137,26 +137,26 @@ class GameDetailsPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Amount",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 15,
-                      ),
-                    ),
+                     Text(
+                       "Amount",
+                       style: TextStyle(
+                         color: Colors.white.withValues(alpha: 0.7),
+                         fontSize: 15,
+                       ),
+                     ),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.15),
-                        ),
-                      ),
+                       decoration: BoxDecoration(
+                         color: Colors.white.withValues(alpha: 0.05),
+                         borderRadius: BorderRadius.circular(12),
+                         border: Border.all(
+                           color: Colors.white.withValues(alpha: 0.15),
+                         ),
+                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
@@ -202,13 +202,13 @@ class GameDetailsPage extends StatelessWidget {
                       gradient: const LinearGradient(
                         colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blueAccent.withOpacity(0.4),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+                       boxShadow: [
+                         BoxShadow(
+                           color: Colors.blueAccent.withValues(alpha: 0.4),
+                           blurRadius: 18,
+                           offset: const Offset(0, 8),
+                         ),
+                       ],
                     ),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -248,9 +248,9 @@ class GameDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(

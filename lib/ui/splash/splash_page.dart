@@ -88,10 +88,10 @@ class _SplashPageState extends State<SplashPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF2C3E50), // Dark blue-gray
-              Color(0xFF34495E), // Slightly lighter
-              Color(0xFF2C3E50), // Back to dark
-              Color(0xFF1A252F), // Very dark at bottom
+              Color(0xFF1F2937), // Darker blue-gray
+              Color(0xFF253342), // Darker lighter
+              Color(0xFF1F2937), // Back to dark
+              Color(0xFF0F1419), // Even darker at bottom
             ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),

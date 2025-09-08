@@ -242,12 +242,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.grey[800],
+                        color: const Color(0xFF2C3E50).withOpacity(0.7),
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF34495E).withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
                       child: Icon(
                         Icons.sports_soccer,
-                        color: Colors.grey[600],
+                        color: Colors.white.withOpacity(0.8),
                         size: 20,
                       ),
                     ),
@@ -504,8 +508,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.grey[800],
+        color: const Color(0xFF34495E).withOpacity(0.8),
         borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: const Color(0xFF2C3E50).withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Text(
         odds,
@@ -529,10 +537,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             width: 140,
             height: 140,
             decoration: BoxDecoration(
-              color: Colors.grey[800],
+              color: const Color(0xFF2C3E50).withOpacity(0.6),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF34495E).withOpacity(0.4),
+                width: 1,
+              ),
             ),
-            child: Icon(Icons.sports, color: Colors.grey[600], size: 40),
+            child: Icon(Icons.sports, color: Colors.white.withOpacity(0.7), size: 40),
           ),
           const SizedBox(height: 8),
           Text(
@@ -627,10 +639,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: const Color(0xFF2C3E50).withOpacity(0.7),
             shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF34495E).withOpacity(0.4),
+              width: 2,
+            ),
           ),
-          child: Icon(Icons.sports, color: Colors.grey[600], size: 40),
+          child: Icon(Icons.sports, color: Colors.white.withOpacity(0.8), size: 40),
         ),
         const SizedBox(height: 12),
         Text(
@@ -656,10 +672,18 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: const Color(0xFF2C3E50).withOpacity(0.6),
             shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF34495E).withOpacity(0.3),
+              width: 2,
+            ),
             gradient: LinearGradient(
-              colors: [Colors.grey[700]!, Colors.grey[800]!, Colors.grey[700]!],
+              colors: [
+                const Color(0xFF2C3E50).withOpacity(0.5),
+                const Color(0xFF34495E).withOpacity(0.7),
+                const Color(0xFF2C3E50).withOpacity(0.5),
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -670,10 +694,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           height: 16,
           width: 65,
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: const Color(0xFF34495E).withOpacity(0.6),
             borderRadius: BorderRadius.circular(4),
             gradient: LinearGradient(
-              colors: [Colors.grey[700]!, Colors.grey[800]!, Colors.grey[700]!],
+              colors: [
+                const Color(0xFF2C3E50).withOpacity(0.5),
+                const Color(0xFF34495E).withOpacity(0.7),
+                const Color(0xFF2C3E50).withOpacity(0.5),
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),

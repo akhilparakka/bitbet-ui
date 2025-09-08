@@ -74,9 +74,12 @@ class _LoginPageState extends State<LoginPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.blackColor.withValues(alpha: 0.3),
-                  AppColors.blackColor,
+                  Color(0xFF1F2937), // Darker blue-gray
+                  Color(0xFF253342), // Darker lighter
+                  Color(0xFF1F2937), // Back to dark
+                  Color(0xFF0F1419), // Even darker at bottom
                 ],
+                stops: [0.0, 0.3, 0.7, 1.0],
               ),
             ),
           ),

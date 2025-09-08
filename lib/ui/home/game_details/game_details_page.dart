@@ -11,13 +11,8 @@ class GameDetailsPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2C3E50), // Dark blue-gray
-              Color(0xFF34495E), // Slightly lighter
-              Color(0xFF2C3E50), // Back to dark
-              Color(0xFF1A252F), // Very dark at bottom
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
+            colors: [Color(0xFF1F2937), Color(0xFF253342), Color(0xFF0F1419)],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
         child: SafeArea(
@@ -25,243 +20,257 @@ class GameDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
               children: [
-                // Top spacing
                 const SizedBox(height: 40),
 
-                // Album Art with enhanced styling
+                // Game Image
                 Container(
-                  width: 300,
-                  height: 300,
+                  width: 280,
+                  height: 280,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 25,
+                        offset: const Offset(0, 12),
                       ),
                     ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Image(
-                        image: AssetImage('assets/album_art.jpg'),
-                        fit: BoxFit.cover,
-                      ),
+                    child: const Image(
+                      image: AssetImage('assets/album_art.jpg'),
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 36),
 
-                // Song Title
+                // Game Title
                 const Text(
-                  'Can\'t Stop',
+                  'Team A vs Team B',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // Artist Name
                 Text(
-                  'Red Hot Chili Peppers',
+                  'Premier League - Matchday 10',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 18,
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 16,
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 36),
 
-                // Progress Bar
-                Column(
+                // Odds Buttons (sleek pill style)
+                Row(
                   children: [
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 4,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 6,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.shade400,
+                              Colors.green.shade600,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        overlayShape: const RoundSliderOverlayShape(
-                          overlayRadius: 16,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Yes 9.7¢',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                        activeTrackColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
-                        thumbColor: Colors.white,
-                        overlayColor: Colors.white.withOpacity(0.2),
-                      ),
-                      child: Slider(
-                        value: 0.0,
-                        onChanged: (value) {},
-                        min: 0.0,
-                        max: 1.0,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: LinearGradient(
+                            colors: [Colors.redAccent, Colors.red.shade700],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'No 90.4¢',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                // Amount Section
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Amount",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.15),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                        children: const [
                           Text(
-                            '0:00',
+                            "\$0.00",
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 14,
+                              fontSize: 20,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Text(
-                            '4:29',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 14,
-                            ),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.white70,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
 
-                const SizedBox(height: 50),
+                    const SizedBox(height: 16),
 
-                // Control Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Previous Button
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.skip_previous,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-
-                    // Play/Pause Button
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: Color(0xFF2C3E50),
-                          size: 36,
-                        ),
-                      ),
-                    ),
-
-                    // Next Button
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.skip_next,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
+                    // Quick Add Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _pillButton("\$1"),
+                        _pillButton("\$20"),
+                        _pillButton("\$100"),
+                        _pillButton("Max"),
+                      ],
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 36),
 
-                // Additional Controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Shuffle
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.shuffle,
-                          color: Colors.white.withOpacity(0.7),
-                          size: 24,
+                // Trade Button
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blueAccent.withOpacity(0.4),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () {},
+                      child: const Text(
+                        "Trade",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-
-                    // Favorite
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.favorite_border,
-                          color: Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-
-                    // Repeat
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.repeat,
-                          color: Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-
-                    // More options
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.more_horiz,
-                          color: Colors.white.withOpacity(0.7),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
 
                 const Spacer(),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Refined pill buttons for quick add
+  static Widget _pillButton(String label) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            onPressed: () {},
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),

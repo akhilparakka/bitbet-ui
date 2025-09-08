@@ -47,6 +47,8 @@ class _LoginPageState extends State<LoginPage> {
       // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('privateKey', res.privKey ?? "");
+      await prefs.setString('address', address.toString());
+      debugPrint("Saved address to SharedPreferences: $address");
 
       // Call API to save user data
       final userService = UserApiService();

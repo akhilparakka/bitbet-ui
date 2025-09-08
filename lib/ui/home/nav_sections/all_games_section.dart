@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
+import '../../../domain/providers/user_provider.dart';
 import '../game_details/game_details_page.dart';
 
 class AllGamesSection extends StatefulWidget {
@@ -13,6 +14,8 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
+  Set<String> favoriteEventIds = {};
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,13 +50,24 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final oddsAsync = ref.watch(oddsProvider('soccer_epl'));
-                  return oddsAsync.when(
-                    data: (matches) => Column(
-                      children: matches
-                          .map((match) => _buildQuickPickItem(match))
-                          .toList(),
-                    ),
+                  final quickPicsAsync = ref.watch(
+                    quickPicsWithFavoritesProvider,
+                  );
+                  return quickPicsAsync.when(
+                    data: (matches) {
+                      // Initialize local favorites from fetched data
+                      if (favoriteEventIds.isEmpty) {
+                        favoriteEventIds = matches
+                            .where((match) => match['isFavorite'] == true)
+                            .map((match) => match['id'] as String)
+                            .toSet();
+                      }
+                      return Column(
+                        children: matches
+                            .map((match) => _buildQuickPickItem(match, ref))
+                            .toList(),
+                      );
+                    },
                     loading: () => Column(
                       children: List.generate(
                         4,
@@ -208,7 +222,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     );
   }
 
-  Widget _buildQuickPickItem(Map<String, dynamic> match) {
+  Widget _buildQuickPickItem(Map<String, dynamic> match, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       constraints: const BoxConstraints(minHeight: 70),
@@ -241,19 +255,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     Container(
                       width: 50,
                       height: 50,
-                       decoration: BoxDecoration(
-                         color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
-                         borderRadius: BorderRadius.circular(8),
-                         border: Border.all(
-                           color: const Color(0xFF34495E).withValues(alpha: 0.3),
-                           width: 1,
-                         ),
-                       ),
-                       child: Icon(
-                         Icons.sports_soccer,
-                         color: Colors.white.withValues(alpha: 0.8),
-                         size: 20,
-                       ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF34495E).withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.sports_soccer,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        size: 20,
+                      ),
                     ),
                     if (match['isLive'])
                       Positioned(
@@ -336,10 +350,64 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 ),
                 const SizedBox(width: 12),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () async {
+                    final eventId = match['id'] as String;
+                    final isCurrentlyFavorite = favoriteEventIds.contains(
+                      eventId,
+                    );
+                    setState(() {
+                      if (isCurrentlyFavorite) {
+                        favoriteEventIds.remove(eventId);
+                      } else {
+                        favoriteEventIds.add(eventId);
+                      }
+                    });
+                    // Call API
+                    final userId = await ref.read(userIdProvider.future);
+                    if (userId == null) {
+                      // Revert the optimistic update
+                      setState(() {
+                        if (isCurrentlyFavorite) {
+                          favoriteEventIds.add(eventId);
+                        } else {
+                          favoriteEventIds.remove(eventId);
+                        }
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please log in to add favorites')),
+                      );
+                      return;
+                    }
+                    final userService = ref.read(userApiServiceProvider);
+                    debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
+                    final success = await userService.addFavorite(
+                      userId,
+                      eventId,
+                    );
+                    if (!success) {
+                      // Revert on failure
+                      setState(() {
+                        if (isCurrentlyFavorite) {
+                          favoriteEventIds.add(eventId);
+                        } else {
+                          favoriteEventIds.remove(eventId);
+                        }
+                      });
+                      // Show error
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to update favorite'),
+                        ),
+                      );
+                    }
+                  },
                   child: Icon(
-                    match['isFavorite'] ? Icons.star : Icons.star_border,
-                    color: match['isFavorite'] ? Colors.blue : Colors.grey[600],
+                    favoriteEventIds.contains(match['id'])
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: favoriteEventIds.contains(match['id'])
+                        ? Colors.yellow
+                        : Colors.grey[600],
                     size: 18,
                   ),
                 ),
@@ -363,19 +431,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               Container(
                 width: 50,
                 height: 50,
-                 decoration: BoxDecoration(
-                   color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   borderRadius: BorderRadius.circular(8),
-                   gradient: LinearGradient(
-                     colors: [
-                       const Color(0xFF34495E).withValues(alpha: 0.5),
-                       const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                       const Color(0xFF34495E).withValues(alpha: 0.5),
-                     ],
-                     begin: Alignment.centerLeft,
-                     end: Alignment.centerRight,
-                   ),
-                 ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF34495E).withValues(alpha: 0.5),
+                      const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                      const Color(0xFF34495E).withValues(alpha: 0.5),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
               ),
               // Space for potential live indicator
               Positioned(
@@ -384,10 +452,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 child: Container(
                   width: 10,
                   height: 10,
-                   decoration: BoxDecoration(
-                     color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                     shape: BoxShape.circle,
-                   ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
             ],
@@ -400,19 +468,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 Container(
                   height: 16,
                   width: 180,
-                   decoration: BoxDecoration(
-                     color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                     borderRadius: BorderRadius.circular(4),
-                     gradient: LinearGradient(
-                       colors: [
-                         const Color(0xFF34495E).withValues(alpha: 0.5),
-                         const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                         const Color(0xFF34495E).withValues(alpha: 0.5),
-                       ],
-                       begin: Alignment.centerLeft,
-                       end: Alignment.centerRight,
-                     ),
-                   ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(4),
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF34495E).withValues(alpha: 0.5),
+                        const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                        const Color(0xFF34495E).withValues(alpha: 0.5),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -420,19 +488,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     Container(
                       height: 14,
                       width: 80,
-                       decoration: BoxDecoration(
-                         color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                         borderRadius: BorderRadius.circular(4),
-                         gradient: LinearGradient(
-                           colors: [
-                             const Color(0xFF34495E).withValues(alpha: 0.5),
-                             const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                             const Color(0xFF34495E).withValues(alpha: 0.5),
-                           ],
-                           begin: Alignment.centerLeft,
-                           end: Alignment.centerRight,
-                         ),
-                       ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(4),
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF34495E).withValues(alpha: 0.5),
+                            const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                            const Color(0xFF34495E).withValues(alpha: 0.5),
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 6),
                     // Space for potential LIVE badge
@@ -443,10 +511,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       ),
                       width: 30,
                       height: 14,
-                       decoration: BoxDecoration(
-                         color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                         borderRadius: BorderRadius.circular(4),
-                       ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Row(
@@ -460,19 +528,21 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           ),
                           width: 24,
                           height: 16,
-                           decoration: BoxDecoration(
-                             color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                             borderRadius: BorderRadius.circular(4),
-                             gradient: LinearGradient(
-                               colors: [
-                                 const Color(0xFF34495E).withValues(alpha: 0.5),
-                                 const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                                 const Color(0xFF34495E).withValues(alpha: 0.5),
-                               ],
-                               begin: Alignment.centerLeft,
-                               end: Alignment.centerRight,
-                             ),
-                           ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF2C3E50,
+                            ).withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF34495E).withValues(alpha: 0.5),
+                                const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                                const Color(0xFF34495E).withValues(alpha: 0.5),
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -485,19 +555,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 18,
             height: 18,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               shape: BoxShape.circle,
-               gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                 ],
-                 begin: Alignment.centerLeft,
-                 end: Alignment.centerRight,
-               ),
-             ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
         ],
       ),
@@ -536,15 +606,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 140,
             height: 140,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               borderRadius: BorderRadius.circular(8),
-               border: Border.all(
-                 color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                 width: 1,
-               ),
-             ),
-            child: Icon(Icons.sports, color: Colors.white.withValues(alpha: 0.7), size: 40),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.sports,
+              color: Colors.white.withValues(alpha: 0.7),
+              size: 40,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -576,56 +650,56 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           Container(
             width: 140,
             height: 140,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               borderRadius: BorderRadius.circular(8),
-               gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                 ],
-                 begin: Alignment.centerLeft,
-                 end: Alignment.centerRight,
-               ),
-             ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
-           Container(
-             height: 16,
-             width: 120,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               borderRadius: BorderRadius.circular(4),
-               gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                 ],
-                 begin: Alignment.centerLeft,
-                 end: Alignment.centerRight,
-               ),
-             ),
-           ),
+          Container(
+            height: 16,
+            width: 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(4),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
           const SizedBox(height: 4),
-           Container(
-             height: 14,
-             width: 80,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               borderRadius: BorderRadius.circular(4),
-               gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                   const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   const Color(0xFF34495E).withValues(alpha: 0.5),
-                 ],
-                 begin: Alignment.centerLeft,
-                 end: Alignment.centerRight,
-               ),
-             ),
-           ),
+          Container(
+            height: 14,
+            width: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(4),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  const Color(0xFF34495E).withValues(alpha: 0.5),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -638,15 +712,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         Container(
           width: 100,
           height: 100,
-           decoration: BoxDecoration(
-             color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
-             shape: BoxShape.circle,
-             border: Border.all(
-               color: const Color(0xFF34495E).withValues(alpha: 0.4),
-               width: 2,
-             ),
-           ),
-          child: Icon(Icons.sports, color: Colors.white.withValues(alpha: 0.8), size: 40),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF34495E).withValues(alpha: 0.4),
+              width: 2,
+            ),
+          ),
+          child: Icon(
+            Icons.sports,
+            color: Colors.white.withValues(alpha: 0.8),
+            size: 40,
+          ),
         ),
         const SizedBox(height: 12),
         Text(
@@ -671,41 +749,41 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         Container(
           width: 100,
           height: 100,
-             decoration: BoxDecoration(
-               color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-               shape: BoxShape.circle,
-               border: Border.all(
-                 color: const Color(0xFF34495E).withValues(alpha: 0.3),
-                 width: 2,
-               ),
-               gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF2C3E50).withValues(alpha: 0.5),
-                   const Color(0xFF34495E).withValues(alpha: 0.7),
-                   const Color(0xFF2C3E50).withValues(alpha: 0.5),
-                 ],
-                 begin: Alignment.centerLeft,
-                 end: Alignment.centerRight,
-               ),
-             ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF34495E).withValues(alpha: 0.3),
+              width: 2,
+            ),
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF2C3E50).withValues(alpha: 0.5),
+                const Color(0xFF34495E).withValues(alpha: 0.7),
+                const Color(0xFF2C3E50).withValues(alpha: 0.5),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           height: 16,
           width: 65,
-           decoration: BoxDecoration(
-             color: const Color(0xFF34495E).withValues(alpha: 0.6),
-             borderRadius: BorderRadius.circular(4),
-             gradient: LinearGradient(
-               colors: [
-                 const Color(0xFF2C3E50).withValues(alpha: 0.5),
-                 const Color(0xFF34495E).withValues(alpha: 0.7),
-                 const Color(0xFF2C3E50).withValues(alpha: 0.5),
-               ],
-               begin: Alignment.centerLeft,
-               end: Alignment.centerRight,
-             ),
-           ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF34495E).withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(4),
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF2C3E50).withValues(alpha: 0.5),
+                const Color(0xFF34495E).withValues(alpha: 0.7),
+                const Color(0xFF2C3E50).withValues(alpha: 0.5),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
         ),
       ],
     );

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/odds_api_service.dart';
+import 'user_provider.dart';
 
 final oddsApiServiceProvider = Provider<OddsApiService>((ref) {
   // No API key needed for the new endpoint
@@ -26,4 +27,16 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
       )
       .take(4)
       .toList();
+});
+
+final quickPicsWithFavoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final matches = await ref.watch(oddsProvider('soccer_epl').future);
+  final favorites = await ref.watch(favoritesProvider.future);
+
+  return matches.map((match) {
+    return {
+      ...match,
+      'isFavorite': favorites.contains(match['id']),
+    };
+  }).toList();
 });

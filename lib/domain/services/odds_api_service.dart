@@ -71,6 +71,7 @@ class OddsApiService {
         }
 
         return {
+          'id': event['event_id'],
           'homeTeam': homeTeam,
           'awayTeam': awayTeam,
           'homeTeamLogo': homeTeamLogo,
@@ -80,7 +81,6 @@ class OddsApiService {
           'isLive':
               commenceTime != null &&
               DateTime.parse(commenceTime).isBefore(DateTime.now()),
-          'isFavorite': false,
         };
       }).toList();
     } else {

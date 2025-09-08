@@ -56,12 +56,18 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                   return quickPicsAsync.when(
                     data: (matches) {
                       // Initialize local favorites from fetched data
+                      final fetchedFavorites = matches
+                          .where((match) => match['isFavorite'] == true)
+                          .map((match) => match['id'] as String)
+                          .toSet();
+                      debugPrint("Fetched favorites: $fetchedFavorites");
                       if (favoriteEventIds.isEmpty) {
-                        favoriteEventIds = matches
-                            .where((match) => match['isFavorite'] == true)
-                            .map((match) => match['id'] as String)
-                            .toSet();
+                        favoriteEventIds = fetchedFavorites;
+                      } else {
+                        // Merge: keep local changes but add server ones
+                        favoriteEventIds = {...favoriteEventIds, ...fetchedFavorites};
                       }
+                      debugPrint("Local favoriteEventIds: $favoriteEventIds");
                       return Column(
                         children: matches
                             .map((match) => _buildQuickPickItem(match, ref))
@@ -352,9 +358,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 GestureDetector(
                   onTap: () async {
                     final eventId = match['id'] as String;
-                    final isCurrentlyFavorite = favoriteEventIds.contains(
-                      eventId,
-                    );
+                    final isCurrentlyFavorite = favoriteEventIds.contains(eventId);
                     setState(() {
                       if (isCurrentlyFavorite) {
                         favoriteEventIds.remove(eventId);
@@ -374,16 +378,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         }
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please log in to add favorites')),
+                        const SnackBar(content: Text('Please log in to manage favorites')),
                       );
                       return;
                     }
                     final userService = ref.read(userApiServiceProvider);
-                    debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
-                    final success = await userService.addFavorite(
-                      userId,
-                      eventId,
-                    );
+                    bool success;
+                    if (isCurrentlyFavorite) {
+                      debugPrint("Removing favorite for userId: $userId, eventId: $eventId");
+                      success = await userService.removeFavorite(userId, eventId);
+                    } else {
+                      debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
+                      success = await userService.addFavorite(userId, eventId);
+                    }
                     if (!success) {
                       // Revert on failure
                       setState(() {
@@ -393,24 +400,20 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           favoriteEventIds.remove(eventId);
                         }
                       });
-                      // Show error
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to update favorite'),
-                        ),
+                        const SnackBar(content: Text('Failed to update favorite')),
                       );
                     }
                   },
-                  child: Icon(
-                    favoriteEventIds.contains(match['id'])
-                        ? Icons.star
-                        : Icons.star_border,
-                    color: favoriteEventIds.contains(match['id'])
-                        ? Colors.yellow
-                        : Colors.grey[600],
-                    size: 18,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      favoriteEventIds.contains(match['id']) ? Icons.star : Icons.star_border,
+                      color: favoriteEventIds.contains(match['id']) ? Colors.yellow : Colors.grey[600],
+                      size: 20,
+                    ),
                   ),
-                ),
+                 ),
               ],
             ),
           ),

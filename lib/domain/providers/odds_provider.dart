@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/odds_api_service.dart';
 import 'user_provider.dart';
@@ -32,11 +33,16 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
 final quickPicsWithFavoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final matches = await ref.watch(oddsProvider('soccer_epl').future);
   final favorites = await ref.watch(favoritesProvider.future);
+  debugPrint("Matches count: ${matches.length}, Favorites: $favorites");
 
-  return matches.map((match) {
+  final merged = matches.map((match) {
+    final isFav = favorites.contains(match['id']);
+    if (isFav) debugPrint("Match ${match['id']} is favorite");
     return {
       ...match,
-      'isFavorite': favorites.contains(match['id']),
+      'isFavorite': isFav,
     };
   }).toList();
+
+  return merged;
 });

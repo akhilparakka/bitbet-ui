@@ -38,12 +38,17 @@ class UserApiService {
   Future<List<String>> fetchFavorites(String userId) async {
     try {
       final url = Uri.parse('$_baseUrl/users/$userId/favorites');
+      debugPrint("Fetching favorites from: $url");
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> favorites = responseData['favorites'] ?? [];
-        return favorites.map<String>((fav) => fav['event_id'] as String).toList();
+        debugPrint("Favorites response: ${response.body}");
+        final List<dynamic> users = responseData['data']['user'] ?? [];
+        final List<dynamic> favorites = users.isNotEmpty ? users[0]['favorites'] ?? [] : [];
+        final eventIds = favorites.map<String>((fav) => fav['event_id'] as String).toList();
+        debugPrint("Parsed eventIds: $eventIds");
+        return eventIds;
       } else {
         debugPrint('Failed to fetch favorites: ${response.statusCode} - ${response.body}');
         return [];
@@ -72,6 +77,24 @@ class UserApiService {
       }
     } catch (e) {
       debugPrint('Error adding favorite: $e');
+      return false;
+    }
+  }
+
+  Future<bool> removeFavorite(String userId, String eventId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/users/$userId/favorites/$eventId');
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        debugPrint('Favorite removed successfully');
+        return true;
+      } else {
+        debugPrint('Failed to remove favorite: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error removing favorite: $e');
       return false;
     }
   }

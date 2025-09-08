@@ -70,52 +70,69 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF181818),
-      body: Material(
-        color: const Color(0xFF181818),
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                CustomNavigationSidebar(
-                  selectedSection: selectedSection,
-                  onSectionChanged: _onSectionChanged,
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      CustomHeader(title: selectedSection),
-                      Expanded(child: _buildContentForSection(selectedSection)),
-                    ],
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF2C3E50), // Dark blue-gray
+              Color(0xFF34495E), // Slightly lighter
+              Color(0xFF2C3E50), // Back to dark
+              Color(0xFF1A252F), // Very dark at bottom
+            ],
+            stops: [0.0, 0.3, 0.7, 1.0],
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  CustomNavigationSidebar(
+                    selectedSection: selectedSection,
+                    onSectionChanged: _onSectionChanged,
                   ),
-                ),
-              ],
-            ),
-            Positioned(
-              top: 85,
-              left: 20,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: Material(
-                  color: const Color(0xFF181818),
-                  child: InkWell(
-                    onTap: () {
-                      // print('Settings icon pressed!');
-                    },
-                    customBorder: const CircleBorder(),
-                    splashColor: Colors.white.withValues(alpha: 0.05),
-                    highlightColor: Colors.white.withValues(alpha: 0.02),
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: Center(
-                        child: SvgPicture.asset(
-                          "assets/svg/settings.svg",
-                          width: 20,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CustomHeader(title: selectedSection),
+                        Expanded(
+                          child: _buildContentForSection(selectedSection),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 85,
+                left: 20,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        // print('Settings icon pressed!');
+                      },
+                      customBorder: const CircleBorder(),
+                      splashColor: Colors.white.withValues(alpha: 0.05),
+                      highlightColor: Colors.white.withValues(alpha: 0.02),
+                      child: SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Center(
+                          child: SvgPicture.asset(
+                            "assets/svg/settings.svg",
+                            width: 20,
+                            height: 20,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ),
@@ -123,8 +140,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -234,7 +251,7 @@ class CustomNavigationSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 60,
-      color: const Color(0xFF181818),
+      color: Colors.transparent,
       child: Column(
         children: [
           const SizedBox(height: 150),
@@ -335,7 +352,7 @@ class CustomHeader extends StatelessWidget {
     return Container(
       height: 150,
       padding: const EdgeInsets.fromLTRB(60, 80, 20, 20),
-      decoration: const BoxDecoration(color: Color(0xFF181818)),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [

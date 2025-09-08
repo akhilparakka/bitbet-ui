@@ -16,7 +16,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF181818),
+      color: Colors.transparent,
       child: CustomScrollView(
         slivers: [
           // Quick picks header

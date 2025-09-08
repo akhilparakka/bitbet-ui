@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:bitbet/domain/app_colors.dart';
 import 'package:bitbet/domain/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -69,22 +68,44 @@ class _SplashPageState extends State<SplashPage> {
       ),
     );
 
-    await Web3AuthFlutter.initialize();
+    try {
+      await Web3AuthFlutter.initialize();
+    } catch (e) {
+      // Ignore "No user found" error as it's expected when no session exists
+      if (!e.toString().contains('No user found')) {
+        rethrow;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blackColor,
-      body: Center(
-        child: AnimatedContainer(
-          duration: const Duration(seconds: 1),
-          width: width,
-          height: height,
-          child: SvgPicture.asset(
-            "assets/Logo/spotify-icon.svg",
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF2C3E50), // Dark blue-gray
+              Color(0xFF34495E), // Slightly lighter
+              Color(0xFF2C3E50), // Back to dark
+              Color(0xFF1A252F), // Very dark at bottom
+            ],
+            stops: [0.0, 0.3, 0.7, 1.0],
+          ),
+        ),
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(seconds: 1),
             width: width,
             height: height,
+            child: SvgPicture.asset(
+              "assets/Logo/spotify-icon.svg",
+              width: width,
+              height: height,
+            ),
           ),
         ),
       ),

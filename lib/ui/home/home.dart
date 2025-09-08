@@ -325,7 +325,8 @@ class CustomNavigationSidebar extends StatelessWidget {
                             color: isSelected
                                 ? Colors.white
                                 : const Color(0xFF666666),
-                            fontSize: 12,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -361,7 +362,7 @@ class CustomHeader extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

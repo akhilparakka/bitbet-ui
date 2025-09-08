@@ -14,7 +14,7 @@ class AllGamesSection extends StatefulWidget {
 }
 
 class _AllGamesSectionState extends State<AllGamesSection> {
-  Set<String> favoriteEventIds = {};
+  Map<String, bool> favoriteMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -61,13 +61,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           .map((match) => match['id'] as String)
                           .toSet();
                       debugPrint("Fetched favorites: $fetchedFavorites");
-                      if (favoriteEventIds.isEmpty) {
-                        favoriteEventIds = fetchedFavorites;
-                      } else {
-                        // Merge: keep local changes but add server ones
-                        favoriteEventIds = {...favoriteEventIds, ...fetchedFavorites};
+                      for (var match in matches) {
+                        if (!favoriteMap.containsKey(match['id'])) {
+                          favoriteMap[match['id']] = fetchedFavorites.contains(match['id']);
+                        }
                       }
-                      debugPrint("Local favoriteEventIds: $favoriteEventIds");
+                      debugPrint("Local favoriteMap: $favoriteMap");
                       return Column(
                         children: matches
                             .map((match) => _buildQuickPickItem(match, ref))
@@ -356,26 +355,19 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 ),
                 const SizedBox(width: 12),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () async {
                     final eventId = match['id'] as String;
-                    final isCurrentlyFavorite = favoriteEventIds.contains(eventId);
+                    final isCurrentlyFavorite = favoriteMap[eventId] ?? false;
                     setState(() {
-                      if (isCurrentlyFavorite) {
-                        favoriteEventIds.remove(eventId);
-                      } else {
-                        favoriteEventIds.add(eventId);
-                      }
+                      favoriteMap[eventId] = !isCurrentlyFavorite;
                     });
                     // Call API
                     final userId = await ref.read(userIdProvider.future);
                     if (userId == null) {
                       // Revert the optimistic update
                       setState(() {
-                        if (isCurrentlyFavorite) {
-                          favoriteEventIds.add(eventId);
-                        } else {
-                          favoriteEventIds.remove(eventId);
-                        }
+                        favoriteMap[eventId] = isCurrentlyFavorite;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please log in to manage favorites')),
@@ -394,11 +386,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     if (!success) {
                       // Revert on failure
                       setState(() {
-                        if (isCurrentlyFavorite) {
-                          favoriteEventIds.add(eventId);
-                        } else {
-                          favoriteEventIds.remove(eventId);
-                        }
+                        favoriteMap[eventId] = isCurrentlyFavorite;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Failed to update favorite')),
@@ -406,10 +394,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(12),
                     child: Icon(
-                      favoriteEventIds.contains(match['id']) ? Icons.star : Icons.star_border,
-                      color: favoriteEventIds.contains(match['id']) ? Colors.yellow : Colors.grey[600],
+                      (favoriteMap[match['id']] ?? false) ? Icons.star : Icons.star_border,
+                      color: (favoriteMap[match['id']] ?? false) ? Colors.yellow : Colors.grey[600],
                       size: 20,
                     ),
                   ),

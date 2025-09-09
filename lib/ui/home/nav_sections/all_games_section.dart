@@ -294,14 +294,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${match['homeTeam']} vs ${match['awayTeam']}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                       Text(
+                         '${match['homeTeam']} vs ${match['awayTeam']}',
+                         style: const TextStyle(
+                           color: Colors.white,
+                           fontSize: 14,
+                           fontWeight: FontWeight.w500,
+                         ),
+                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -413,7 +413,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   Widget _buildQuickPickSkeleton() {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 70),
+      constraints: const BoxConstraints(minHeight: 100),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -456,10 +456,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 16,
-                  width: 180,
-                  decoration: BoxDecoration(
+                 Container(
+                   height: 32,
+                   width: 180,
+                   decoration: BoxDecoration(
                     color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(4),
                     gradient: LinearGradient(
@@ -594,33 +594,35 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(
-            league['image'],
-            width: 120,
-            height: 120,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              // If image fails to load, show icon in box
-              return Container(
-                width: 120,
-                height: 120,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Icon(
-                  Icons.sports,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 40,
-                ),
-              );
-            },
-          ),
+           Image.asset(
+             league['image'],
+             width: 120,
+             height: 120,
+             fit: BoxFit.contain,
+             errorBuilder: (context, error, stackTrace) {
+               // Debug: Print why image failed to load
+               print('Image failed to load: ${league['image']}, Error: $error');
+               // If image fails to load, show icon in box
+               return Container(
+                 width: 120,
+                 height: 120,
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                   borderRadius: BorderRadius.circular(8),
+                   border: Border.all(
+                     color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                     width: 1,
+                   ),
+                 ),
+                 child: Icon(
+                   Icons.sports,
+                   color: Colors.white.withValues(alpha: 0.7),
+                   size: 40,
+                 ),
+               );
+             },
+           ),
           const SizedBox(height: 8),
           Text(
             league['name'],

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:bitbet/domain/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
@@ -16,9 +15,6 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  double width = 10;
-  double height = 10;
-
   @override
   void initState() {
     super.initState();
@@ -27,12 +23,6 @@ class _SplashPageState extends State<SplashPage> {
 
   void animate() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) {
-      setState(() {
-        width = 80;
-        height = 70;
-      });
-    }
 
     await _initWeb3Auth();
 
@@ -115,15 +105,10 @@ class _SplashPageState extends State<SplashPage> {
           ),
         ),
         child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(seconds: 1),
-            width: width,
-            height: height,
-            child: SvgPicture.asset(
-              "assets/Logo/spotify-icon.svg",
-              width: width,
-              height: height,
-            ),
+          child: Image.asset(
+            "assets/Logo/bitbet-logo.png",
+            width: 250,
+            height: 218,
           ),
         ),
       ),

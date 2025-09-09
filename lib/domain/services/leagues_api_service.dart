@@ -22,18 +22,21 @@ class LeaguesApiService {
           leaguesData = responseData['data'];
         }
 
-        return leaguesData.map<Map<String, dynamic>>((league) {
-          final name = league['sport_title'] ?? 'Unknown League';
-          final sport = league['sport_group'] ?? 'Unknown Sport';
+         return leaguesData.map<Map<String, dynamic>>((league) {
+           final name = league['sport_title'] ?? 'Unknown League';
+           final sport = league['sport_group'] ?? 'Unknown Sport';
 
-          final imagePath = 'assets/leagues/$name.png';
+           final imagePath = 'assets/leagues/$name.png';
 
-          return {
-            'name': name,
-            'image': imagePath,
-            'sport': sport,
-          };
-        }).toList();
+           // Debug: Print the name and path for troubleshooting
+           print('League: $name, Image path: $imagePath');
+
+           return {
+             'name': name,
+             'image': imagePath,
+             'sport': sport,
+           };
+         }).toList();
       }
     } catch (e) {
       // print(e);
@@ -62,11 +65,16 @@ class LeaguesApiService {
         'image': 'assets/leagues/NBA.png',
         'sport': 'Basketball',
       },
-      {
-        'name': 'NFL',
-        'image': 'assets/leagues/NFL.png',
-        'sport': 'Football',
-      },
-    ];
+       {
+         'name': 'NFL',
+         'image': 'assets/leagues/NFL.png',
+         'sport': 'Football',
+       },
+       {
+         'name': 'WNBA',
+         'image': 'assets/leagues/WNBA.png',
+         'sport': 'Basketball',
+       },
+     ];
   }
 }

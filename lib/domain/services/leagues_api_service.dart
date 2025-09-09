@@ -25,14 +25,12 @@ class LeaguesApiService {
         return leaguesData.map<Map<String, dynamic>>((league) {
           final name = league['sport_title'] ?? 'Unknown League';
           final sport = league['sport_group'] ?? 'Unknown Sport';
-          final season = '2024';
 
           final imagePath = 'assets/leagues/$name.png';
 
           return {
             'name': name,
             'image': imagePath,
-            'season': season,
             'sport': sport,
           };
         }).toList();
@@ -47,31 +45,26 @@ class LeaguesApiService {
       {
         'name': 'La Liga',
         'image': 'assets/leagues/La Liga.png',
-        'season': '2024',
         'sport': 'Soccer',
       },
       {
         'name': 'Serie A',
         'image': 'assets/leagues/Serie A.png',
-        'season': '2024',
         'sport': 'Soccer',
       },
       {
         'name': 'Bundesliga',
         'image': 'assets/leagues/Bundesliga.png',
-        'season': '2024',
         'sport': 'Soccer',
       },
       {
         'name': 'NBA',
         'image': 'assets/leagues/NBA.png',
-        'season': '2024',
         'sport': 'Basketball',
       },
       {
         'name': 'NFL',
         'image': 'assets/leagues/NFL.png',
-        'season': '2024',
         'sport': 'Football',
       },
     ];

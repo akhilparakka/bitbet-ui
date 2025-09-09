@@ -592,31 +592,34 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       width: 140,
       margin: const EdgeInsets.only(right: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
+          Image.asset(
+            league['image'],
             width: 120,
             height: 120,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                width: 1,
-              ),
-            ),
-            child: Image.asset(
-              league['image'],
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // If image fails to load, show icon in box
+              return Container(
+                width: 120,
+                height: 120,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
                   Icons.sports,
                   color: Colors.white.withValues(alpha: 0.7),
                   size: 40,
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
           Text(
@@ -628,10 +631,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            league['season'],
-            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

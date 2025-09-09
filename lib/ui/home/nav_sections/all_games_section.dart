@@ -382,11 +382,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                        debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
                        success = await userService.addFavorite(userId, eventId);
                      }
-                     if (success) {
-                       // Invalidate providers to refresh cached data with server state
-                       ref.invalidate(favoritesProvider);
-                       ref.invalidate(quickPicsWithFavoritesProvider);
-                     } else {
+                      if (success) {
+                        // Invalidate providers to refresh cached data with server state
+                        ref.invalidate(favoritesProvider);
+                        ref.invalidate(quickPicsWithFavoritesProvider);
+                        ref.invalidate(fullFavoritesProvider);
+                      } else {
                        // Revert on failure
                        setState(() {
                          favoriteMap[eventId] = isCurrentlyFavorite;

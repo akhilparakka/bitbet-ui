@@ -95,3 +95,31 @@ final favoritesProvider = FutureProvider<List<String>>((ref) async {
   debugPrint("=== FAVORITES PROVIDER: SUCCESS ===");
   return favorites;
 });
+
+final fullFavoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  debugPrint("=== FULL FAVORITES PROVIDER ===");
+  final userId = await ref.watch(userIdProvider.future);
+  debugPrint("Fetching full favorites for userId: $userId");
+
+  if (userId == null) {
+    debugPrint("No userId available - returning empty full favorites");
+    debugPrint("=== FULL FAVORITES PROVIDER: NO USER ===");
+    return [];
+  }
+
+  final userService = ref.read(userApiServiceProvider);
+
+  // Ensure user exists in backend before fetching favorites
+  debugPrint("Ensuring user exists in backend...");
+  final userRecreated = await userService.recreateUserIfNeeded(userId);
+  if (!userRecreated) {
+    debugPrint("Failed to ensure user exists in backend - full favorites may not work");
+    debugPrint("=== FULL FAVORITES PROVIDER: USER ENSURANCE FAILED ===");
+    return [];
+  }
+
+  debugPrint("User exists in backend - proceeding to fetch full favorites");
+  final fullFavorites = await userService.fetchFullFavorites(userId);
+  debugPrint("=== FULL FAVORITES PROVIDER: SUCCESS ===");
+  return fullFavorites;
+});

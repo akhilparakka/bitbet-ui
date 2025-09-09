@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/user_provider.dart';
-import '../game_details/game_details_page.dart';
 
 class FavoritesSection extends StatefulWidget {
   const FavoritesSection({super.key});
@@ -12,7 +10,6 @@ class FavoritesSection extends StatefulWidget {
 }
 
 class _FavoritesSectionState extends State<FavoritesSection> {
-  Map<String, bool> favoriteMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -26,25 +23,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Your Favorites',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Games you\'ve marked as favorites',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
           ),
@@ -55,43 +34,45 @@ class _FavoritesSectionState extends State<FavoritesSection> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final quickPicsAsync = ref.watch(quickPicsWithFavoritesProvider);
-                  return quickPicsAsync.when(
-                    data: (matches) {
-                      // Filter only favorite matches
-                      final favoriteMatches = matches
-                          .where((match) => match['isFavorite'] == true)
-                          .toList();
+                  final fullFavoritesAsync = ref.watch(fullFavoritesProvider);
+                  return fullFavoritesAsync.when(
+                    data: (favorites) {
+                      debugPrint("Full favorites data: ${favorites.length} items");
 
-                      // Initialize local favorites from fetched data
-                      final fetchedFavorites = favoriteMatches
-                          .where((match) => match['isFavorite'] == true)
-                          .map((match) => match['id'] as String)
-                          .toSet();
-                      debugPrint("Fetched favorites: $fetchedFavorites");
-
-                      for (var match in matches) {
-                        // Always update favoriteMap with latest data from server
-                        favoriteMap[match['id']] = fetchedFavorites.contains(match['id']);
-                      }
-                      debugPrint("Local favoriteMap: $favoriteMap");
-
-                      if (favoriteMatches.isEmpty) {
+                      if (favorites.isEmpty) {
                         return _buildEmptyState();
                       }
 
+                      // Group favorites by sport_group
+                      final Map<String, List<Map<String, dynamic>>> groupedFavorites = {};
+                      for (final favorite in favorites) {
+                        final hasEvent = favorite['~has_event'] as List<dynamic>?;
+                        if (hasEvent != null && hasEvent.isNotEmpty) {
+                          final sportGroup = hasEvent[0]['sport_group'] as String? ?? 'Unknown';
+                          if (!groupedFavorites.containsKey(sportGroup)) {
+                            groupedFavorites[sportGroup] = [];
+                          }
+                          groupedFavorites[sportGroup]!.add(favorite);
+                        }
+                      }
+
+                      debugPrint("Grouped favorites: ${groupedFavorites.keys.toList()}");
+
+                      final sportGroups = groupedFavorites.keys.toList();
+
                       return Column(
                         children: [
-                          // Create 2x2 grid
-                          for (int row = 0; row < (favoriteMatches.length / 2).ceil(); row++) ...[
+                          // Create 2x2 grid for sport groups
+                          for (int row = 0; row < (sportGroups.length / 2).ceil(); row++) ...[
                             Row(
                               children: [
                                 for (int col = 0; col < 2; col++) ...[
                                   Expanded(
-                                    child: _buildFavoriteCard(
-                                      favoriteMatches.length > (row * 2 + col)
-                                          ? favoriteMatches[row * 2 + col]
+                                    child: _buildSportGroupCard(
+                                      sportGroups.length > (row * 2 + col)
+                                          ? sportGroups[row * 2 + col]
                                           : null,
+                                      groupedFavorites,
                                       ref,
                                     ),
                                   ),
@@ -99,7 +80,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                                 ],
                               ],
                             ),
-                            if (row < (favoriteMatches.length / 2).ceil() - 1)
+                            if (row < (sportGroups.length / 2).ceil() - 1)
                               const SizedBox(height: 16),
                           ],
                         ],
@@ -131,11 +112,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.star_border,
-              size: 64,
-              color: Colors.grey[600],
-            ),
+            Icon(Icons.star_border, size: 64, color: Colors.grey[600]),
             const SizedBox(height: 16),
             const Text(
               'No favorites yet',
@@ -147,11 +124,8 @@ class _FavoritesSectionState extends State<FavoritesSection> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Mark games as favorites to see them here',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14,
-              ),
+              'Mark games as favorites to see sports here',
+              style: TextStyle(color: Colors.grey[400], fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -167,9 +141,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
           Row(
             children: [
               for (int col = 0; col < 2; col++) ...[
-                Expanded(
-                  child: _buildFavoriteCardSkeleton(),
-                ),
+                Expanded(child: _buildSportGroupCardSkeleton()),
                 if (col == 0) const SizedBox(width: 16),
               ],
             ],
@@ -180,28 +152,27 @@ class _FavoritesSectionState extends State<FavoritesSection> {
     );
   }
 
-  Widget _buildFavoriteCard(Map<String, dynamic>? match, WidgetRef ref) {
-    if (match == null) {
+  Widget _buildSportGroupCard(
+    String? sportGroup,
+    Map<String, List<Map<String, dynamic>>> groupedFavorites,
+    WidgetRef ref,
+  ) {
+    if (sportGroup == null) {
       return const SizedBox.shrink();
     }
 
+    final favoritesInGroup = groupedFavorites[sportGroup] ?? [];
+    final count = favoritesInGroup.length;
+
     return Container(
-      height: 160,
+      height: 120,
       margin: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const GameDetailsPage(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                transitionDuration: const Duration(milliseconds: 200),
-              ),
-            );
+            // TODO: Navigate to filtered view of this sport's favorites
+            debugPrint("Tapped on $sportGroup with $count favorites");
           },
           splashColor: Colors.white.withValues(alpha: 0.1),
           highlightColor: Colors.white.withValues(alpha: 0.05),
@@ -219,126 +190,61 @@ class _FavoritesSectionState extends State<FavoritesSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // League and Live indicator
+                // Sport icon and title
                 Row(
                   children: [
+                    Icon(
+                      _getSportIcon(sportGroup),
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        match['league'] ?? 'Unknown League',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        sportGroup,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (match['isLive'] == true) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'LIVE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
                 const SizedBox(height: 8),
 
-                // Teams
+                // Count of favorites
                 Text(
-                  '${match['homeTeam']} vs ${match['awayTeam']}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  '$count favorite${count == 1 ? '' : 's'}',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 14,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-
-                // Odds
-                if (match['odds'] != null && match['odds']['home'] != 'N/A') ...[
-                  Row(
-                    children: [
-                      _buildOddsChip(match['odds']['home']),
-                      const SizedBox(width: 8),
-                      if (match['odds']['draw'] != 'N/A') ...[
-                        _buildOddsChip(match['odds']['draw']),
-                        const SizedBox(width: 8),
-                      ],
-                      if (match['odds']['away'] != 'N/A')
-                        _buildOddsChip(match['odds']['away']),
-                    ],
-                  ),
-                ],
 
                 const Spacer(),
 
-                // Favorite toggle
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () async {
-                      final eventId = match['id'] as String;
-                      final isCurrentlyFavorite = favoriteMap[eventId] ?? false;
-                      setState(() {
-                        favoriteMap[eventId] = !isCurrentlyFavorite;
-                      });
-
-                      final userId = await ref.read(userIdProvider.future);
-                      if (userId == null) {
-                        setState(() {
-                          favoriteMap[eventId] = isCurrentlyFavorite;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please log in to manage favorites')),
-                        );
-                        return;
-                      }
-
-                      final userService = ref.read(userApiServiceProvider);
-                      bool success;
-                      if (isCurrentlyFavorite) {
-                        success = await userService.removeFavorite(userId, eventId);
-                      } else {
-                        success = await userService.addFavorite(userId, eventId);
-                      }
-
-                      if (success) {
-                        ref.invalidate(favoritesProvider);
-                        ref.invalidate(quickPicsWithFavoritesProvider);
-                      } else {
-                        setState(() {
-                          favoriteMap[eventId] = isCurrentlyFavorite;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Failed to update favorite')),
-                        );
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        (favoriteMap[match['id']] ?? false) ? Icons.star : Icons.star_border,
-                        color: (favoriteMap[match['id']] ?? false) ? Colors.yellow : Colors.grey[600],
-                        size: 24,
+                // View details hint
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Tap to view',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey[500],
+                      size: 16,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -348,9 +254,30 @@ class _FavoritesSectionState extends State<FavoritesSection> {
     );
   }
 
-  Widget _buildFavoriteCardSkeleton() {
+  IconData _getSportIcon(String sportGroup) {
+    switch (sportGroup.toLowerCase()) {
+      case 'soccer':
+        return Icons.sports_soccer;
+      case 'basketball':
+        return Icons.sports_basketball;
+      case 'baseball':
+        return Icons.sports_baseball;
+      case 'football':
+        return Icons.sports_football;
+      case 'tennis':
+        return Icons.sports_tennis;
+      case 'cricket':
+        return Icons.sports_cricket;
+      case 'hockey':
+        return Icons.sports_hockey;
+      default:
+        return Icons.sports;
+    }
+  }
+
+  Widget _buildSportGroupCardSkeleton() {
     return Container(
-      height: 160,
+      height: 120,
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
@@ -365,82 +292,65 @@ class _FavoritesSectionState extends State<FavoritesSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // League skeleton
-            Container(
-              height: 12,
-              width: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Teams skeleton
-            Container(
-              height: 16,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              height: 16,
-              width: 120,
-              decoration: BoxDecoration(
-                color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Odds skeleton
+            // Sport icon and title skeleton
             Row(
               children: [
                 Container(
-                  height: 20,
-                  width: 40,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(4),
+                    shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 20,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  height: 20,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+
+            // Count skeleton
+            Container(
+              height: 14,
+              width: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
 
             const Spacer(),
 
-            // Star skeleton
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
+            // View details hint skeleton
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
                 ),
-              ),
+                const Spacer(),
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF34495E).withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -448,25 +358,5 @@ class _FavoritesSectionState extends State<FavoritesSection> {
     );
   }
 
-  Widget _buildOddsChip(String odds) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF34495E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        odds,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+
 }

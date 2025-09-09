@@ -166,6 +166,37 @@ class UserApiService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchFullFavorites(String userId) async {
+    debugPrint("=== FETCH FULL FAVORITES ===");
+    debugPrint("UserId: $userId");
+    try {
+      final url = Uri.parse('$_baseUrl/users/$userId/favorites');
+      debugPrint("Fetching full favorites from: $url");
+      final response = await http.get(url);
+      debugPrint("Response status: ${response.statusCode}");
+      debugPrint("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        debugPrint("Full favorites response: ${response.body}");
+        final List<dynamic> users = responseData['data']['user'] ?? [];
+        final List<dynamic> favorites = users.isNotEmpty ? users[0]['favorites'] ?? [] : [];
+        final fullFavorites = favorites.map<Map<String, dynamic>>((fav) => fav as Map<String, dynamic>).toList();
+        debugPrint("Parsed full favorites: ${fullFavorites.length} items");
+        debugPrint("=== FETCH FULL FAVORITES SUCCESS ===");
+        return fullFavorites;
+      } else {
+        debugPrint('Failed to fetch full favorites: ${response.statusCode} - ${response.body}');
+        debugPrint("=== FETCH FULL FAVORITES FAILED ===");
+        return [];
+      }
+    } catch (e) {
+      debugPrint('Error fetching full favorites: $e');
+      debugPrint("=== FETCH FULL FAVORITES ERROR ===");
+      return [];
+    }
+  }
+
   Future<bool> addFavorite(String userId, String eventId) async {
     debugPrint("=== ADD FAVORITE ===");
     debugPrint("UserId: $userId");

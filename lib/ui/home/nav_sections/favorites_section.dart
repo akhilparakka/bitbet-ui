@@ -10,7 +10,6 @@ class FavoritesSection extends StatefulWidget {
 }
 
 class _FavoritesSectionState extends State<FavoritesSection> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,24 +30,30 @@ class _FavoritesSectionState extends State<FavoritesSection> {
           // Favorites Grid
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Consumer(
                 builder: (context, ref, child) {
                   final fullFavoritesAsync = ref.watch(fullFavoritesProvider);
                   return fullFavoritesAsync.when(
                     data: (favorites) {
-                      debugPrint("Full favorites data: ${favorites.length} items");
+                      debugPrint(
+                        "Full favorites data: ${favorites.length} items",
+                      );
 
                       if (favorites.isEmpty) {
                         return _buildEmptyState();
                       }
 
                       // Group favorites by sport_group
-                      final Map<String, List<Map<String, dynamic>>> groupedFavorites = {};
+                      final Map<String, List<Map<String, dynamic>>>
+                      groupedFavorites = {};
                       for (final favorite in favorites) {
-                        final hasEvent = favorite['~has_event'] as List<dynamic>?;
+                        final hasEvent =
+                            favorite['~has_event'] as List<dynamic>?;
                         if (hasEvent != null && hasEvent.isNotEmpty) {
-                          final sportGroup = hasEvent[0]['sport_group'] as String? ?? 'Unknown';
+                          final sportGroup =
+                              hasEvent[0]['sport_group'] as String? ??
+                              'Unknown';
                           if (!groupedFavorites.containsKey(sportGroup)) {
                             groupedFavorites[sportGroup] = [];
                           }
@@ -56,25 +61,30 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                         }
                       }
 
-                      debugPrint("Grouped favorites: ${groupedFavorites.keys.toList()}");
+                      debugPrint(
+                        "Grouped favorites: ${groupedFavorites.keys.toList()}",
+                      );
 
                       final sportGroups = groupedFavorites.keys.toList();
 
                       return Column(
                         children: [
                           // Create 2x2 grid for sport groups
-                          for (int row = 0; row < (sportGroups.length / 2).ceil(); row++) ...[
+                          for (
+                            int row = 0;
+                            row < (sportGroups.length / 2).ceil();
+                            row++
+                          ) ...[
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 for (int col = 0; col < 2; col++) ...[
-                                  Expanded(
-                                    child: _buildSportGroupCard(
-                                      sportGroups.length > (row * 2 + col)
-                                          ? sportGroups[row * 2 + col]
-                                          : null,
-                                      groupedFavorites,
-                                      ref,
-                                    ),
+                                  _buildSportGroupCard(
+                                    sportGroups.length > (row * 2 + col)
+                                        ? sportGroups[row * 2 + col]
+                                        : null,
+                                    groupedFavorites,
+                                    ref,
                                   ),
                                   if (col == 0) const SizedBox(width: 16),
                                 ],
@@ -106,7 +116,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return SizedBox(
       height: 300,
       child: Center(
         child: Column(
@@ -123,11 +133,6 @@ class _FavoritesSectionState extends State<FavoritesSection> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Mark games as favorites to see sports here',
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
@@ -139,9 +144,10 @@ class _FavoritesSectionState extends State<FavoritesSection> {
       children: [
         for (int row = 0; row < 2; row++) ...[
           Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               for (int col = 0; col < 2; col++) ...[
-                Expanded(child: _buildSportGroupCardSkeleton()),
+                _buildSportGroupCardSkeleton(),
                 if (col == 0) const SizedBox(width: 16),
               ],
             ],
@@ -165,8 +171,9 @@ class _FavoritesSectionState extends State<FavoritesSection> {
     final count = favoritesInGroup.length;
 
     return Container(
-      height: 120,
-      margin: const EdgeInsets.only(bottom: 8),
+      width: 160,
+      height: 160,
+      margin: const EdgeInsets.only(top: 16, bottom: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -218,10 +225,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                 // Count of favorites
                 Text(
                   '$count favorite${count == 1 ? '' : 's'}',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
                 ),
 
                 const Spacer(),
@@ -232,10 +236,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                     Expanded(
                       child: Text(
                         'Tap to view',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -277,8 +278,9 @@ class _FavoritesSectionState extends State<FavoritesSection> {
 
   Widget _buildSportGroupCardSkeleton() {
     return Container(
-      height: 120,
-      margin: const EdgeInsets.only(bottom: 8),
+      width: 160,
+      height: 160,
+      margin: const EdgeInsets.only(top: 16, bottom: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
@@ -357,6 +359,4 @@ class _FavoritesSectionState extends State<FavoritesSection> {
       ),
     );
   }
-
-
 }

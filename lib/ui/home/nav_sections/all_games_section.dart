@@ -61,11 +61,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           .map((match) => match['id'] as String)
                           .toSet();
                       debugPrint("Fetched favorites: $fetchedFavorites");
-                      for (var match in matches) {
-                        if (!favoriteMap.containsKey(match['id'])) {
-                          favoriteMap[match['id']] = fetchedFavorites.contains(match['id']);
-                        }
-                      }
+                       for (var match in matches) {
+                         // Always update favoriteMap with latest data from server
+                         favoriteMap[match['id']] = fetchedFavorites.contains(match['id']);
+                       }
                       debugPrint("Local favoriteMap: $favoriteMap");
                       return Column(
                         children: matches
@@ -376,22 +375,26 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     }
                     final userService = ref.read(userApiServiceProvider);
                     bool success;
-                    if (isCurrentlyFavorite) {
-                      debugPrint("Removing favorite for userId: $userId, eventId: $eventId");
-                      success = await userService.removeFavorite(userId, eventId);
-                    } else {
-                      debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
-                      success = await userService.addFavorite(userId, eventId);
-                    }
-                    if (!success) {
-                      // Revert on failure
-                      setState(() {
-                        favoriteMap[eventId] = isCurrentlyFavorite;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to update favorite')),
-                      );
-                    }
+                     if (isCurrentlyFavorite) {
+                       debugPrint("Removing favorite for userId: $userId, eventId: $eventId");
+                       success = await userService.removeFavorite(userId, eventId);
+                     } else {
+                       debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
+                       success = await userService.addFavorite(userId, eventId);
+                     }
+                     if (success) {
+                       // Invalidate providers to refresh cached data with server state
+                       ref.invalidate(favoritesProvider);
+                       ref.invalidate(quickPicsWithFavoritesProvider);
+                     } else {
+                       // Revert on failure
+                       setState(() {
+                         favoriteMap[eventId] = isCurrentlyFavorite;
+                       });
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         const SnackBar(content: Text('Failed to update favorite')),
+                       );
+                     }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(12),

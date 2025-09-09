@@ -594,22 +594,30 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              Icons.sports,
-              color: Colors.white.withValues(alpha: 0.7),
-              size: 40,
-            ),
+          Image.asset(
+            league['image'],
+            width: 120,
+            height: 120,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.sports,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  size: 40,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
           Text(

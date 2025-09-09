@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
+import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -39,11 +40,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   final Map<String, Widget> _sectionWidgets = {
     'All Games': const AllGamesSection(),
-    'Favorites': const Text(
-      "Favorites Section\nYour favorite games appear here",
-      style: TextStyle(color: Colors.white, fontSize: 18),
-      textAlign: TextAlign.center,
-    ),
+    'Favorites': const FavoritesSection(),
     'My Bets': const Text(
       "My Bets Section\nTrack your betting history and active bets",
       style: TextStyle(color: Colors.white, fontSize: 18),

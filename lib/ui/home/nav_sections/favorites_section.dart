@@ -75,9 +75,9 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                             row < (sportGroups.length / 2).ceil();
                             row++
                           ) ...[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
+                             Row(
+                               mainAxisAlignment: MainAxisAlignment.center,
+                               children: [
                                 for (int col = 0; col < 2; col++) ...[
                                   _buildSportGroupCard(
                                     sportGroups.length > (row * 2 + col)
@@ -144,7 +144,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
       children: [
         for (int row = 0; row < 2; row++) ...[
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (int col = 0; col < 2; col++) ...[
                 _buildSportGroupCardSkeleton(),
@@ -171,8 +171,8 @@ class _FavoritesSectionState extends State<FavoritesSection> {
     final count = favoritesInGroup.length;
 
     return Container(
-      width: 160,
-      height: 160,
+      width: 140,
+      height: 140,
       margin: const EdgeInsets.only(top: 16, bottom: 8),
       child: Material(
         color: Colors.transparent,
@@ -277,8 +277,8 @@ class _FavoritesSectionState extends State<FavoritesSection> {
 
   Widget _buildSportGroupCardSkeleton() {
     return Container(
-      width: 160,
-      height: 160,
+      width: 140,
+      height: 140,
       margin: const EdgeInsets.only(top: 16, bottom: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF2C3E50).withValues(alpha: 0.6),

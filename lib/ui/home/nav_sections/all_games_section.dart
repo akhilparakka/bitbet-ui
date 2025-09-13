@@ -425,7 +425,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                                 ),
                               ),
                             ),
-                           ],
+                          ],
                         ],
                       ),
                     ],
@@ -605,7 +605,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-
                   ],
                 ),
               ],
@@ -634,27 +633,27 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     );
   }
 
-  Widget _buildOddsChip(String odds) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF34495E).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        odds,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 9,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+  // Widget _buildOddsChip(String odds) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFF34495E).withValues(alpha: 0.8),
+  //       borderRadius: BorderRadius.circular(4),
+  //       border: Border.all(
+  //         color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
+  //         width: 1,
+  //       ),
+  //     ),
+  //     child: Text(
+  //       odds,
+  //       style: const TextStyle(
+  //         color: Colors.white,
+  //         fontSize: 9,
+  //         fontWeight: FontWeight.w500,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildLeagueCard(Map<String, dynamic> league) {
     return Container(
@@ -669,9 +668,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             height: 120,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
-              // Debug: Print why image failed to load
-              print('Image failed to load: ${league['image']}, Error: $error');
-              // If image fails to load, show icon in box
               return Container(
                 width: 120,
                 height: 120,

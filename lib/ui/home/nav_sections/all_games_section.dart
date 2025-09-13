@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:flutter/material.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
@@ -22,29 +23,69 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       color: Colors.transparent,
       child: CustomScrollView(
         slivers: [
-          // Quick picks header
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Quick picks',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
+           // Quick picks header
+           SliverToBoxAdapter(
+             child: Container(
+               padding: const EdgeInsets.all(16.0),
+               child: Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                   const Text(
+                     'Quick picks',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                   Row(
+                     children: [
+                       GestureDetector(
+                         onTap: () {},
+                         child: SvgPicture.asset(
+                           'assets/svg/games.svg',
+                           width: 20,
+                           height: 20,
+                           colorFilter: const ColorFilter.mode(
+                             Colors.white,
+                             BlendMode.srcIn,
+                           ),
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       GestureDetector(
+                         onTap: () {},
+                         child: const Icon(
+                           Icons.sports_soccer,
+                           color: Colors.white,
+                           size: 20,
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       GestureDetector(
+                         onTap: () {},
+                         child: const Icon(
+                           Icons.sports_soccer,
+                           color: Colors.white,
+                           size: 20,
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       GestureDetector(
+                         onTap: () {},
+                         child: const Icon(
+                           Icons.sports_soccer,
+                           color: Colors.white,
+                           size: 20,
+                         ),
+                       ),
+                     ],
+                   ),
+                 ],
+               ),
+             ),
+           ),
 
-          // Quick picks content
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -61,10 +102,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           .map((match) => match['id'] as String)
                           .toSet();
                       debugPrint("Fetched favorites: $fetchedFavorites");
-                       for (var match in matches) {
-                         // Always update favoriteMap with latest data from server
-                         favoriteMap[match['id']] = fetchedFavorites.contains(match['id']);
-                       }
+                      for (var match in matches) {
+                        // Always update favoriteMap with latest data from server
+                        favoriteMap[match['id']] = fetchedFavorites.contains(
+                          match['id'],
+                        );
+                      }
                       debugPrint("Local favoriteMap: $favoriteMap");
                       return Column(
                         children: matches
@@ -293,14 +336,14 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                       Text(
-                         '${match['homeTeam']} vs ${match['awayTeam']}',
-                         style: const TextStyle(
-                           color: Colors.white,
-                           fontSize: 14,
-                           fontWeight: FontWeight.w500,
-                         ),
-                       ),
+                      Text(
+                        '${match['homeTeam']} vs ${match['awayTeam']}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -369,43 +412,58 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         favoriteMap[eventId] = isCurrentlyFavorite;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please log in to manage favorites')),
+                        const SnackBar(
+                          content: Text('Please log in to manage favorites'),
+                        ),
                       );
                       return;
                     }
                     final userService = ref.read(userApiServiceProvider);
                     bool success;
-                     if (isCurrentlyFavorite) {
-                       debugPrint("Removing favorite for userId: $userId, eventId: $eventId");
-                       success = await userService.removeFavorite(userId, eventId);
-                     } else {
-                       debugPrint("Adding favorite for userId: $userId, eventId: $eventId");
-                       success = await userService.addFavorite(userId, eventId);
-                     }
-                      if (success) {
-                        // Invalidate providers to refresh cached data with server state
-                        ref.invalidate(favoritesProvider);
-                        ref.invalidate(quickPicsWithFavoritesProvider);
-                        ref.invalidate(fullFavoritesProvider);
-                      } else {
-                       // Revert on failure
-                       setState(() {
-                         favoriteMap[eventId] = isCurrentlyFavorite;
-                       });
-                       ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(content: Text('Failed to update favorite')),
-                       );
-                     }
+                    if (isCurrentlyFavorite) {
+                      debugPrint(
+                        "Removing favorite for userId: $userId, eventId: $eventId",
+                      );
+                      success = await userService.removeFavorite(
+                        userId,
+                        eventId,
+                      );
+                    } else {
+                      debugPrint(
+                        "Adding favorite for userId: $userId, eventId: $eventId",
+                      );
+                      success = await userService.addFavorite(userId, eventId);
+                    }
+                    if (success) {
+                      // Invalidate providers to refresh cached data with server state
+                      ref.invalidate(favoritesProvider);
+                      ref.invalidate(quickPicsWithFavoritesProvider);
+                      ref.invalidate(fullFavoritesProvider);
+                    } else {
+                      // Revert on failure
+                      setState(() {
+                        favoriteMap[eventId] = isCurrentlyFavorite;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to update favorite'),
+                        ),
+                      );
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      (favoriteMap[match['id']] ?? false) ? Icons.star : Icons.star_border,
-                      color: (favoriteMap[match['id']] ?? false) ? Colors.yellow : Colors.grey[600],
+                      (favoriteMap[match['id']] ?? false)
+                          ? Icons.star
+                          : Icons.star_border,
+                      color: (favoriteMap[match['id']] ?? false)
+                          ? Colors.yellow
+                          : Colors.grey[600],
                       size: 20,
                     ),
                   ),
-                 ),
+                ),
               ],
             ),
           ),
@@ -460,10 +518,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Container(
-                   height: 32,
-                   width: 180,
-                   decoration: BoxDecoration(
+                Container(
+                  height: 32,
+                  width: 180,
+                  decoration: BoxDecoration(
                     color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(4),
                     gradient: LinearGradient(
@@ -598,35 +656,35 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-           Image.asset(
-             league['image'],
-             width: 120,
-             height: 120,
-             fit: BoxFit.contain,
-             errorBuilder: (context, error, stackTrace) {
-               // Debug: Print why image failed to load
-               print('Image failed to load: ${league['image']}, Error: $error');
-               // If image fails to load, show icon in box
-               return Container(
-                 width: 120,
-                 height: 120,
-                 padding: const EdgeInsets.all(8),
-                 decoration: BoxDecoration(
-                   color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                   borderRadius: BorderRadius.circular(8),
-                   border: Border.all(
-                     color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                     width: 1,
-                   ),
-                 ),
-                 child: Icon(
-                   Icons.sports,
-                   color: Colors.white.withValues(alpha: 0.7),
-                   size: 40,
-                 ),
-               );
-             },
-           ),
+          Image.asset(
+            league['image'],
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // Debug: Print why image failed to load
+              print('Image failed to load: ${league['image']}, Error: $error');
+              // If image fails to load, show icon in box
+              return Container(
+                width: 120,
+                height: 120,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.sports,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  size: 40,
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 8),
           Text(
             league['name'],

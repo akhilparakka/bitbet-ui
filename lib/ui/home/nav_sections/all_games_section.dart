@@ -130,14 +130,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                   );
                   return quickPicsAsync.when(
                     data: (matches) {
-                      // Initialize local favorites from fetched data
                       final fetchedFavorites = matches
                           .where((match) => match['isFavorite'] == true)
                           .map((match) => match['id'] as String)
                           .toSet();
                       debugPrint("Fetched favorites: $fetchedFavorites");
                       for (var match in matches) {
-                        // Always update favoriteMap with latest data from server
                         favoriteMap[match['id']] = fetchedFavorites.contains(
                           match['id'],
                         );
@@ -166,15 +164,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         ),
                       );
                     },
-                     loading: () => SizedBox(
-                       height: 371,
-                       child: Column(
-                         children: List.generate(
-                           4,
-                           (index) => _buildQuickPickSkeleton(),
-                         ),
-                       ),
-                     ),
+                    loading: () => SizedBox(
+                      height: 371,
+                      child: Column(
+                        children: List.generate(
+                          4,
+                          (index) => _buildQuickPickSkeleton(),
+                        ),
+                      ),
+                    ),
                     error: (error, stack) => Text(
                       'Error: $error',
                       style: const TextStyle(color: Colors.red),
@@ -427,22 +425,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                                 ),
                               ),
                             ),
-                          ],
-                          const SizedBox(width: 6),
-                          Row(
-                            children: [
-                              if (match['odds']['home'] != 'N/A')
-                                _buildOddsChip(match['odds']['home']),
-                              if (match['odds']['draw'] != 'N/A') ...[
-                                const SizedBox(width: 4),
-                                _buildOddsChip(match['odds']['draw']),
-                              ],
-                              if (match['odds']['away'] != 'N/A') ...[
-                                const SizedBox(width: 4),
-                                _buildOddsChip(match['odds']['away']),
-                              ],
-                            ],
-                          ),
+                           ],
                         ],
                       ),
                     ],
@@ -622,36 +605,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Row(
-                      children: List.generate(
-                        3,
-                        (index) => Container(
-                          margin: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          width: 24,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF2C3E50,
-                            ).withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(4),
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF34495E).withValues(alpha: 0.5),
-                                const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                                const Color(0xFF34495E).withValues(alpha: 0.5),
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
               ],

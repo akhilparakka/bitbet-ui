@@ -7,8 +7,8 @@ class OddsApiService {
 
   OddsApiService({this.apiKey = ''});
 
-  Future<List<Map<String, dynamic>>> fetchOdds(String sportKey) async {
-    final url = Uri.parse('$_baseUrl/quick_pics');
+  Future<List<Map<String, dynamic>>> fetchOdds({String? sportGroup}) async {
+    final url = Uri.parse('$_baseUrl/quick_pics${sportGroup != null ? '?sport_group=$sportGroup' : ''}');
 
     final response = await http.get(url);
 

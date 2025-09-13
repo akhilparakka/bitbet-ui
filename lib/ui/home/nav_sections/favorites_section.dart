@@ -178,7 +178,6 @@ class _FavoritesSectionState extends State<FavoritesSection> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to filtered view of this sport's favorites
             debugPrint("Tapped on $sportGroup with $count favorites");
           },
           splashColor: Colors.white.withValues(alpha: 0.1),

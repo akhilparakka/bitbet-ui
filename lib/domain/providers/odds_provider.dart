@@ -13,7 +13,7 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
   sportKey,
 ) async {
   final service = ref.read(oddsApiServiceProvider);
-  final apiMatches = await service.fetchOdds(sportKey);
+  final apiMatches = await service.fetchOdds(sportGroup: sportKey);
 
   // Filter valid matches and take first 4
   return apiMatches
@@ -30,8 +30,9 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
       .toList();
 });
 
-final quickPicsWithFavoritesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final matches = await ref.watch(oddsProvider('soccer_epl').future);
+final quickPicsWithFavoritesProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, sportGroup) async {
+  final service = ref.read(oddsApiServiceProvider);
+  final matches = await service.fetchOdds(sportGroup: sportGroup);
   final favorites = await ref.watch(favoritesProvider.future);
   debugPrint("Matches count: ${matches.length}, Favorites: $favorites");
 

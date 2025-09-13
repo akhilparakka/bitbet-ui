@@ -1,6 +1,6 @@
- import 'package:flutter/material.dart';
- import 'package:flutter_riverpod/flutter_riverpod.dart';
- import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
@@ -17,6 +17,7 @@ class AllGamesSection extends StatefulWidget {
 class _AllGamesSectionState extends State<AllGamesSection> {
   Map<String, bool> favoriteMap = {};
   int selectedIconIndex = 0;
+  String selectedSportGroup = 'Soccer';
 
   @override
   Widget build(BuildContext context) {
@@ -24,68 +25,100 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       color: Colors.transparent,
       child: CustomScrollView(
         slivers: [
-           // Quick picks header
-           SliverToBoxAdapter(
-             child: Container(
-               padding: const EdgeInsets.all(16.0),
-               child: Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   const Text(
-                     'Quick picks',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w600,
-                     ),
-                   ),
-                   Row(
-                     children: [
-                       GestureDetector(
-                         onTap: () => setState(() => selectedIconIndex = 0),
-                         child: Icon(
-                           Icons.sports_soccer,
-                           color: selectedIconIndex == 0 ? Colors.white : Colors.grey.shade600,
-                           size: 16,
-                         ),
-                       ),
-                       const SizedBox(width: 12),
-                       GestureDetector(
-                         onTap: () => setState(() => selectedIconIndex = 1),
-                         child: SvgPicture.asset(
-                           'assets/svg/games.svg',
-                           width: 16,
-                           height: 16,
-                           colorFilter: ColorFilter.mode(
-                             selectedIconIndex == 1 ? Colors.white : Colors.grey.shade600,
-                             BlendMode.srcIn,
+          // Quick picks header
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Quick picks',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          selectedIconIndex = 0;
+                          selectedSportGroup = 'Soccer';
+                        }),
+                         child: Container(
+                           padding: const EdgeInsets.all(8),
+                           child: Icon(
+                             Icons.sports_soccer,
+                             color: selectedIconIndex == 0
+                                 ? Colors.white
+                                 : Colors.grey.shade600,
+                             size: 16,
                            ),
                          ),
-                       ),
-                       const SizedBox(width: 12),
-                       GestureDetector(
-                         onTap: () => setState(() => selectedIconIndex = 2),
-                         child: Icon(
-                           Icons.sports_soccer,
-                           color: selectedIconIndex == 2 ? Colors.white : Colors.grey.shade600,
-                           size: 16,
+                      ),
+                       const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          selectedIconIndex = 1;
+                          selectedSportGroup = 'Cricket';
+                        }),
+                         child: Container(
+                           padding: const EdgeInsets.all(8),
+                           child: SvgPicture.asset(
+                             'assets/svg/games.svg',
+                             width: 16,
+                             height: 16,
+                             colorFilter: ColorFilter.mode(
+                               selectedIconIndex == 1
+                                   ? Colors.white
+                                   : Colors.grey.shade600,
+                               BlendMode.srcIn,
+                             ),
+                           ),
                          ),
-                       ),
-                       const SizedBox(width: 12),
-                       GestureDetector(
-                         onTap: () => setState(() => selectedIconIndex = 3),
-                         child: Icon(
-                           Icons.sports_soccer,
-                           color: selectedIconIndex == 3 ? Colors.white : Colors.grey.shade600,
-                           size: 16,
+                      ),
+                       const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          selectedIconIndex = 2;
+                          selectedSportGroup = 'Soccer';
+                        }),
+                         child: Container(
+                           padding: const EdgeInsets.all(8),
+                           child: Icon(
+                             Icons.sports_soccer,
+                             color: selectedIconIndex == 2
+                                 ? Colors.white
+                                 : Colors.grey.shade600,
+                             size: 16,
+                           ),
                          ),
-                       ),
-                     ],
-                   ),
-                 ],
-               ),
-             ),
-           ),
+                      ),
+                       const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          selectedIconIndex = 3;
+                          selectedSportGroup = 'Soccer';
+                        }),
+                         child: Container(
+                           padding: const EdgeInsets.all(8),
+                           child: Icon(
+                             Icons.sports_soccer,
+                             color: selectedIconIndex == 3
+                                 ? Colors.white
+                                 : Colors.grey.shade600,
+                             size: 16,
+                           ),
+                         ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           SliverToBoxAdapter(
             child: Container(
@@ -93,7 +126,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               child: Consumer(
                 builder: (context, ref, child) {
                   final quickPicsAsync = ref.watch(
-                    quickPicsWithFavoritesProvider,
+                    quickPicsWithFavoritesProvider(selectedSportGroup),
                   );
                   return quickPicsAsync.when(
                     data: (matches) {
@@ -376,7 +409,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               ),
                             ),
                           ],
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Row(
                             children: [
                               if (match['odds']['home'] != 'N/A')
@@ -405,10 +438,8 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     setState(() {
                       favoriteMap[eventId] = !isCurrentlyFavorite;
                     });
-                    // Call API
                     final userId = await ref.read(userIdProvider.future);
                     if (userId == null) {
-                      // Revert the optimistic update
                       setState(() {
                         favoriteMap[eventId] = isCurrentlyFavorite;
                       });
@@ -438,7 +469,9 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     if (success) {
                       // Invalidate providers to refresh cached data with server state
                       ref.invalidate(favoritesProvider);
-                      ref.invalidate(quickPicsWithFavoritesProvider);
+                      ref.invalidate(
+                        quickPicsWithFavoritesProvider(selectedSportGroup),
+                      );
                       ref.invalidate(fullFavoritesProvider);
                     } else {
                       // Revert on failure

@@ -47,71 +47,71 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           selectedIconIndex = 0;
                           selectedSportGroup = 'Soccer';
                         }),
-                         child: Container(
-                           padding: const EdgeInsets.all(8),
-                           child: Icon(
-                             Icons.sports_soccer,
-                             color: selectedIconIndex == 0
-                                 ? Colors.white
-                                 : Colors.grey.shade600,
-                             size: 16,
-                           ),
-                         ),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.sports_soccer,
+                            color: selectedIconIndex == 0
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            size: 16,
+                          ),
+                        ),
                       ),
-                       const SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       GestureDetector(
                         onTap: () => setState(() {
                           selectedIconIndex = 1;
                           selectedSportGroup = 'Cricket';
                         }),
-                         child: Container(
-                           padding: const EdgeInsets.all(8),
-                           child: SvgPicture.asset(
-                             'assets/svg/games.svg',
-                             width: 16,
-                             height: 16,
-                             colorFilter: ColorFilter.mode(
-                               selectedIconIndex == 1
-                                   ? Colors.white
-                                   : Colors.grey.shade600,
-                               BlendMode.srcIn,
-                             ),
-                           ),
-                         ),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: SvgPicture.asset(
+                            'assets/svg/games.svg',
+                            width: 16,
+                            height: 16,
+                            colorFilter: ColorFilter.mode(
+                              selectedIconIndex == 1
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
                       ),
-                       const SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       GestureDetector(
                         onTap: () => setState(() {
                           selectedIconIndex = 2;
                           selectedSportGroup = 'Soccer';
                         }),
-                         child: Container(
-                           padding: const EdgeInsets.all(8),
-                           child: Icon(
-                             Icons.sports_soccer,
-                             color: selectedIconIndex == 2
-                                 ? Colors.white
-                                 : Colors.grey.shade600,
-                             size: 16,
-                           ),
-                         ),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.sports_soccer,
+                            color: selectedIconIndex == 2
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            size: 16,
+                          ),
+                        ),
                       ),
-                       const SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       GestureDetector(
                         onTap: () => setState(() {
                           selectedIconIndex = 3;
                           selectedSportGroup = 'Soccer';
                         }),
-                         child: Container(
-                           padding: const EdgeInsets.all(8),
-                           child: Icon(
-                             Icons.sports_soccer,
-                             color: selectedIconIndex == 3
-                                 ? Colors.white
-                                 : Colors.grey.shade600,
-                             size: 16,
-                           ),
-                         ),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.sports_soccer,
+                            color: selectedIconIndex == 3
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                            size: 16,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -145,6 +145,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       debugPrint("Local favoriteMap: $favoriteMap");
                       return Column(
                         children: matches
+                            .take(4)
                             .map((match) => _buildQuickPickItem(match, ref))
                             .toList(),
                       );
@@ -165,10 +166,9 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             ),
           ),
 
-          // Popular leagues header
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -226,7 +226,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           // Other sports header
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -509,7 +509,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   Widget _buildQuickPickSkeleton() {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 100),
+      constraints: const BoxConstraints(minHeight: 70),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

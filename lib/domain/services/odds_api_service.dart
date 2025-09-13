@@ -14,15 +14,24 @@ class OddsApiService {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
-      final List<dynamic> eplData = responseData['data']['epl'];
-      final List<dynamic> events = eplData.isNotEmpty
-          ? eplData[0]['has_event']
-          : [];
+      final data = responseData['data'] as Map<String, dynamic>;
+      final key = data.keys.first;
+      final leagues = data[key] as List<dynamic>;
 
-      return events.map<Map<String, dynamic>>((event) {
+      final List<Map<String, dynamic>> allEvents = [];
+      for (final league in leagues) {
+        final sportTitle = league['sport_title'] as String;
+        final events = league['has_event'] as List<dynamic>;
+        for (final event in events) {
+          allEvents.add({'event': event, 'league': sportTitle});
+        }
+      }
+
+      return allEvents.map<Map<String, dynamic>>((item) {
+        final event = item['event'] as Map<String, dynamic>;
+        final league = item['league'] as String;
         final homeTeam = event['home_team'] ?? 'Unknown Home Team';
         final awayTeam = event['away_team'] ?? 'Unknown Away Team';
-        final league = 'EPL';
         final commenceTime = event['commence_time'];
 
         final homeTeamLogo = homeTeam != 'Unknown Home Team'

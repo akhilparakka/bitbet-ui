@@ -143,19 +143,38 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         );
                       }
                       debugPrint("Local favoriteMap: $favoriteMap");
-                      return Column(
-                        children: matches
-                            .take(4)
-                            .map((match) => _buildQuickPickItem(match, ref))
-                            .toList(),
+                      final pageCount = (matches.length / 4).ceil();
+                      return SizedBox(
+                        height: 371,
+                        child: PageView.builder(
+                          itemCount: pageCount,
+                          itemBuilder: (context, pageIndex) {
+                            final start = pageIndex * 4;
+                            final end = start + 4;
+                            final pageMatches = matches.sublist(
+                              start,
+                              end > matches.length ? matches.length : end,
+                            );
+                            return Column(
+                              children: pageMatches
+                                  .map(
+                                    (match) => _buildQuickPickItem(match, ref),
+                                  )
+                                  .toList(),
+                            );
+                          },
+                        ),
                       );
                     },
-                    loading: () => Column(
-                      children: List.generate(
-                        4,
-                        (index) => _buildQuickPickSkeleton(),
-                      ),
-                    ),
+                     loading: () => SizedBox(
+                       height: 371,
+                       child: Column(
+                         children: List.generate(
+                           4,
+                           (index) => _buildQuickPickSkeleton(),
+                         ),
+                       ),
+                     ),
                     error: (error, stack) => Text(
                       'Error: $error',
                       style: const TextStyle(color: Colors.red),

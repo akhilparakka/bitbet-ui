@@ -16,6 +16,7 @@ class AllGamesSection extends StatefulWidget {
 
 class _AllGamesSectionState extends State<AllGamesSection> {
   Map<String, bool> favoriteMap = {};
+  int selectedIconIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -41,42 +42,42 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                    Row(
                      children: [
                        GestureDetector(
-                         onTap: () {},
+                         onTap: () => setState(() => selectedIconIndex = 0),
+                         child: Icon(
+                           Icons.sports_soccer,
+                           color: selectedIconIndex == 0 ? Colors.white : Colors.grey.shade600,
+                           size: 16,
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       GestureDetector(
+                         onTap: () => setState(() => selectedIconIndex = 1),
                          child: SvgPicture.asset(
                            'assets/svg/games.svg',
-                           width: 20,
-                           height: 20,
-                           colorFilter: const ColorFilter.mode(
-                             Colors.white,
+                           width: 16,
+                           height: 16,
+                           colorFilter: ColorFilter.mode(
+                             selectedIconIndex == 1 ? Colors.white : Colors.grey.shade600,
                              BlendMode.srcIn,
                            ),
                          ),
                        ),
                        const SizedBox(width: 12),
                        GestureDetector(
-                         onTap: () {},
-                         child: const Icon(
+                         onTap: () => setState(() => selectedIconIndex = 2),
+                         child: Icon(
                            Icons.sports_soccer,
-                           color: Colors.white,
-                           size: 20,
+                           color: selectedIconIndex == 2 ? Colors.white : Colors.grey.shade600,
+                           size: 16,
                          ),
                        ),
                        const SizedBox(width: 12),
                        GestureDetector(
-                         onTap: () {},
-                         child: const Icon(
+                         onTap: () => setState(() => selectedIconIndex = 3),
+                         child: Icon(
                            Icons.sports_soccer,
-                           color: Colors.white,
-                           size: 20,
-                         ),
-                       ),
-                       const SizedBox(width: 12),
-                       GestureDetector(
-                         onTap: () {},
-                         child: const Icon(
-                           Icons.sports_soccer,
-                           color: Colors.white,
-                           size: 20,
+                           color: selectedIconIndex == 3 ? Colors.white : Colors.grey.shade600,
+                           size: 16,
                          ),
                        ),
                      ],

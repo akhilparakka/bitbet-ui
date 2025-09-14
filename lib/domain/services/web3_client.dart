@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/enums.dart';
@@ -32,6 +33,7 @@ class Web3BetClient {
   String? _userEmail;
   String? _userName;
   String? _profileImage;
+  String? _dominantColorHex;
 
   bool get isLoggedIn => _credentials != null;
 
@@ -87,9 +89,37 @@ class Web3BetClient {
     _userEmail = prefs.getString('email');
     _userName = prefs.getString('name');
     _profileImage = prefs.getString('profileImage');
+    _dominantColorHex = prefs.getString('dominantColor');
     final privateKey = prefs.getString('privateKey');
     if (privateKey != null && privateKey.isNotEmpty) {
       _credentials = EthPrivateKey.fromHex(privateKey);
+    }
+  }
+
+  // Get dominant color, caching it if not already
+  Future<Color?> getDominantColor() async {
+    if (_dominantColorHex != null) {
+      return Color(int.parse(_dominantColorHex!, radix: 16));
+    }
+    if (_profileImage == null || _profileImage!.isEmpty) {
+      return null;
+    }
+    try {
+      debugPrint('Generating palette for profile image...');
+      final palette = await PaletteGenerator.fromImageProvider(
+        NetworkImage(_profileImage!),
+        size: const Size(200, 200),
+      );
+      final color = palette.dominantColor?.color ?? Colors.blueGrey;
+      debugPrint('Dominant color: $color');
+      _dominantColorHex = color.toARGB32().toRadixString(16).padLeft(8, '0');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('dominantColor', _dominantColorHex!);
+      debugPrint('Cached dominant color: $_dominantColorHex');
+      return color;
+    } catch (e) {
+      debugPrint('Failed to generate palette: $e');
+      return Colors.blueGrey;
     }
   }
 
@@ -97,4 +127,5 @@ class Web3BetClient {
   String? get userEmail => _userEmail;
   String? get userName => _userName;
   String? get profileImage => _profileImage;
+  bool get hasCachedColor => _dominantColorHex != null;
 }

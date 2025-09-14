@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
@@ -17,11 +16,20 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String selectedSection = 'All Games';
   late AnimationController _slideController;
+  late AnimationController _colorAnimationController;
   bool _isAnimating = false;
   String? _outgoingSection;
   bool _slideUp = true;
   Color? _dominantColor;
   bool _colorLoaded = false;
+  double _colorAnimationValue = 0.0;
+
+  static const List<Color> _defaultColors = [
+    Color(0xFF1F2937), // Darker blue-gray
+    Color(0xFF253342), // Darker lighter
+    Color(0xFF1F2937), // Back to dark
+    Color(0xFF0F1419), // Even darker at bottom
+  ];
 
   @override
   void initState() {
@@ -33,6 +41,17 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _slideController.value = 1.0;
 
+    _colorAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _colorAnimationController.addListener(() {
+      setState(() {
+        _colorAnimationValue = _colorAnimationController.value;
+      });
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Web3BetClient().loadUserData();
       if (mounted) setState(() {});
@@ -41,34 +60,17 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _loadDominantColor() async {
-    final profileImage = Web3BetClient().profileImage;
-    debugPrint('Profile image URL: $profileImage');
-    if (profileImage != null && profileImage.isNotEmpty) {
-      try {
-        debugPrint('Generating palette for profile image...');
-        final palette = await PaletteGenerator.fromImageProvider(
-          NetworkImage(profileImage),
-          size: const Size(200, 200),
-        );
-        debugPrint('Palette generated. Dominant color: ${palette.dominantColor?.color}');
-        setState(() {
-          _dominantColor = palette.dominantColor?.color ?? Colors.blueGrey;
-          _colorLoaded = true;
-        });
-        debugPrint('Set dominant color to: $_dominantColor');
-      } catch (e) {
-        debugPrint('Failed to generate palette: $e');
-        setState(() {
-          _dominantColor = Colors.blueGrey;
-          _colorLoaded = true;
-        });
-      }
+    final client = Web3BetClient();
+    final wasCached = client.hasCachedColor;
+    final color = await client.getDominantColor();
+    setState(() {
+      _dominantColor = color ?? Colors.blueGrey;
+      _colorLoaded = true;
+    });
+    if (!wasCached) {
+      _colorAnimationController.forward(from: 0.0);
     } else {
-      debugPrint('No profile image available');
-      setState(() {
-        _dominantColor = Colors.blueGrey;
-        _colorLoaded = true;
-      });
+      _colorAnimationController.value = 1.0;
     }
   }
 
@@ -106,24 +108,28 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: _colorLoaded && _dominantColor != null
-                ? [
-                    _dominantColor!.withValues(alpha: 0.8),
-                    _dominantColor!.withValues(alpha: 0.6),
+          gradient: _colorLoaded && _dominantColor != null
+              ? RadialGradient(
+                  center: const Alignment(
+                    -0.8,
+                    -0.8,
+                  ), // Approximate position of profile icon
+                  radius: _colorAnimationValue * 3.0,
+                  colors: [
                     _dominantColor!.withValues(alpha: 0.4),
+                    _dominantColor!.withValues(alpha: 0.3),
                     _dominantColor!.withValues(alpha: 0.2),
-                  ]
-                : [
-                    const Color(0xFF1F2937), // Darker blue-gray
-                    const Color(0xFF253342), // Darker lighter
-                    const Color(0xFF1F2937), // Back to dark
-                    const Color(0xFF0F1419), // Even darker at bottom
+                    _dominantColor!.withValues(alpha: 0.1),
+                    _dominantColor!.withValues(alpha: 0.05),
                   ],
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
+                  stops: [0.0, 0.2, 0.4, 0.6, 0.8],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: _defaultColors,
+                  stops: [0.0, 0.3, 0.7, 1.0],
+                ),
         ),
         child: Material(
           color: Colors.transparent,
@@ -154,25 +160,27 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(22),
                   child: Material(
                     color: Colors.transparent,
-                       child: InkWell(
-                       onTap: () {
-                         Navigator.of(context).push(
-                           MaterialPageRoute(builder: (_) => const ProfilePage()),
-                         );
-                       },
-                       customBorder: const CircleBorder(),
-                       splashColor: Colors.white.withValues(alpha: 0.05),
-                       highlightColor: Colors.white.withValues(alpha: 0.02),
-                       child: CircleAvatar(
-                         radius: 22,
-                         backgroundImage: Web3BetClient().profileImage != null
-                             ? NetworkImage(Web3BetClient().profileImage!)
-                             : null,
-                         child: Web3BetClient().profileImage == null
-                             ? const Icon(Icons.person, color: Colors.white)
-                             : null,
-                       ),
-                     ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                      customBorder: const CircleBorder(),
+                      splashColor: Colors.white.withValues(alpha: 0.05),
+                      highlightColor: Colors.white.withValues(alpha: 0.02),
+                      child: CircleAvatar(
+                        radius: 22,
+                        backgroundImage: Web3BetClient().profileImage != null
+                            ? NetworkImage(Web3BetClient().profileImage!)
+                            : null,
+                        child: Web3BetClient().profileImage == null
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -259,6 +267,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _slideController.dispose();
+    _colorAnimationController.dispose();
     super.dispose();
   }
 }
@@ -318,9 +327,9 @@ class CustomNavigationSidebar extends StatelessWidget {
             highlightColor: Colors.white.withValues(alpha: 0.02),
             onTap: () {
               if (section == 'Profile') {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                );
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const ProfilePage()));
               } else {
                 onSectionChanged(section);
               }

@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/config/app_config.dart';
 
 class UserApiService {
-  final String _baseUrl = 'http://localhost:3000';
+  final String _baseUrl = AppConfig.baseUrl;
 
   Future<bool> saveUserData({
     required String publicKey,

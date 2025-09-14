@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/config/app_config.dart';
 
 class OddsApiService {
-  final String _baseUrl = 'http://localhost:3000';
+  final String _baseUrl = AppConfig.baseUrl;
   final String apiKey;
 
   OddsApiService({this.apiKey = ''});

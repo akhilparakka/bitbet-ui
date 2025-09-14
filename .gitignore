@@ -44,3 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .env
+switch_to_dev.sh
+switch_to_prod.sh

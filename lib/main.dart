@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bitbet/domain/app_routes.dart';
+import 'package:bitbet/core/config/app_config.dart';
 
 void main() async {
   await dotenv.load();
+
+  // Validate configuration
+  AppConfig.validateConfig();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

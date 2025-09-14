@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/config/app_config.dart';
 
 class SportsApiService {
-  final String _baseUrl = 'http://localhost:3000';
+  final String _baseUrl = AppConfig.baseUrl;
 
   Future<List<Map<String, dynamic>>> fetchSports() async {
     // Try to fetch from API first

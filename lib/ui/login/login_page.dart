@@ -1,15 +1,11 @@
 import 'package:bitbet/domain/app_colors.dart';
 import 'package:bitbet/domain/ui_heloper.dart';
 import 'package:bitbet/domain/app_routes.dart';
-import 'package:bitbet/domain/services/user_api_service.dart';
+import 'package:bitbet/domain/services/web3_client.dart';
 import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3auth_flutter/enums.dart';
-import 'package:web3auth_flutter/input.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3dart/web3dart.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -31,94 +27,37 @@ class _LoginPageState extends State<LoginPage> {
       isGoogleLoading = true;
     });
 
-    // Log existing address if available
+    // Log existing address if available (keep for debugging)
     final prefs = await SharedPreferences.getInstance();
     String? existingAddress = prefs.getString('address');
     if (existingAddress != null && existingAddress.isNotEmpty) {
       debugPrint("Existing user address: $existingAddress");
     }
 
-    debugPrint("Starting Google login...");
-    try {
-      final res = await Web3AuthFlutter.login(
-        LoginParams(loginProvider: Provider.google),
-      );
+    debugPrint("Starting login via Web3BetClient...");
 
-      debugPrint("Login successful!");
-      debugPrint("User Info: ${res.userInfo}");
+    // Use centralized client
+    final web3Client = Web3BetClient();
+    final result = await web3Client.loginWithGoogle();
 
-      // Get wallet credentials
-      final credentials = EthPrivateKey.fromHex(res.privKey!);
-      final address = credentials.address;
-      debugPrint("Address: $address");
+    setState(() {
+      isGoogleLoading = false;
+    });
 
-       // Save to SharedPreferences
-       final prefs = await SharedPreferences.getInstance();
-       await prefs.setString('privateKey', res.privKey ?? "");
-       await prefs.setString('address', address.toString());
-       await prefs.setString('profileImage', res.userInfo?.profileImage ?? "");
-       await prefs.setString('email', res.userInfo?.email ?? "");
-       await prefs.setString('name', res.userInfo?.name ?? "");
-       debugPrint("Saved user data to SharedPreferences:");
-       debugPrint("  - Address: $address");
-       debugPrint("  - Profile Image: ${res.userInfo?.profileImage ?? 'null'}");
-       debugPrint("  - Email: ${res.userInfo?.email ?? 'null'}");
-       debugPrint("  - Name: ${res.userInfo?.name ?? 'null'}");
+    if (!mounted) return;
 
-      // Call API to save user data
-      debugPrint("=== LOGIN: SAVING USER DATA ===");
-      debugPrint("Address to save: ${address.toString()}");
-      final userService = UserApiService();
-      final apiSuccess = await userService.saveUserData(
-        publicKey: address.toString(),
-        imageUrl: res.userInfo?.profileImage ?? '',
-        address: address.toString(),
-      );
-      debugPrint("API save result: $apiSuccess");
-
-      setState(() {
-        isGoogleLoading = false;
-      });
-
-      if (!mounted) return;
-
-      if (apiSuccess) {
-        debugPrint("API call successful, navigating to home...");
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-        debugPrint("Navigation completed.");
-      } else {
-        // Show error dialog for API failure
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Login Error'),
-              content: const Text(
-                'Failed to save user data. Please try again.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint("Google login error: $e");
-      setState(() {
-        isGoogleLoading = false;
-      });
-
-      // Show error dialog for login failure
+    if (result.success) {
+      debugPrint("Login successful, navigating to home...");
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      debugPrint("Navigation completed.");
+    } else {
+      // Show error dialog (same as before)
       if (mounted) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Login Error'),
-            content: Text('Login failed: $e'),
+            content: Text(result.error ?? 'Login failed. Please try again.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),

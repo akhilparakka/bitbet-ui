@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
-import 'package:bitbet/ui/home/nav_sections/profile_section.dart';
+import 'package:bitbet/ui/profile/profile_page.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -36,7 +36,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     'My Bets',
     'Discover',
     'Leaderboards',
-    'Profile',
   ];
 
   final Map<String, Widget> _sectionWidgets = {
@@ -57,7 +56,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       style: TextStyle(color: Colors.white, fontSize: 18),
       textAlign: TextAlign.center,
     ),
-    'Profile': const ProfileSection(),
   };
 
   @override
@@ -274,7 +272,15 @@ class CustomNavigationSidebar extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.white.withValues(alpha: 0.05),
             highlightColor: Colors.white.withValues(alpha: 0.02),
-            onTap: () => onSectionChanged(section),
+            onTap: () {
+              if (section == 'Profile') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              } else {
+                onSectionChanged(section);
+              }
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 4),
               child: Row(

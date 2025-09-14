@@ -1,5 +1,5 @@
 class AppConfig {
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
   static String get baseUrl {
     return isProduction

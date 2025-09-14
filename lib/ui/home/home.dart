@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
+import 'package:bitbet/domain/services/web3_client.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -28,6 +29,11 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     _slideController.value = 1.0;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Web3BetClient().loadUserData();
+      if (mounted) setState(() {});
+    });
   }
 
   final List<String> _navOrder = [
@@ -100,34 +106,30 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               Positioned(
                 top: 85,
-                left: 20,
+                left: 30,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: Material(
                     color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        // print('Settings icon pressed!');
-                      },
-                      customBorder: const CircleBorder(),
-                      splashColor: Colors.white.withValues(alpha: 0.05),
-                      highlightColor: Colors.white.withValues(alpha: 0.02),
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Center(
-                          child: SvgPicture.asset(
-                            "assets/svg/settings.svg",
-                            width: 20,
-                            height: 20,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                       child: InkWell(
+                       onTap: () {
+                         Navigator.of(context).push(
+                           MaterialPageRoute(builder: (_) => const ProfilePage()),
+                         );
+                       },
+                       customBorder: const CircleBorder(),
+                       splashColor: Colors.white.withValues(alpha: 0.05),
+                       highlightColor: Colors.white.withValues(alpha: 0.02),
+                       child: CircleAvatar(
+                         radius: 22,
+                         backgroundImage: Web3BetClient().profileImage != null
+                             ? NetworkImage(Web3BetClient().profileImage!)
+                             : null,
+                         child: Web3BetClient().profileImage == null
+                             ? const Icon(Icons.person, color: Colors.white)
+                             : null,
+                       ),
+                     ),
                   ),
                 ),
               ),
@@ -234,7 +236,6 @@ class CustomNavigationSidebar extends StatelessWidget {
     {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
     {'name': 'Discover', 'icon': 'assets/svg/discover.svg'},
     {'name': 'Leaderboards', 'icon': 'assets/svg/leaderboard.svg'},
-    {'name': 'Profile', 'icon': 'assets/svg/user.svg'},
   ];
 
   @override

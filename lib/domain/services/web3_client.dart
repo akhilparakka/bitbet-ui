@@ -15,10 +15,10 @@ class LoginResult {
   const LoginResult._({required this.success, this.error, this.address});
 
   factory LoginResult.success(dynamic address) =>
-    LoginResult._(success: true, address: address);
+      LoginResult._(success: true, address: address);
 
   factory LoginResult.failure(String error) =>
-    LoginResult._(success: false, error: error);
+      LoginResult._(success: false, error: error);
 }
 
 class Web3BetClient {
@@ -31,6 +31,7 @@ class Web3BetClient {
   dynamic _address;
   String? _userEmail;
   String? _userName;
+  String? _profileImage;
 
   bool get isLoggedIn => _credentials != null;
 
@@ -39,32 +40,26 @@ class Web3BetClient {
     try {
       debugPrint("=== WEB3 CLIENT: Starting Google login ===");
 
-      // Web3Auth login (same as before)
       final res = await Web3AuthFlutter.login(
         LoginParams(loginProvider: Provider.google),
       );
 
-      debugPrint("Web3Auth login successful");
-
-      // Extract credentials (same as before)
       final credentials = EthPrivateKey.fromHex(res.privKey!);
       final address = credentials.address;
 
-      // Store in memory
       _credentials = credentials;
       _address = address;
       _userEmail = res.userInfo?.email;
       _userName = res.userInfo?.name;
+      _profileImage = res.userInfo?.profileImage;
 
-      // Save to SharedPreferences (same as before)
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('privateKey', res.privKey ?? "");
       await prefs.setString('address', address.toString());
       await prefs.setString('email', _userEmail ?? "");
       await prefs.setString('name', _userName ?? "");
-      debugPrint("Credentials saved to SharedPreferences");
+      await prefs.setString('profileImage', _profileImage ?? "");
 
-      // API call (same as before)
       debugPrint("Calling user API...");
       final userService = UserApiService();
       final apiSuccess = await userService.saveUserData(
@@ -80,15 +75,26 @@ class Web3BetClient {
         debugPrint("=== WEB3 CLIENT: API call failed ===");
         return LoginResult.failure("Failed to save user data");
       }
-
     } catch (e) {
       debugPrint("=== WEB3 CLIENT: Login error: $e ===");
       return LoginResult.failure(e.toString());
     }
   }
 
-  // Getters for UI access
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _address = prefs.getString('address');
+    _userEmail = prefs.getString('email');
+    _userName = prefs.getString('name');
+    _profileImage = prefs.getString('profileImage');
+    final privateKey = prefs.getString('privateKey');
+    if (privateKey != null && privateKey.isNotEmpty) {
+      _credentials = EthPrivateKey.fromHex(privateKey);
+    }
+  }
+
   dynamic get address => _address;
   String? get userEmail => _userEmail;
   String? get userName => _userName;
+  String? get profileImage => _profileImage;
 }

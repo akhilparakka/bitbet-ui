@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
@@ -19,6 +20,8 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _isAnimating = false;
   String? _outgoingSection;
   bool _slideUp = true;
+  Color? _dominantColor;
+  bool _colorLoaded = false;
 
   @override
   void initState() {
@@ -33,7 +36,40 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Web3BetClient().loadUserData();
       if (mounted) setState(() {});
+      await _loadDominantColor();
     });
+  }
+
+  Future<void> _loadDominantColor() async {
+    final profileImage = Web3BetClient().profileImage;
+    debugPrint('Profile image URL: $profileImage');
+    if (profileImage != null && profileImage.isNotEmpty) {
+      try {
+        debugPrint('Generating palette for profile image...');
+        final palette = await PaletteGenerator.fromImageProvider(
+          NetworkImage(profileImage),
+          size: const Size(200, 200),
+        );
+        debugPrint('Palette generated. Dominant color: ${palette.dominantColor?.color}');
+        setState(() {
+          _dominantColor = palette.dominantColor?.color ?? Colors.blueGrey;
+          _colorLoaded = true;
+        });
+        debugPrint('Set dominant color to: $_dominantColor');
+      } catch (e) {
+        debugPrint('Failed to generate palette: $e');
+        setState(() {
+          _dominantColor = Colors.blueGrey;
+          _colorLoaded = true;
+        });
+      }
+    } else {
+      debugPrint('No profile image available');
+      setState(() {
+        _dominantColor = Colors.blueGrey;
+        _colorLoaded = true;
+      });
+    }
   }
 
   final List<String> _navOrder = [
@@ -69,16 +105,23 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1F2937), // Darker blue-gray
-              Color(0xFF253342), // Darker lighter
-              Color(0xFF1F2937), // Back to dark
-              Color(0xFF0F1419), // Even darker at bottom
-            ],
+            colors: _colorLoaded && _dominantColor != null
+                ? [
+                    _dominantColor!.withValues(alpha: 0.8),
+                    _dominantColor!.withValues(alpha: 0.6),
+                    _dominantColor!.withValues(alpha: 0.4),
+                    _dominantColor!.withValues(alpha: 0.2),
+                  ]
+                : [
+                    const Color(0xFF1F2937), // Darker blue-gray
+                    const Color(0xFF253342), // Darker lighter
+                    const Color(0xFF1F2937), // Back to dark
+                    const Color(0xFF0F1419), // Even darker at bottom
+                  ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),

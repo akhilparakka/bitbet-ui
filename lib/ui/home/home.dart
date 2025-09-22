@@ -155,7 +155,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               Positioned(
                 top: 85,
-                left: 30,
+                left: 20,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: Material(

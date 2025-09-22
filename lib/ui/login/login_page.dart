@@ -5,7 +5,6 @@ import 'package:bitbet/domain/services/web3_client.dart';
 import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

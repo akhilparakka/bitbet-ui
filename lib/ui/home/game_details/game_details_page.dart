@@ -1,278 +1,461 @@
 import 'package:flutter/material.dart';
 
-class GameDetailsPage extends StatelessWidget {
+class GameDetailsPage extends StatefulWidget {
   const GameDetailsPage({super.key});
+
+  @override
+  State<GameDetailsPage> createState() => _GameDetailsPageState();
+}
+
+class _GameDetailsPageState extends State<GameDetailsPage> {
+  double _sliderPosition = 0.0;
+  bool _isSliding = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1F2937), Color(0xFF253342), Color(0xFF0F1419)],
-            stops: [0.0, 0.5, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-
-                // Game Image
-                Container(
-                  width: 280,
-                  height: 280,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                       BoxShadow(
-                         color: Colors.black.withValues(alpha: 0.4),
-                         blurRadius: 25,
-                         offset: const Offset(0, 12),
-                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: const Image(
-                      image: AssetImage('assets/album_art.jpg'),
-                      fit: BoxFit.cover,
+      backgroundColor: const Color(0xFFF8F9FA),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Fixed Header
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.black87,
+                      size: 18,
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 36),
-
-                // Game Title
-                const Text(
-                  'Team A vs Team B',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
+                  const Text(
+                    'Car Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 6),
-
-                 Text(
-                   'Premier League - Matchday 10',
-                   style: TextStyle(
-                     color: Colors.white.withValues(alpha: 0.6),
-                     fontSize: 16,
-                   ),
-                 ),
-
-                const SizedBox(height: 36),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.green.shade400,
-                              Colors.green.shade600,
-                            ],
-                          ),
-                           boxShadow: [
-                             BoxShadow(
-                               color: Colors.green.withValues(alpha: 0.3),
-                               blurRadius: 12,
-                               offset: const Offset(0, 6),
-                             ),
-                           ],
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Yes 9.7¢',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          gradient: LinearGradient(
-                            colors: [Colors.redAccent, Colors.red.shade700],
-                          ),
-                           boxShadow: [
-                             BoxShadow(
-                               color: Colors.red.withValues(alpha: 0.3),
-                               blurRadius: 12,
-                               offset: const Offset(0, 6),
-                             ),
-                           ],
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'No 90.4¢',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                    child: const Icon(
+                      Icons.favorite_border,
+                      color: Colors.black87,
+                      size: 18,
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+            ),
 
-                const SizedBox(height: 28),
-
-                // Amount Section
-                Column(
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text(
-                       "Amount",
-                       style: TextStyle(
-                         color: Colors.white.withValues(alpha: 0.7),
-                         fontSize: 15,
-                       ),
-                     ),
-                    const SizedBox(height: 10),
+                    // Car Title and Year
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Porsche Taycan',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          '2022',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Car Image Container (Light Grey Background)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                      height: 200,
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                       decoration: BoxDecoration(
-                         color: Colors.white.withValues(alpha: 0.05),
-                         borderRadius: BorderRadius.circular(12),
-                         border: Border.all(
-                           color: Colors.white.withValues(alpha: 0.15),
-                         ),
-                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            "\$0.00",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.directions_car,
+                            size: 80,
+                            color: Colors.blue.shade300,
                           ),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Colors.white70,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
-                    // Quick Add Buttons
+                    // Pagination dots
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.black87,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade400,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Car Specs
+                    const Text(
+                      'Car specs',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Specs in Separate Square Boxes
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _pillButton("\$1"),
-                        _pillButton("\$20"),
-                        _pillButton("\$100"),
-                        _pillButton("Max"),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: _buildSpecItem(
+                              Icons.local_gas_station_outlined,
+                              'Fuel info',
+                              '10,9L',
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: _buildSpecItem(
+                              Icons.speed_outlined,
+                              'Top speed',
+                              '120mph',
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: _buildSpecItem(
+                              Icons.person_outline,
+                              'Capacity',
+                              '2 seats',
+                            ),
+                          ),
+                        ),
                       ],
                     ),
+
+                    const SizedBox(height: 32),
+
+                    // Location
+                    const Text(
+                      'Location',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Map in Light Grey Container
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Map View',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
                   ],
                 ),
-
-                const SizedBox(height: 36),
-
-                // Trade Button
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
-                      ),
-                       boxShadow: [
-                         BoxShadow(
-                           color: Colors.blueAccent.withValues(alpha: 0.4),
-                           blurRadius: 18,
-                           offset: const Offset(0, 8),
-                         ),
-                       ],
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {},
-                      child: const Text(
-                        "Trade",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const Spacer(),
-              ],
+              ),
             ),
-          ),
+
+            // Bottom Slider Button
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2A),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxSlide =
+                        constraints.maxWidth - 120; // Reduced button width
+                    return Stack(
+                      children: [
+                        // Background track with arrows and price
+                        Positioned.fill(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  width: 120,
+                                ), // Space for slider button
+                                // Arrow indicators (now in the middle)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      size: 12,
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(),
+                                // Price
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  child: Text(
+                                    '\$120/day',
+                                    style: TextStyle(
+                                      color: _sliderPosition > maxSlide * 0.7
+                                          ? Colors.transparent
+                                          : Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Draggable slider button
+                        AnimatedPositioned(
+                          duration: _isSliding
+                              ? Duration.zero
+                              : const Duration(milliseconds: 300),
+                          left: 4 + _sliderPosition,
+                          top: 4,
+                          child: GestureDetector(
+                            onPanStart: (_) {
+                              setState(() {
+                                _isSliding = true;
+                              });
+                            },
+                            onPanUpdate: (details) {
+                              setState(() {
+                                _sliderPosition =
+                                    (_sliderPosition + details.delta.dx).clamp(
+                                      0.0,
+                                      maxSlide,
+                                    );
+                              });
+                            },
+                            onPanEnd: (details) {
+                              setState(() {
+                                _isSliding = false;
+                                if (_sliderPosition > maxSlide * 0.8) {
+                                  // Trigger booking action
+                                  _completeSlide();
+                                } else {
+                                  // Snap back to start
+                                  _sliderPosition = 0.0;
+                                }
+                              });
+                            },
+                            child: Container(
+                              height: 52,
+                              width: 112, // Reduced width
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00BCD4),
+                                borderRadius: BorderRadius.circular(26),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Book now',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // Refined pill buttons for quick add
-  static Widget _pillButton(String label) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-          ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            onPressed: () {},
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
+  void _completeSlide() {
+    // Show booking confirmation or navigate to booking page
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Booking confirmed! 🚗'),
+        backgroundColor: Color(0xFF00BCD4),
       ),
+    );
+
+    // Reset slider after a delay
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          _sliderPosition = 0.0;
+        });
+      }
+    });
+  }
+
+  Widget _buildSpecItem(IconData icon, String title, String value) {
+    return Column(
+      children: [
+        Icon(icon, size: 24, color: Colors.grey.shade600),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

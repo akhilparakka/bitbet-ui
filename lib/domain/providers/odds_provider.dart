@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/odds_api_service.dart';
 import 'user_provider.dart';
 
 final oddsApiServiceProvider = Provider<OddsApiService>((ref) {
-  // No API key needed for the new endpoint
   return OddsApiService(apiKey: '');
 });
 
@@ -15,7 +13,6 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
   final service = ref.read(oddsApiServiceProvider);
   final apiMatches = await service.fetchOdds(sportGroup: sportKey);
 
-  // Filter valid matches and take first 4
   return apiMatches
       .where(
         (match) =>

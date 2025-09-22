@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/app_config.dart';
@@ -61,8 +60,8 @@ class UserApiService {
       final prefs = await SharedPreferences.getInstance();
       final privateKey = prefs.getString('privateKey');
       final profileImage = prefs.getString('profileImage') ?? '';
-      final email = prefs.getString('email') ?? '';
-      final name = prefs.getString('name') ?? '';
+      // final email = prefs.getString('email') ?? '';
+      // final name = prefs.getString('name') ?? '';
 
       if (privateKey == null || privateKey.isEmpty) {
         return false;

@@ -36,10 +36,6 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                   final fullFavoritesAsync = ref.watch(fullFavoritesProvider);
                   return fullFavoritesAsync.when(
                     data: (favorites) {
-                      debugPrint(
-                        "Full favorites data: ${favorites.length} items",
-                      );
-
                       if (favorites.isEmpty) {
                         return _buildEmptyState();
                       }
@@ -61,10 +57,6 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                         }
                       }
 
-                      debugPrint(
-                        "Grouped favorites: ${groupedFavorites.keys.toList()}",
-                      );
-
                       final sportGroups = groupedFavorites.keys.toList();
 
                       return Column(
@@ -75,9 +67,9 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                             row < (sportGroups.length / 2).ceil();
                             row++
                           ) ...[
-                             Row(
-                               mainAxisAlignment: MainAxisAlignment.center,
-                               children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
                                 for (int col = 0; col < 2; col++) ...[
                                   _buildSportGroupCard(
                                     sportGroups.length > (row * 2 + col)

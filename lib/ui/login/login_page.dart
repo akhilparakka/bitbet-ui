@@ -27,16 +27,6 @@ class _LoginPageState extends State<LoginPage> {
       isGoogleLoading = true;
     });
 
-    // Log existing address if available (keep for debugging)
-    final prefs = await SharedPreferences.getInstance();
-    String? existingAddress = prefs.getString('address');
-    if (existingAddress != null && existingAddress.isNotEmpty) {
-      debugPrint("Existing user address: $existingAddress");
-    }
-
-    debugPrint("Starting login via Web3BetClient...");
-
-    // Use centralized client
     final web3Client = Web3BetClient();
     final result = await web3Client.loginWithGoogle();
 
@@ -47,9 +37,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     if (result.success) {
-      debugPrint("Login successful, navigating to home...");
       Navigator.pushReplacementNamed(context, AppRoutes.home);
-      debugPrint("Navigation completed.");
     } else {
       // Show error dialog (same as before)
       if (mounted) {

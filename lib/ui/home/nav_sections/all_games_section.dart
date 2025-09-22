@@ -134,13 +134,11 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           .where((match) => match['isFavorite'] == true)
                           .map((match) => match['id'] as String)
                           .toSet();
-                      debugPrint("Fetched favorites: $fetchedFavorites");
                       for (var match in matches) {
                         favoriteMap[match['id']] = fetchedFavorites.contains(
                           match['id'],
                         );
                       }
-                      debugPrint("Local favoriteMap: $favoriteMap");
                       final pageCount = (matches.length / 4).ceil();
                       return SizedBox(
                         height: 371,
@@ -455,17 +453,11 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     final userService = ref.read(userApiServiceProvider);
                     bool success;
                     if (isCurrentlyFavorite) {
-                      debugPrint(
-                        "Removing favorite for userId: $userId, eventId: $eventId",
-                      );
                       success = await userService.removeFavorite(
                         userId,
                         eventId,
                       );
                     } else {
-                      debugPrint(
-                        "Adding favorite for userId: $userId, eventId: $eventId",
-                      );
                       success = await userService.addFavorite(userId, eventId);
                     }
                     if (success) {

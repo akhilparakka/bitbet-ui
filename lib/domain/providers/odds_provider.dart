@@ -30,20 +30,19 @@ final oddsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((
       .toList();
 });
 
-final quickPicsWithFavoritesProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, sportGroup) async {
-  final service = ref.read(oddsApiServiceProvider);
-  final matches = await service.fetchOdds(sportGroup: sportGroup);
-  final favorites = await ref.watch(favoritesProvider.future);
-  debugPrint("Matches count: ${matches.length}, Favorites: $favorites");
+final quickPicsWithFavoritesProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((
+      ref,
+      sportGroup,
+    ) async {
+      final service = ref.read(oddsApiServiceProvider);
+      final matches = await service.fetchOdds(sportGroup: sportGroup);
+      final favorites = await ref.watch(favoritesProvider.future);
 
-  final merged = matches.map((match) {
-    final isFav = favorites.contains(match['id']);
-    if (isFav) debugPrint("Match ${match['id']} is favorite");
-    return {
-      ...match,
-      'isFavorite': isFav,
-    };
-  }).toList();
+      final merged = matches.map((match) {
+        final isFav = favorites.contains(match['id']);
+        return {...match, 'isFavorite': isFav};
+      }).toList();
 
-  return merged;
-});
+      return merged;
+    });

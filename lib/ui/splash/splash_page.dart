@@ -32,24 +32,6 @@ class _SplashPageState extends State<SplashPage> {
         ? AppRoutes.home
         : AppRoutes.login;
 
-    // Log address if user is already logged in
-    if (privKey != null && privKey.isNotEmpty) {
-      String? address = prefs.getString('address');
-      if (address != null && address.isNotEmpty) {
-        debugPrint("=== SPLASH: USER ALREADY LOGGED IN ===");
-        debugPrint("Address: $address");
-        debugPrint("PrivateKey length: ${privKey.length}");
-        debugPrint("Note: User exists in SharedPreferences but may not exist in backend");
-        debugPrint("=== SPLASH: PROCEEDING TO HOME ===");
-      } else {
-        debugPrint("=== SPLASH: INVALID LOGIN STATE ===");
-        debugPrint("PrivateKey exists but address is null/empty");
-      }
-    } else {
-      debugPrint("=== SPLASH: NO LOGIN SESSION ===");
-      debugPrint("Proceeding to login page");
-    }
-
     Timer(const Duration(seconds: 1), () {
       if (mounted) {
         Navigator.pushReplacementNamed(context, route);

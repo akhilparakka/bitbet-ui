@@ -5,13 +5,14 @@ import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:http/http.dart';
 import 'user_api_service.dart';
 
 // Login result for type safety
 class LoginResult {
   final bool success;
   final String? error;
-  final dynamic address; // Using dynamic to match credentials.address type
+  final dynamic address;
 
   const LoginResult._({required this.success, this.error, this.address});
 
@@ -27,7 +28,6 @@ class Web3BetClient {
   factory Web3BetClient() => _instance;
   Web3BetClient._internal();
 
-  // User state
   EthPrivateKey? _credentials;
   dynamic _address;
   String? _userEmail;
@@ -37,11 +37,8 @@ class Web3BetClient {
 
   bool get isLoggedIn => _credentials != null;
 
-  // Main login method (consolidates all login logic)
   Future<LoginResult> loginWithGoogle() async {
     try {
-      debugPrint("=== WEB3 CLIENT: Starting Google login ===");
-
       final res = await Web3AuthFlutter.login(
         LoginParams(loginProvider: Provider.google),
       );
@@ -62,7 +59,6 @@ class Web3BetClient {
       await prefs.setString('name', _userName ?? "");
       await prefs.setString('profileImage', _profileImage ?? "");
 
-      debugPrint("Calling user API...");
       final userService = UserApiService();
       final apiSuccess = await userService.saveUserData(
         publicKey: address.toString(),
@@ -71,14 +67,11 @@ class Web3BetClient {
       );
 
       if (apiSuccess) {
-        debugPrint("=== WEB3 CLIENT: Login successful ===");
         return LoginResult.success(address);
       } else {
-        debugPrint("=== WEB3 CLIENT: API call failed ===");
         return LoginResult.failure("Failed to save user data");
       }
     } catch (e) {
-      debugPrint("=== WEB3 CLIENT: Login error: $e ===");
       return LoginResult.failure(e.toString());
     }
   }
@@ -96,7 +89,6 @@ class Web3BetClient {
     }
   }
 
-  // Get dominant color, caching it if not already
   Future<Color?> getDominantColor() async {
     if (_dominantColorHex != null) {
       return Color(int.parse(_dominantColorHex!, radix: 16));
@@ -105,21 +97,35 @@ class Web3BetClient {
       return null;
     }
     try {
-      debugPrint('Generating palette for profile image...');
       final palette = await PaletteGenerator.fromImageProvider(
         NetworkImage(_profileImage!),
         size: const Size(200, 200),
       );
       final color = palette.dominantColor?.color ?? Colors.blueGrey;
-      debugPrint('Dominant color: $color');
       _dominantColorHex = color.toARGB32().toRadixString(16).padLeft(8, '0');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dominantColor', _dominantColorHex!);
-      debugPrint('Cached dominant color: $_dominantColorHex');
       return color;
     } catch (e) {
-      debugPrint('Failed to generate palette: $e');
       return Colors.blueGrey;
+    }
+  }
+
+  Future<EtherAmount> getBalance() async {
+    if (_credentials == null || _address == null) {
+      throw Exception('User not logged in');
+    }
+
+    try {
+      final client = Web3Client(
+        'https://eth-sepolia.g.alchemy.com/v2/xuu9ST6cfCwJ-pgZpykfVDsYLhW9pT6k',
+        Client(),
+      );
+      final address = EthereumAddress.fromHex(_address!);
+      final balance = await client.getBalance(address);
+      return balance;
+    } catch (e) {
+      return EtherAmount.inWei(BigInt.zero);
     }
   }
 

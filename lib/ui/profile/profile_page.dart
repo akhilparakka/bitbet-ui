@@ -1,7 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:bitbet/domain/services/web3_client.dart';
+import 'package:web3dart/web3dart.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  EtherAmount? _balance;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBalance();
+  }
+
+  Future<void> _loadBalance() async {
+    try {
+      final balance = await Web3BetClient().getBalance();
+      setState(() {
+        _balance = balance;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,41 +66,60 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    // Balance
-                    const Center(
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.account_balance_wallet,
-                            color: Colors.black,
-                            size: 40,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "Pocket",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "\$142.83",
-                            style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            "\$0 Available",
-                            style: TextStyle(color: Colors.black87, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
+                     // Balance
+                     Center(
+                       child: Column(
+                         children: [
+                           const Icon(
+                             Icons.account_balance_wallet,
+                             color: Colors.black,
+                             size: 40,
+                           ),
+                           const SizedBox(height: 8),
+                           const Text(
+                             "Pocket",
+                             style: TextStyle(
+                               fontSize: 16,
+                               color: Colors.black87,
+                               fontWeight: FontWeight.w500,
+                             ),
+                           ),
+                           const SizedBox(height: 8),
+                             SizedBox(
+                               height: 45,
+                               child: Center(
+                                 child: _isLoading
+                                     ? Container(
+                                         width: 200,
+                                         height: 45,
+                                         decoration: BoxDecoration(
+                                           color: const Color.fromRGBO(0, 0, 0, 0.1),
+                                           borderRadius: BorderRadius.circular(8),
+                                         ),
+                                       )
+                                     : _error != null
+                                         ? Text(
+                                             "Error: $_error",
+                                             style: const TextStyle(
+                                               fontSize: 16,
+                                               color: Colors.red,
+                                             ),
+                                           )
+                                         : Text(
+                                             _balance != null
+                                                 ? "${_balance!.getValueInUnit(EtherUnit.ether).toStringAsFixed(4)} ETH"
+                                                 : "0.0000 ETH",
+                                             style: const TextStyle(
+                                               fontSize: 34,
+                                               fontWeight: FontWeight.bold,
+                                               color: Colors.black,
+                                             ),
+                                           ),
+                               ),
+                             ),
+                         ],
+                       ),
+                     ),
 
                     const SizedBox(height: 20),
 
@@ -123,6 +174,4 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
-
-
 }

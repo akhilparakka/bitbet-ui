@@ -37,12 +37,17 @@ class OddsApiService {
         final awayTeam = event['away_team'] ?? 'Unknown Away Team';
         final commenceTime = event['commence_time'];
 
-        final homeTeamLogo = homeTeam != 'Unknown Home Team'
-            ? 'assets/images/${homeTeam.toLowerCase().replaceAll(" ", "_")}.png'
-            : 'assets/images/default_team.png';
-        final awayTeamLogo = awayTeam != 'Unknown Away Team'
-            ? 'assets/images/${awayTeam.toLowerCase().replaceAll(" ", "_")}.png'
-            : 'assets/images/default_team.png';
+        // Try to get logo from API response first, fallback to local assets
+        final homeTeamLogo =
+            event['home_team_logo'] as String? ??
+            (homeTeam != 'Unknown Home Team'
+                ? 'assets/images/${homeTeam.toLowerCase().replaceAll(" ", "_")}.png'
+                : null);
+        final awayTeamLogo =
+            event['away_team_logo'] as String? ??
+            (awayTeam != 'Unknown Away Team'
+                ? 'assets/images/${awayTeam.toLowerCase().replaceAll(" ", "_")}.png'
+                : null);
 
         final bookmakers = event['has_bookmaker'] as List<dynamic>?;
         Map<String, String> odds = {

@@ -151,12 +151,15 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                            return Column(
-                              children: pageMatches
-                                  .map(
-                                    (match) => _buildQuickPickItem(match, ref),
-                                  )
-                                  .toList(),
+                            return SingleChildScrollView(
+                              child: Column(
+                                children: pageMatches
+                                    .map(
+                                      (match) =>
+                                          _buildQuickPickItem(match, ref),
+                                    )
+                                    .toList(),
+                              ),
                             );
                           },
                         ),
@@ -348,23 +351,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               children: [
                 Stack(
                   children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF34495E).withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.sports_soccer,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        size: 20,
-                      ),
-                    ),
+                    _buildTeamLogoContainer(match),
                     if (match['isLive'])
                       Positioned(
                         top: -2,
@@ -797,6 +784,85 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         ),
       ],
     );
+  }
+
+  Widget _buildTeamLogoContainer(Map<String, dynamic> match) {
+    final homeTeamLogo = match['homeTeamLogo'] as String?;
+    final awayTeamLogo = match['awayTeamLogo'] as String?;
+    final hasLogos = homeTeamLogo != null || awayTeamLogo != null;
+
+    return Container(
+      width: hasLogos ? 60 : 50,
+      height: hasLogos ? 60 : 50,
+      decoration: hasLogos
+          ? null
+          : BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF34495E).withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+      child: _buildTeamLogo(match, hasLogos),
+    );
+  }
+
+  Widget _buildTeamLogo(Map<String, dynamic> match, bool hasLogos) {
+    final homeTeamLogo = match['homeTeamLogo'] as String?;
+    final awayTeamLogo = match['awayTeamLogo'] as String?;
+
+    // If we have logos, show them side by side
+    if (hasLogos) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (homeTeamLogo != null)
+              Expanded(child: _buildSingleLogo(homeTeamLogo)),
+            if (awayTeamLogo != null)
+              Expanded(child: _buildSingleLogo(awayTeamLogo)),
+          ],
+        ),
+      );
+    }
+
+    // Default fallback icon
+    return Icon(
+      Icons.sports_soccer,
+      color: Colors.white.withValues(alpha: 0.8),
+      size: 20,
+    );
+  }
+
+  Widget _buildSingleLogo(String logoUrl) {
+    // Check if it's a network URL or local asset
+    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+      return Image.network(
+        logoUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.sports_soccer,
+            color: Colors.white.withValues(alpha: 0.8),
+            size: 20,
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        logoUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.sports_soccer,
+            color: Colors.white.withValues(alpha: 0.8),
+            size: 20,
+          );
+        },
+      );
+    }
   }
 
   Widget _buildSportCardSkeleton() {

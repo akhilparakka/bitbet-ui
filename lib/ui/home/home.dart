@@ -154,7 +154,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ],
               ),
               Positioned(
-                top: 85,
+                top: 70,
                 left: 20,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
@@ -297,7 +297,7 @@ class CustomNavigationSidebar extends StatelessWidget {
       color: Colors.transparent,
       child: Column(
         children: [
-          const SizedBox(height: 150),
+          const SizedBox(height: 135),
           Expanded(
             child: ListView(
               children: _navData
@@ -402,8 +402,8 @@ class CustomHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 150,
-      padding: const EdgeInsets.fromLTRB(60, 80, 20, 20),
+      height: 135,
+      padding: const EdgeInsets.fromLTRB(60, 65, 20, 20),
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

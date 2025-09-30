@@ -20,7 +20,12 @@ class _GameDetailsPageState extends State<GameDetailsPage> {
           children: [
             // Fixed Header
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.only(
+                left: 20.0,
+                top: 40.0,
+                right: 20.0,
+                bottom: 20.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

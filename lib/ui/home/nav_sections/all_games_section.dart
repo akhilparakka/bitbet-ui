@@ -635,14 +635,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   // }
 
   Widget _buildLeagueCard(Map<String, dynamic> league) {
+    final imageUrl = league['image'] as String;
+
     return Container(
       width: 140,
       margin: const EdgeInsets.only(right: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(
-            league['image'],
+          Image.network(
+            imageUrl,
             width: 120,
             height: 120,
             fit: BoxFit.contain,

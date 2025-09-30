@@ -27,10 +27,8 @@ class LeaguesApiService {
           final name = league['sport_title'] ?? 'Unknown League';
           final sport = league['sport_group'] ?? 'Unknown Sport';
 
-          final imagePath = 'assets/leagues/$name.png';
-
-          // Debug: Print the name and path for troubleshooting
-          print('League: $name, Image path: $imagePath');
+          // Use league_logo from API response
+          final imagePath = league['league_logo'] as String? ?? '';
 
           return {'name': name, 'image': imagePath, 'sport': sport};
         }).toList();

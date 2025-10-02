@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../core/config/app_config.dart';
 
 class OddsApiService {
@@ -18,77 +18,64 @@ class OddsApiService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
       final data = responseData['data'] as Map<String, dynamic>;
-      final key = data.keys.first;
-      final leagues = data[key] as List<dynamic>;
+      final sports = data['sports'] as List<dynamic>;
 
       final List<Map<String, dynamic>> allEvents = [];
-      for (final league in leagues) {
-        final sportTitle = league['sport_title'] as String;
-        final events = league['has_event'] as List<dynamic>;
-        for (final event in events) {
-          allEvents.add({'event': event, 'league': sportTitle});
+
+      for (final sport in sports) {
+        final hasLeague = sport['has_league'] as List<dynamic>?;
+
+        if (hasLeague != null) {
+          for (final league in hasLeague) {
+            final leagueName =
+                league['league_name'] as String? ?? 'Unknown League';
+            final events = league['has_event'] as List<dynamic>?;
+
+            if (events != null) {
+              for (final event in events) {
+                allEvents.add({'event': event, 'league': leagueName});
+              }
+            }
+          }
         }
       }
 
       return allEvents.map<Map<String, dynamic>>((item) {
         final event = item['event'] as Map<String, dynamic>;
         final league = item['league'] as String;
-        final homeTeam = event['home_team'] ?? 'Unknown Home Team';
-        final awayTeam = event['away_team'] ?? 'Unknown Away Team';
-        final commenceTime = event['commence_time'];
 
-        // Try to get logo from API response first, fallback to local assets
-        final homeTeamLogo =
-            event['home_team_logo'] as String? ??
-            (homeTeam != 'Unknown Home Team'
-                ? 'assets/images/${homeTeam.toLowerCase().replaceAll(" ", "_")}.png'
-                : null);
-        final awayTeamLogo =
-            event['away_team_logo'] as String? ??
-            (awayTeam != 'Unknown Away Team'
-                ? 'assets/images/${awayTeam.toLowerCase().replaceAll(" ", "_")}.png'
-                : null);
+        // Extract team names from nested arrays
+        String homeTeam = 'Unknown Home Team';
+        String awayTeam = 'Unknown Away Team';
+        String? homeTeamLogo;
+        String? awayTeamLogo;
 
-        final bookmakers = event['has_bookmaker'] as List<dynamic>?;
+        final homeTeamList = event['home_team'] as List<dynamic>?;
+        if (homeTeamList != null && homeTeamList.isNotEmpty) {
+          final homeTeamData = homeTeamList.first as Map<String, dynamic>;
+          homeTeam = homeTeamData['team_name'] ?? 'Unknown Home Team';
+        }
+
+        final awayTeamList = event['away_team'] as List<dynamic>?;
+        if (awayTeamList != null && awayTeamList.isNotEmpty) {
+          final awayTeamData = awayTeamList.first as Map<String, dynamic>;
+          awayTeam = awayTeamData['team_name'] ?? 'Unknown Away Team';
+        }
+
+        homeTeamLogo = event['home_team_logo'] as String?;
+        awayTeamLogo = event['away_team_logo'] as String?;
+
+        final commenceTime = event['commence_time'] ?? event['event_date'];
+
+        // Note: odds data is not in the quick_pics response anymore
         Map<String, String> odds = {
           'home': 'N/A',
           'draw': 'N/A',
           'away': 'N/A',
         };
-        if (bookmakers != null && bookmakers.isNotEmpty) {
-          for (final bookmaker in bookmakers) {
-            final markets = bookmaker['has_market'] as List<dynamic>?;
-            if (markets != null) {
-              for (final market in markets) {
-                if (market['market_key'] == 'h2h') {
-                  final outcomes = market['has_outcome'] as List<dynamic>?;
-                  if (outcomes != null) {
-                    for (final outcome in outcomes) {
-                      final name = outcome['outcome_name'] as String?;
-                      final price = outcome['outcome_price']?.toString();
-                      if (name == homeTeam) {
-                        odds['home'] = price ?? 'N/A';
-                      } else if (name == awayTeam) {
-                        odds['away'] = price ?? 'N/A';
-                      } else if (name == 'Draw') {
-                        odds['draw'] = price ?? 'N/A';
-                      }
-                    }
-                  }
-                  break;
-                }
-              }
-            }
-            if (odds['home'] != 'N/A' ||
-                odds['draw'] != 'N/A' ||
-                odds['away'] != 'N/A') {
-              break;
-            }
-          }
-        }
 
         return {
-          'id': event['event_id'],
+          'id': event['event_id']?.toString() ?? '',
           'homeTeam': homeTeam,
           'awayTeam': awayTeam,
           'homeTeamLogo': homeTeamLogo,

@@ -135,9 +135,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           .map((match) => match['id'] as String)
                           .toSet();
                       for (var match in matches) {
-                        favoriteMap[match['id']] = fetchedFavorites.contains(
-                          match['id'],
-                        );
+                        // Only update if not already set (to preserve optimistic updates)
+                        if (!favoriteMap.containsKey(match['id'])) {
+                          favoriteMap[match['id']] = fetchedFavorites.contains(
+                            match['id'],
+                          );
+                        }
                       }
                       final pageCount = (matches.length / 4).ceil();
                       return SizedBox(
@@ -332,7 +335,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
             Navigator.of(context).push(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    const GameDetailsPage(),
+                    GameDetailsPage(eventId: match['id']),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       return FadeTransition(opacity: animation, child: child);

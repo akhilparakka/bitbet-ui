@@ -59,6 +59,10 @@ class Web3BetClient {
       await prefs.setString('name', _userName ?? "");
       await prefs.setString('profileImage', _profileImage ?? "");
 
+      debugPrint('=== LOGIN: Saving user to database ===');
+      debugPrint('Address: ${address.toString()}');
+      debugPrint('Image URL: ${res.userInfo?.profileImage ?? ''}');
+
       final userService = UserApiService();
       final apiSuccess = await userService.saveUserData(
         publicKey: address.toString(),
@@ -66,9 +70,13 @@ class Web3BetClient {
         address: address.toString(),
       );
 
+      debugPrint('=== LOGIN: API Save Result: $apiSuccess ===');
+
       if (apiSuccess) {
+        debugPrint('=== LOGIN: User successfully saved to database ===');
         return LoginResult.success(address);
       } else {
+        debugPrint('=== LOGIN ERROR: Failed to save user data to database ===');
         return LoginResult.failure("Failed to save user data");
       }
     } catch (e) {

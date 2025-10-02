@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../core/config/app_config.dart';
 
 class LeaguesApiService {
@@ -12,30 +12,36 @@ class LeaguesApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        List<dynamic> leaguesData = [];
+        final data = responseData['data'] as Map<String, dynamic>?;
 
-        if (responseData['data'] != null &&
-            responseData['data']['leagues'] != null) {
-          leaguesData = responseData['data']['leagues'];
-        } else if (responseData['leagues'] != null) {
-          leaguesData = responseData['leagues'];
-        } else if (responseData['data'] is List) {
-          leaguesData = responseData['data'];
+        if (data != null && data['sports'] != null) {
+          final sports = data['sports'] as List<dynamic>;
+          final List<Map<String, dynamic>> allLeagues = [];
+
+          for (final sport in sports) {
+            final hasLeague = sport['has_league'] as List<dynamic>?;
+
+            if (hasLeague != null) {
+              for (final league in hasLeague) {
+                final name = league['league_name'] ?? 'Unknown League';
+                final country = league['league_country'] ?? 'Unknown';
+                final imagePath = league['league_badge'] as String? ?? '';
+
+                allLeagues.add({
+                  'name': name,
+                  'image': imagePath,
+                  'sport': sport['sport_name'] ?? 'Unknown Sport',
+                  'country': country,
+                });
+              }
+            }
+          }
+
+          return allLeagues;
         }
-
-        return leaguesData.map<Map<String, dynamic>>((league) {
-          final name = league['sport_title'] ?? 'Unknown League';
-          final sport = league['sport_group'] ?? 'Unknown Sport';
-
-          // Use league_logo from API response
-          final imagePath = league['league_logo'] as String? ?? '';
-
-          return {'name': name, 'image': imagePath, 'sport': sport};
-        }).toList();
       }
     } catch (e) {
-      // print(e);
-      // API call failed, continue to fallback
+      print('Error fetching leagues: $e');
     }
 
     // Return diverse leagues from different sports

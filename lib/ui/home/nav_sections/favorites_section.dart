@@ -35,59 +35,73 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                 builder: (context, ref, child) {
                   final fullFavoritesAsync = ref.watch(fullFavoritesProvider);
                   return fullFavoritesAsync.when(
-                    data: (favorites) {
-                      if (favorites.isEmpty) {
-                        return _buildEmptyState();
-                      }
+                     data: (favorites) {
+                       if (favorites.isEmpty) {
+                         return _buildEmptyState();
+                       }
 
-                      // Group favorites by sport_group
-                      final Map<String, List<Map<String, dynamic>>>
-                      groupedFavorites = {};
-                      for (final favorite in favorites) {
-                        final hasEvent =
-                            favorite['~has_event'] as List<dynamic>?;
-                        if (hasEvent != null && hasEvent.isNotEmpty) {
-                          final sportGroup =
-                              hasEvent[0]['sport_group'] as String? ??
-                              'Unknown';
-                          if (!groupedFavorites.containsKey(sportGroup)) {
-                            groupedFavorites[sportGroup] = [];
-                          }
-                          groupedFavorites[sportGroup]!.add(favorite);
-                        }
-                      }
+                       return ListView.builder(
+                         shrinkWrap: true,
+                         physics: const NeverScrollableScrollPhysics(),
+                         itemCount: favorites.length,
+                         itemBuilder: (context, index) {
+                           final favorite = favorites[index];
+                           final eventId = favorite['event_id'] as String?;
+                           final commenceTime = favorite['commence_time'] as String?;
+                           final completed = favorite['completed'] as bool? ?? false;
 
-                      final sportGroups = groupedFavorites.keys.toList();
-
-                      return Column(
-                        children: [
-                          // Create 2x2 grid for sport groups
-                          for (
-                            int row = 0;
-                            row < (sportGroups.length / 2).ceil();
-                            row++
-                          ) ...[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                for (int col = 0; col < 2; col++) ...[
-                                  _buildSportGroupCard(
-                                    sportGroups.length > (row * 2 + col)
-                                        ? sportGroups[row * 2 + col]
-                                        : null,
-                                    groupedFavorites,
-                                    ref,
-                                  ),
-                                  if (col == 0) const SizedBox(width: 16),
-                                ],
-                              ],
-                            ),
-                            if (row < (sportGroups.length / 2).ceil() - 1)
-                              const SizedBox(height: 16),
-                          ],
-                        ],
-                      );
-                    },
+                           return Container(
+                             margin: const EdgeInsets.only(bottom: 8),
+                             padding: const EdgeInsets.all(16),
+                             decoration: BoxDecoration(
+                               color: const Color(0xFF2C3E50).withValues(alpha: 0.8),
+                               borderRadius: BorderRadius.circular(8),
+                             ),
+                             child: Row(
+                               children: [
+                                 Icon(
+                                   Icons.star,
+                                   color: Colors.yellow,
+                                   size: 24,
+                                 ),
+                                 const SizedBox(width: 16),
+                                 Expanded(
+                                   child: Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     children: [
+                                       Text(
+                                         'Event ID: $eventId',
+                                         style: const TextStyle(
+                                           color: Colors.white,
+                                           fontSize: 16,
+                                           fontWeight: FontWeight.w500,
+                                         ),
+                                       ),
+                                       if (commenceTime != null)
+                                         Text(
+                                           'Time: $commenceTime',
+                                           style: TextStyle(
+                                             color: Colors.grey[400],
+                                             fontSize: 14,
+                                           ),
+                                         ),
+                                       if (completed)
+                                         Text(
+                                           'Completed',
+                                           style: TextStyle(
+                                             color: Colors.red,
+                                             fontSize: 12,
+                                           ),
+                                         ),
+                                     ],
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           );
+                         },
+                       );
+                     },
                     loading: () => _buildLoadingState(),
                     error: (error, stack) => Center(
                       child: Text(

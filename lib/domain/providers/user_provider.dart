@@ -57,11 +57,6 @@ final favoritesProvider = FutureProvider<List<String>>((ref) async {
 
   final userService = ref.read(userApiServiceProvider);
 
-  final userRecreated = await userService.recreateUserIfNeeded(userId);
-  if (!userRecreated) {
-    return [];
-  }
-
   final favorites = await userService.fetchFavorites(userId);
   return favorites;
 });
@@ -76,12 +71,6 @@ final fullFavoritesProvider = FutureProvider<List<Map<String, dynamic>>>((
   }
 
   final userService = ref.read(userApiServiceProvider);
-
-  // Ensure user exists in backend before fetching favorites
-  final userRecreated = await userService.recreateUserIfNeeded(userId);
-  if (!userRecreated) {
-    return [];
-  }
 
   final fullFavorites = await userService.fetchFullFavorites(userId);
   return fullFavorites;

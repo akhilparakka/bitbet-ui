@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../core/config/app_config.dart';
 
 class SportsApiService {
@@ -13,34 +13,27 @@ class SportsApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final data = responseData['data'] as Map<String, dynamic>?;
 
-        // Parse the nested structure: data.unique_sports[0].@groupby
-        List<dynamic> sportsData = [];
-        if (responseData['data'] != null &&
-            responseData['data']['unique_sports'] != null &&
-            responseData['data']['unique_sports'].isNotEmpty) {
-          final uniqueSports = responseData['data']['unique_sports'][0];
-          if (uniqueSports['@groupby'] != null) {
-            sportsData = uniqueSports['@groupby'];
-          }
+        if (data != null && data['sports'] != null) {
+          final sports = data['sports'] as List<dynamic>;
+
+          return sports.map<Map<String, dynamic>>((sport) {
+            final sportName = sport['sport_name'] ?? 'Unknown Sport';
+            final sportIcon = sport['sport_icon'] as String? ?? '';
+            final leagueCount = sport['league_count'] ?? 0;
+
+            return {
+              'name': sportName,
+              'image': sportIcon,
+              'sport_group': sportName,
+              'league_count': leagueCount,
+            };
+          }).toList();
         }
-
-        return sportsData.map<Map<String, dynamic>>((sport) {
-          final sportGroup = sport['sport_group'] ?? 'Unknown Sport';
-          final count = sport['count'] ?? 0;
-
-          // Generate image path based on sport group
-          final imagePath = 'assets/images/${sportGroup.toLowerCase().replaceAll(" ", "_").replaceAll("'", "")}.png';
-
-          return {
-            'name': sportGroup,
-            'image': imagePath,
-            'count': count,
-          };
-        }).toList();
       }
     } catch (e) {
-      // API call failed, continue to fallback
+      print('Error fetching sports: $e');
     }
 
     // Return default sports if API fails

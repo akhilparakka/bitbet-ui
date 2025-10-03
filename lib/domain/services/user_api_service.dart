@@ -142,7 +142,12 @@ class UserApiService {
             ? (users[0]['has_favorite'] ?? users[0]['favorites'] ?? [])
             : [];
         final fullFavorites = favorites
-            .map<Map<String, dynamic>>((fav) => fav as Map<String, dynamic>)
+            .map<Map<String, dynamic>>((fav) {
+              final favMap = fav as Map<String, dynamic>;
+              // Add sport_group assuming all favorites are from Soccer (based on quick picks)
+              favMap['sport_group'] = 'Soccer';
+              return favMap;
+            })
             .toList();
         debugPrint(
           '=== FETCH FULL FAVORITES: Parsed favorites: $fullFavorites ===',

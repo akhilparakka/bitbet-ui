@@ -185,28 +185,31 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 },
               ),
             ),
-          ),
+           ),
 
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Popular leagues',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
+           // Consistent spacing between sections
+           const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+           SliverToBoxAdapter(
+             child: Container(
+               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   const SizedBox(height: 8),
+                   const Text(
+                     'Popular leagues',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                   const SizedBox(height: 8),
+                 ],
+               ),
+             ),
+           ),
 
           // Popular leagues content
           SliverToBoxAdapter(
@@ -242,29 +245,32 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 },
               ),
             ),
-          ),
+           ),
 
-          // Other sports header
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Other sports',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-              ),
-            ),
-          ),
+           // Consistent spacing between sections
+           const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+           // Other sports header
+           SliverToBoxAdapter(
+             child: Container(
+               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   const SizedBox(height: 8),
+                   const Text(
+                     'Other sports',
+                     style: TextStyle(
+                       color: Colors.white,
+                       fontSize: 20,
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                   const SizedBox(height: 4),
+                 ],
+               ),
+             ),
+           ),
 
           // Other sports content
           SliverToBoxAdapter(
@@ -671,9 +677,9 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 ),
               );
             },
-          ),
-          const SizedBox(height: 8),
-          Text(
+           ),
+           const SizedBox(height: 16),
+           Text(
             league['name'],
             style: const TextStyle(
               color: Colors.white,

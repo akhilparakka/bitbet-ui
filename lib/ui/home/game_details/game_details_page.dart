@@ -26,17 +26,20 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) =>
               Center(child: Text('Error loading event: $error')),
-          data: (eventData) {
-            if (eventData == null) {
-              return const Center(child: Text('Event not found'));
-            }
+           data: (eventData) {
+             if (eventData == null) {
+               return const Center(child: Text('Event not found'));
+             }
 
-            final homeTeam = eventData['home_team'] ?? 'Home Team';
-            final awayTeam = eventData['away_team'] ?? 'Away Team';
-            final homeTeamLogo = eventData['home_team_logo'] as String?;
-            final awayTeamLogo = eventData['away_team_logo'] as String?;
-            final leagueInfo = (eventData['~has_event'] as List?)?.first;
-            final leagueName = leagueInfo?['sport_title'] ?? 'Match Details';
+             debugPrint('=== EVENT DATA: $eventData ===');
+
+             final homeTeam = (eventData['home_team'] as List?)?.first?['team_name'] ?? 'Home Team';
+             final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ?? 'Away Team';
+             final homeTeamLogo = eventData['home_team_logo'] as String?;
+             final awayTeamLogo = eventData['away_team_logo'] as String?;
+             final leagueInfo = (eventData['~has_event'] as List?)?.first;
+             final sportInfo = (leagueInfo?['~has_league'] as List?)?.first;
+             final leagueName = sportInfo?['sport_title'] ?? 'Match Details';
 
             return Column(
               children: [

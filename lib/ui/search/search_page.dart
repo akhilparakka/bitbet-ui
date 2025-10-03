@@ -10,6 +10,8 @@ class SearchPage extends StatefulWidget {
 
 class SearchPageState extends State<SearchPage> {
   String selectedSection = 'Leagues';
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
 
   final List<Map<String, String>> _navData = [
     {'name': 'Leagues', 'icon': 'assets/svg/games.svg'},
@@ -28,6 +30,23 @@ class SearchPageState extends State<SearchPage> {
       textAlign: TextAlign.center,
     ),
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +80,11 @@ class SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: Column(
                       children: [
-                        CustomHeader(title: 'Search'),
+                        CustomHeader(
+                          title: 'Search',
+                          searchController: _searchController,
+                          searchFocusNode: _searchFocusNode,
+                        ),
                         Expanded(
                           child: _buildContentForSection(selectedSection),
                         ),
@@ -110,7 +133,8 @@ class SearchPageState extends State<SearchPage> {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: _sectionWidgets[section] ??
+      child:
+          _sectionWidgets[section] ??
           Center(
             child: Text(
               "Section '$section' not found",
@@ -130,8 +154,15 @@ class SearchPageState extends State<SearchPage> {
 
 class CustomHeader extends StatelessWidget {
   final String title;
+  final TextEditingController? searchController;
+  final FocusNode? searchFocusNode;
 
-  const CustomHeader({super.key, required this.title});
+  const CustomHeader({
+    super.key,
+    required this.title,
+    this.searchController,
+    this.searchFocusNode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -142,14 +173,42 @@ class CustomHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
+          if (searchController != null && searchFocusNode != null)
+            Expanded(
+              child: TextField(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+                decoration: InputDecoration(
+                  hintText: title,
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                cursorColor: Colors.white,
+                cursorWidth: 2,
+              ),
+            )
+          else
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
         ],
       ),
     );

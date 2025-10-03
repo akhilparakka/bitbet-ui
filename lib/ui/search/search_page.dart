@@ -10,8 +10,8 @@ class SearchPage extends StatefulWidget {
 
 class SearchPageState extends State<SearchPage> {
   String selectedSection = 'Leagues';
-  late final TextEditingController _searchController;
-  late final FocusNode _searchFocusNode;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   final List<Map<String, String>> _navData = [
     {'name': 'Leagues', 'icon': 'assets/svg/games.svg'},
@@ -34,10 +34,10 @@ class SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _searchFocusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocusNode.requestFocus();
+      if (mounted) {
+        _searchFocusNode.requestFocus();
+      }
     });
   }
 

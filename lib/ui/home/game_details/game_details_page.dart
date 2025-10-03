@@ -26,20 +26,24 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) =>
               Center(child: Text('Error loading event: $error')),
-           data: (eventData) {
-             if (eventData == null) {
-               return const Center(child: Text('Event not found'));
-             }
+          data: (eventData) {
+            if (eventData == null) {
+              return const Center(child: Text('Event not found'));
+            }
 
-             debugPrint('=== EVENT DATA: $eventData ===');
+            debugPrint('=== EVENT DATA: $eventData ===');
 
-             final homeTeam = (eventData['home_team'] as List?)?.first?['team_name'] ?? 'Home Team';
-             final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ?? 'Away Team';
-             final homeTeamLogo = eventData['home_team_logo'] as String?;
-             final awayTeamLogo = eventData['away_team_logo'] as String?;
-             final leagueInfo = (eventData['~has_event'] as List?)?.first;
-             final sportInfo = (leagueInfo?['~has_league'] as List?)?.first;
-             final leagueName = sportInfo?['sport_title'] ?? 'Match Details';
+            final homeTeam =
+                (eventData['home_team'] as List?)?.first?['team_name'] ??
+                'Home Team';
+            final awayTeam =
+                (eventData['away_team'] as List?)?.first?['team_name'] ??
+                'Away Team';
+            final homeTeamLogo = eventData['home_team_logo'] as String?;
+            final awayTeamLogo = eventData['away_team_logo'] as String?;
+            final leagueInfo = (eventData['~has_event'] as List?)?.first;
+            final sportInfo = (leagueInfo?['~has_league'] as List?)?.first;
+            final leagueName = sportInfo?['sport_title'] ?? 'Match Details';
 
             return Column(
               children: [
@@ -386,7 +390,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
     return Column(
       children: [firstBookmaker].map((bookmaker) {
-        final title = bookmaker['bookmaker_title'] ?? 'Unknown';
+        // final title = bookmaker['bookmaker_title'] ?? 'Unknown';
         final markets = bookmaker['has_market'] as List?;
 
         if (markets == null || markets.isEmpty) return const SizedBox.shrink();

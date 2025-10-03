@@ -82,6 +82,7 @@ class OddsApiService {
           'awayTeamLogo': awayTeamLogo,
           'league': league,
           'odds': odds,
+          'commenceTime': commenceTime,
           'isLive':
               commenceTime != null &&
               DateTime.parse(commenceTime).isBefore(DateTime.now()),

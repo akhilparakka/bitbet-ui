@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/app_config.dart';
 
@@ -141,14 +139,12 @@ class UserApiService {
         final List<dynamic> favorites = users.isNotEmpty
             ? (users[0]['has_favorite'] ?? users[0]['favorites'] ?? [])
             : [];
-        final fullFavorites = favorites
-            .map<Map<String, dynamic>>((fav) {
-              final favMap = fav as Map<String, dynamic>;
-              // Add sport_group assuming all favorites are from Soccer (based on quick picks)
-              favMap['sport_group'] = 'Soccer';
-              return favMap;
-            })
-            .toList();
+        final fullFavorites = favorites.map<Map<String, dynamic>>((fav) {
+          final favMap = fav as Map<String, dynamic>;
+          // Add sport_group assuming all favorites are from Soccer (based on quick picks)
+          favMap['sport_group'] = 'Soccer';
+          return favMap;
+        }).toList();
         debugPrint(
           '=== FETCH FULL FAVORITES: Parsed favorites: $fullFavorites ===',
         );

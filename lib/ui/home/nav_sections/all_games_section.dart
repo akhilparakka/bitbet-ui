@@ -19,6 +19,45 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   int selectedIconIndex = 0;
   String selectedSportGroup = 'Soccer';
 
+  String formatEventDateTime(String? dateTimeStr) {
+    if (dateTimeStr == null) return '';
+
+    try {
+      final dateTime = DateTime.parse(dateTimeStr);
+      final day = dateTime.day;
+      final monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      final month = monthNames[dateTime.month - 1];
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+
+      // Add ordinal suffix (st, nd, rd, th)
+      String suffix = 'th';
+      if (day == 1 || day == 21 || day == 31)
+        suffix = 'st';
+      else if (day == 2 || day == 22)
+        suffix = 'nd';
+      else if (day == 3 || day == 23)
+        suffix = 'rd';
+
+      return '$day$suffix $month $hour:$minute UTC';
+    } catch (e) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -185,31 +224,31 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 },
               ),
             ),
-           ),
+          ),
 
-           // Consistent spacing between sections
-           const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          // Consistent spacing between sections
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-           SliverToBoxAdapter(
-             child: Container(
-               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   const SizedBox(height: 8),
-                   const Text(
-                     'Popular leagues',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w500,
-                     ),
-                   ),
-                   const SizedBox(height: 8),
-                 ],
-               ),
-             ),
-           ),
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Popular leagues',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
 
           // Popular leagues content
           SliverToBoxAdapter(
@@ -245,32 +284,32 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 },
               ),
             ),
-           ),
+          ),
 
-           // Consistent spacing between sections
-           const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          // Consistent spacing between sections
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-           // Other sports header
-           SliverToBoxAdapter(
-             child: Container(
-               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   const SizedBox(height: 8),
-                   const Text(
-                     'Other sports',
-                     style: TextStyle(
-                       color: Colors.white,
-                       fontSize: 20,
-                       fontWeight: FontWeight.w500,
-                     ),
-                   ),
-                   const SizedBox(height: 4),
-                 ],
-               ),
-             ),
-           ),
+          // Other sports header
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Other sports',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ),
+          ),
 
           // Other sports content
           SliverToBoxAdapter(
@@ -422,6 +461,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           ],
                         ],
                       ),
+                      if (match['commenceTime'] != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          formatEventDateTime(match['commenceTime']),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -677,9 +726,9 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 ),
               );
             },
-           ),
-           const SizedBox(height: 16),
-           Text(
+          ),
+          const SizedBox(height: 16),
+          Text(
             league['name'],
             style: const TextStyle(
               color: Colors.white,

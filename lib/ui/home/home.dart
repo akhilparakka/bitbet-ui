@@ -153,37 +153,62 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              Positioned(
-                top: 70,
-                left: 20,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(22),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const ProfilePage(),
-                          ),
-                        );
-                      },
-                      customBorder: const CircleBorder(),
-                      splashColor: Colors.white.withValues(alpha: 0.05),
-                      highlightColor: Colors.white.withValues(alpha: 0.02),
-                      child: CircleAvatar(
-                        radius: 22,
-                        backgroundImage: Web3BetClient().profileImage != null
-                            ? NetworkImage(Web3BetClient().profileImage!)
-                            : null,
-                        child: Web3BetClient().profileImage == null
-                            ? const Icon(Icons.person, color: Colors.white)
-                            : null,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+               Positioned(
+                 top: 70,
+                 left: 20,
+                 child: ClipRRect(
+                   borderRadius: BorderRadius.circular(22),
+                   child: Material(
+                     color: Colors.transparent,
+                     child: InkWell(
+                       onTap: () {
+                         Navigator.of(context).push(
+                           MaterialPageRoute(
+                             builder: (_) => const ProfilePage(),
+                           ),
+                         );
+                       },
+                       customBorder: const CircleBorder(),
+                       splashColor: Colors.white.withValues(alpha: 0.05),
+                       highlightColor: Colors.white.withValues(alpha: 0.02),
+                       child: CircleAvatar(
+                         radius: 22,
+                         backgroundImage: Web3BetClient().profileImage != null
+                             ? NetworkImage(Web3BetClient().profileImage!)
+                             : null,
+                         child: Web3BetClient().profileImage == null
+                             ? const Icon(Icons.person, color: Colors.white)
+                             : null,
+                       ),
+                     ),
+                   ),
+                 ),
+               ),
+               Positioned(
+                 bottom: 40,
+                 right: 20,
+                 child: Container(
+                   width: 70,
+                   height: 70,
+                   decoration: BoxDecoration(
+                     color: const Color(0xFF00BCD4),
+                     borderRadius: BorderRadius.circular(16),
+                   ),
+                   child: IconButton(
+                     icon: const Icon(
+                       Icons.search,
+                       color: Colors.white,
+                       size: 32,
+                     ),
+                     onPressed: () {
+                       // TODO: Implement search functionality
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         const SnackBar(content: Text('Search not implemented yet')),
+                       );
+                     },
+                   ),
+                 ),
+               ),
             ],
           ),
         ),

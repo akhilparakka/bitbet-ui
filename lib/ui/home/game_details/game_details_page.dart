@@ -42,6 +42,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             final homeTeamLogo = eventData['home_team_logo'] as String?;
             final awayTeamLogo = eventData['away_team_logo'] as String?;
             final leagueName = 'Soccer';
+            final isLive =
+                eventData['event_status'] != null &&
+                eventData['event_status'] != 'Not Started' &&
+                eventData['completed'] == false;
+            final homeScore = eventData['home_score'];
+            final awayScore = eventData['away_score'];
+            final matchProgress = eventData['match_progress'];
+            final eventStatus = eventData['event_status'] as String?;
 
             return Column(
               children: [
@@ -115,7 +123,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           child: Column(
                             children: [
                               Text(
-                                eventData['event_name'] ?? '$homeTeam vs $awayTeam',
+                                eventData['event_name'] ??
+                                    '$homeTeam vs $awayTeam',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -124,27 +133,101 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                               ),
                               const SizedBox(height: 16),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   _buildTeamLogo(homeTeamLogo, homeTeam),
-                                  const Text(
-                                    'VS',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black54,
+                                  if (isLive)
+                                    Column(
+                                      children: [
+                                        Text(
+                                          '$homeScore - $awayScore',
+                                          style: const TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        if (matchProgress != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                              top: 4,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              "$matchProgress'",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    )
+                                  else
+                                    const Text(
+                                      'VS',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black54,
+                                      ),
                                     ),
-                                  ),
                                   _buildTeamLogo(awayTeamLogo, awayTeam),
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                'Round ${eventData['event_round'] ?? 'N/A'} • ${eventData['event_status'] ?? 'Unknown'}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 14,
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Round ${eventData['event_round'] ?? 'N/A'}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (eventStatus != null) ...[
+                                    Text(
+                                      ' • ',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isLive
+                                            ? Colors.red
+                                            : Colors.grey.shade300,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        eventStatus,
+                                        style: TextStyle(
+                                          color: isLive
+                                              ? Colors.white
+                                              : Colors.grey.shade700,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ],
                           ),
@@ -152,7 +235,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         const SizedBox(height: 20),
                         // Odds Rectangle (blank for now)
                         Container(
-                          height: 60,
+                          height: 80,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: const Color(0xFFF5F5F5),
@@ -173,18 +256,24 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         Row(
                           children: [
                             Expanded(
-                              child: _buildInfoBox(
-                                '📊 Team Form',
-                                _buildTeamFormPreview(eventData),
-                                () => _showTeamFormModal(eventData),
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: _buildInfoBox(
+                                  '📊 Team Form',
+                                  _buildTeamFormPreview(eventData),
+                                  () => _showTeamFormModal(eventData),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: _buildInfoBox(
-                                '⚽ Lineups',
-                                _buildLineupsPreview(eventData),
-                                () => _showLineupsModal(eventData),
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: _buildInfoBox(
+                                  '⚽ Lineups',
+                                  _buildLineupsPreview(eventData),
+                                  () => _showLineupsModal(eventData),
+                                ),
                               ),
                             ),
                           ],
@@ -387,82 +476,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildBookmakersList(Map<String, dynamic> eventData) {
-    final bookmakers = eventData['has_bookmaker'] as List?;
-
-    if (bookmakers == null || bookmakers.isEmpty) {
-      return const Text('No bookmakers available');
-    }
-
-    // Show only the first bookmaker
-    final firstBookmaker = bookmakers.first;
-
-    return Column(
-      children: [firstBookmaker].map((bookmaker) {
-        // final title = bookmaker['bookmaker_title'] ?? 'Unknown';
-        final markets = bookmaker['has_market'] as List?;
-
-        if (markets == null || markets.isEmpty) return const SizedBox.shrink();
-
-        final market = markets.first;
-        final outcomes = market['has_outcome'] as List?;
-
-        if (outcomes == null || outcomes.isEmpty)
-          return const SizedBox.shrink();
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: outcomes.map<Widget>((outcome) {
-              final name = outcome['outcome_name'] ?? '';
-              final price = outcome['outcome_price']?.toString() ?? 'N/A';
-              return Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        price,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   void _completeSlide() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -519,14 +532,23 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final awayForm = eventData['away_team']?.first?['form_last_5'] ?? 'N/A';
     return Column(
       children: [
-        Text('Home: $homeForm', style: const TextStyle(color: Color(0xFF757575))),
-        Text('Away: $awayForm', style: const TextStyle(color: Color(0xFF757575))),
+        Text(
+          'Home: $homeForm',
+          style: const TextStyle(color: Color(0xFF757575)),
+        ),
+        Text(
+          'Away: $awayForm',
+          style: const TextStyle(color: Color(0xFF757575)),
+        ),
       ],
     );
   }
 
   Widget _buildLineupsPreview(Map<String, dynamic> eventData) {
-    return const Text('Lineups not available', style: TextStyle(color: Color(0xFF757575)));
+    return const Text(
+      'Lineups not available',
+      style: TextStyle(color: Color(0xFF757575)),
+    );
   }
 
   void _showTeamFormModal(Map<String, dynamic> eventData) {
@@ -537,13 +559,20 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Home Form: ${eventData['home_team']?.first?['form_last_5'] ?? 'N/A'}'),
-            Text('Away Form: ${eventData['away_team']?.first?['form_last_5'] ?? 'N/A'}'),
+            Text(
+              'Home Form: ${eventData['home_team']?.first?['form_last_5'] ?? 'N/A'}',
+            ),
+            Text(
+              'Away Form: ${eventData['away_team']?.first?['form_last_5'] ?? 'N/A'}',
+            ),
             // Add more details if available
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );
@@ -556,7 +585,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         title: const Text('Lineups'),
         content: const Text('Lineups not available yet'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );

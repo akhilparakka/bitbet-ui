@@ -33,7 +33,7 @@ class SportsApiService {
         }
       }
     } catch (e) {
-      print('Error fetching sports: $e');
+      // Error fetching sports: $e
     }
 
     // Return default sports if API fails

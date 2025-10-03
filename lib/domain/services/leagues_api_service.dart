@@ -41,7 +41,7 @@ class LeaguesApiService {
         }
       }
     } catch (e) {
-      print('Error fetching leagues: $e');
+      // Error fetching leagues: $e
     }
 
     // Return diverse leagues from different sports

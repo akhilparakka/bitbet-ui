@@ -45,12 +45,13 @@ class _AllGamesSectionState extends State<AllGamesSection> {
 
       // Add ordinal suffix (st, nd, rd, th)
       String suffix = 'th';
-      if (day == 1 || day == 21 || day == 31)
+      if (day == 1 || day == 21 || day == 31) {
         suffix = 'st';
-      else if (day == 2 || day == 22)
+      } else if (day == 2 || day == 22) {
         suffix = 'nd';
-      else if (day == 3 || day == 23)
+      } else if (day == 3 || day == 23) {
         suffix = 'rd';
+      }
 
       return '$day$suffix $month $hour:$minute UTC';
     } catch (e) {
@@ -484,6 +485,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       favoriteMap[eventId] = !isCurrentlyFavorite;
                     });
                     final userId = await ref.read(userIdProvider.future);
+                    if (!mounted) return;
                     if (userId == null) {
                       setState(() {
                         favoriteMap[eventId] = isCurrentlyFavorite;
@@ -513,6 +515,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       );
                       ref.invalidate(fullFavoritesProvider);
                     } else {
+                      if (!mounted) return;
                       // Revert on failure
                       setState(() {
                         favoriteMap[eventId] = isCurrentlyFavorite;

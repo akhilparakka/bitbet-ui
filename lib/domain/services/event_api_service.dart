@@ -20,7 +20,7 @@ class EventApiService {
         }
       }
     } catch (e) {
-      print('Error fetching event details: $e');
+      // Error fetching event details: $e
     }
     return null;
   }

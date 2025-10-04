@@ -68,7 +68,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           // Quick picks header
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(12, 16.0, 16.0, 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -80,6 +80,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       GestureDetector(
@@ -162,7 +163,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
 
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Consumer(
                 builder: (context, ref, child) {
                   final quickPicsAsync = ref.watch(
@@ -182,11 +183,11 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                           );
                         }
                       }
-                      final pageCount = (matches.length / 4).ceil();
                       return SizedBox(
                         height: 371,
                         child: PageView.builder(
-                          itemCount: pageCount,
+                          controller: PageController(viewportFraction: 0.87),
+                          itemCount: (matches.length / 4).ceil(),
                           itemBuilder: (context, pageIndex) {
                             final start = pageIndex * 4;
                             final end = start + 4;
@@ -194,14 +195,17 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: pageMatches
-                                    .map(
-                                      (match) =>
-                                          _buildQuickPickItem(match, ref),
-                                    )
-                                    .toList(),
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: pageMatches
+                                      .map(
+                                        (match) =>
+                                            _buildQuickPickItem(match, ref),
+                                      )
+                                      .toList(),
+                                ),
                               ),
                             );
                           },
@@ -232,7 +236,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
 
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -293,7 +297,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           // Other sports header
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -439,23 +443,12 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               fontSize: 12,
                             ),
                           ),
-
                         ],
                       ),
-                      if (match['commenceTime'] != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          formatEventDateTime(match['commenceTime']),
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 4),
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () async {
@@ -508,7 +501,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(4),
                     child: Icon(
                       (favoriteMap[match['id']] ?? false)
                           ? Icons.star

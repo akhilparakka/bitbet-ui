@@ -154,69 +154,71 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-               Positioned(
-                 top: 70,
-                 left: 20,
-                 child: ClipRRect(
-                   borderRadius: BorderRadius.circular(22),
-                   child: Material(
-                     color: Colors.transparent,
-                     child: InkWell(
-                       onTap: () {
-                         Navigator.of(context).push(
-                           MaterialPageRoute(
-                             builder: (_) => ProfilePage(),
-                           ),
-                         );
-                       },
-                       customBorder: const CircleBorder(),
-                       splashColor: Colors.white.withValues(alpha: 0.05),
-                       highlightColor: Colors.white.withValues(alpha: 0.02),
-                       child: CircleAvatar(
-                         radius: 22,
-                         backgroundImage: Web3BetClient().profileImage != null
-                             ? NetworkImage(Web3BetClient().profileImage!)
-                             : null,
-                         child: Web3BetClient().profileImage == null
-                             ? const Icon(Icons.person, color: Colors.white)
-                             : null,
-                       ),
-                     ),
-                   ),
-                 ),
-               ),
-               Positioned(
-                 bottom: 40,
-                 right: 20,
-                 child: Container(
-                   width: 70,
-                   height: 70,
-                   decoration: BoxDecoration(
-                     color: const Color(0xFF00BCD4),
-                     borderRadius: BorderRadius.circular(16),
-                   ),
-                   child: IconButton(
-                     icon: const Icon(
-                       Icons.search,
-                       color: Colors.white,
-                       size: 32,
-                     ),
-                     onPressed: () {
-                       Navigator.of(context).push(
-                         PageRouteBuilder(
-                           pageBuilder: (context, animation, secondaryAnimation) =>
-                               const SearchPage(),
-                           transitionsBuilder:
-                               (context, animation, secondaryAnimation, child) {
-                             return FadeTransition(opacity: animation, child: child);
-                           },
-                           transitionDuration: const Duration(milliseconds: 200),
-                         ),
-                       );
-                     },
-                   ),
-                 ),
-               ),
+              Positioned(
+                top: 70,
+                left: 20,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => ProfilePage()),
+                        );
+                      },
+                      customBorder: const CircleBorder(),
+                      splashColor: Colors.white.withValues(alpha: 0.05),
+                      highlightColor: Colors.white.withValues(alpha: 0.02),
+                      child: CircleAvatar(
+                        radius: 22,
+                        backgroundImage: Web3BetClient().profileImage != null
+                            ? NetworkImage(Web3BetClient().profileImage!)
+                            : null,
+                        child: Web3BetClient().profileImage == null
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 40,
+                right: 20,
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00BCD4),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.search,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const SearchPage(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                          transitionDuration: const Duration(milliseconds: 200),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -305,7 +307,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-
 class CustomHeader extends StatelessWidget {
   final String title;
 
@@ -315,7 +316,7 @@ class CustomHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 135,
-      padding: const EdgeInsets.fromLTRB(60, 65, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 65, 20, 20),
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

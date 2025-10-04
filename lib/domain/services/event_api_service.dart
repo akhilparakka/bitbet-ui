@@ -24,4 +24,19 @@ class EventApiService {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>?> fetchTeamForm(String eventId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/events/$eventId/team-form');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      // Error fetching team form: $e
+    }
+    return null;
+  }
 }

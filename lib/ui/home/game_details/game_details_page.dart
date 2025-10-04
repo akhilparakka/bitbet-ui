@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/event_provider.dart';
+import 'team_form_page.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -577,28 +578,23 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   }
 
   void _showTeamFormModal(Map<String, dynamic> eventData) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Team Form'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Home Form: ${eventData['home_team']?.first?['form_last_5'] ?? 'N/A'}',
-            ),
-            Text(
-              'Away Form: ${eventData['away_team']?.first?['form_last_5'] ?? 'N/A'}',
-            ),
-            // Add more details if available
-          ],
+    final homeTeam =
+        (eventData['home_team'] as List?)?.first?['team_name'] ?? 'Home Team';
+    final awayTeam =
+        (eventData['away_team'] as List?)?.first?['team_name'] ?? 'Away Team';
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => TeamFormPage(
+          eventId: widget.eventId,
+          eventName: eventData['event_name'] ?? 'Event Details',
+          homeTeamName: homeTeam,
+          awayTeamName: awayTeam,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 200),
       ),
     );
   }
@@ -610,7 +606,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         title: const Text('Lineups'),
         content: const Text('Lineups not available yet'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
         ],
       ),
     );

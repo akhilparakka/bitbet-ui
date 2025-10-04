@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/event_provider.dart';
@@ -14,6 +15,23 @@ class GameDetailsPage extends ConsumerStatefulWidget {
 class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   double _sliderPosition = 0.0;
   bool _isSliding = false;
+  Timer? _timer;
+  bool _hasInvalidated = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInvalidated) {
+      ref.invalidate(eventDetailsProvider(widget.eventId));
+      _hasInvalidated = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +50,13 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             }
 
             debugPrint('=== EVENT DATA: $eventData ===');
+
+            // Start/stop timer for live events
+            if (eventData['event_status'] == 'live') {
+              _startTimer();
+            } else {
+              _stopTimer();
+            }
 
             final homeTeam =
                 (eventData['home_team'] as List?)?.first?['team_name'] ??
@@ -585,12 +610,21 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         title: const Text('Lineups'),
         content: const Text('Lineups not available yet'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
         ],
       ),
     );
+  }
+
+  void _startTimer() {
+    _stopTimer(); // Ensure no duplicate timers
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
+      ref.invalidate(eventDetailsProvider(widget.eventId));
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
   }
 }

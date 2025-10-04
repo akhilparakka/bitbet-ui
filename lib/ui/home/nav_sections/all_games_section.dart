@@ -439,27 +439,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               fontSize: 12,
                             ),
                           ),
-                          if (match['isLive']) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'LIVE',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+
                         ],
                       ),
                       if (match['commenceTime'] != null) ...[

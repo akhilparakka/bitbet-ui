@@ -44,7 +44,7 @@ class OddsApiService {
         final event = item['event'] as Map<String, dynamic>;
         final league = item['league'] as String;
 
-        // Extract team names from nested arrays
+        // Extract team names from nested arrays with fallback for live events
         String homeTeam = 'Unknown Home Team';
         String awayTeam = 'Unknown Away Team';
         String? homeTeamLogo;
@@ -54,12 +54,18 @@ class OddsApiService {
         if (homeTeamList != null && homeTeamList.isNotEmpty) {
           final homeTeamData = homeTeamList.first as Map<String, dynamic>;
           homeTeam = homeTeamData['team_name'] ?? 'Unknown Home Team';
+        } else {
+          // Fallback to home_team_name for live events
+          homeTeam = event['home_team_name'] ?? 'Unknown Home Team';
         }
 
         final awayTeamList = event['away_team'] as List<dynamic>?;
         if (awayTeamList != null && awayTeamList.isNotEmpty) {
           final awayTeamData = awayTeamList.first as Map<String, dynamic>;
           awayTeam = awayTeamData['team_name'] ?? 'Unknown Away Team';
+        } else {
+          // Fallback to away_team_name for live events
+          awayTeam = event['away_team_name'] ?? 'Unknown Away Team';
         }
 
         homeTeamLogo = event['home_team_logo'] as String?;

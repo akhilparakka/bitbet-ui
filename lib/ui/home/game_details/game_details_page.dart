@@ -61,9 +61,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
             final homeTeam =
                 (eventData['home_team'] as List?)?.first?['team_name'] ??
+                eventData['home_team_name'] ??
                 'Home Team';
             final awayTeam =
                 (eventData['away_team'] as List?)?.first?['team_name'] ??
+                eventData['away_team_name'] ??
                 'Away Team';
             final homeTeamLogo = eventData['home_team_logo'] as String?;
             final awayTeamLogo = eventData['away_team_logo'] as String?;

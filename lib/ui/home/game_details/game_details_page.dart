@@ -77,6 +77,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             final matchProgress = eventData['match_progress'];
             final eventStatus = eventData['event_status'] as String?;
 
+            debugPrint('=== EVENT STATUS: $eventStatus ===');
+            debugPrint('=== HOME SCORE: $homeScore ===');
+            debugPrint('=== AWAY SCORE: $awayScore ===');
+            debugPrint('=== MATCH PROGRESS: $matchProgress ===');
+            debugPrint(
+              '=== IS NOT STARTED: ${eventStatus == 'Not Started' || eventStatus == null} ===',
+            );
+
             return Column(
               children: [
                 // Fixed Header
@@ -127,14 +135,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 ),
                 // Scrollable Content
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20.0, 32.0, 20.0, 0),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Top Card (Your Progress style)
                         Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
@@ -151,197 +159,345 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                             ],
                           ),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Match Progress',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                  Expanded(
+                                    child: Text(
+                                      (eventData['event_league'] as List?)
+                                              ?.first?['league_name'] ??
+                                          leagueName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.3,
-                                      ),
+                                      color:
+                                          (eventStatus == 'Not Started' ||
+                                              eventStatus == null)
+                                          ? Colors.white.withValues(alpha: 0.3)
+                                          : ([
+                                              '1H',
+                                              '2H',
+                                              'HT',
+                                              'ET',
+                                            ].contains(eventStatus))
+                                          ? Colors.red
+                                          : Colors.white.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      eventStatus ?? 'N/A',
+                                      (eventStatus == 'Not Started' ||
+                                              eventStatus == null)
+                                          ? 'Not Started'
+                                          : ([
+                                              '1H',
+                                              '2H',
+                                              'HT',
+                                              'ET',
+                                            ].contains(eventStatus))
+                                          ? 'LIVE'
+                                          : eventStatus ?? 'N/A',
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        if (homeTeamLogo != null &&
+                                            homeTeamLogo.isNotEmpty)
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            padding: const EdgeInsets.all(8),
+                                            child: Image.network(
+                                              homeTeamLogo,
+                                              fit: BoxFit.contain,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
+                                                    Icons.sports_soccer,
+                                                    size: 40,
+                                                  ),
+                                            ),
+                                          )
+                                        else
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Icon(
+                                              Icons.sports_soccer,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          homeTeam,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        isLive
-                                            ? '$homeScore - $awayScore'
-                                            : 'VS',
+                                        (eventStatus == 'Not Started' ||
+                                                eventStatus == null)
+                                            ? 'VS'
+                                            : '$homeScore - $awayScore',
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 48,
+                                          fontSize: 32,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Round ${eventData['event_round'] ?? 'N/A'}',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.8,
+                                      if ([
+                                            '1H',
+                                            '2H',
+                                            'HT',
+                                            'ET',
+                                          ].contains(eventStatus) &&
+                                          matchProgress != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
                                           ),
-                                          fontSize: 14,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "$matchProgress'",
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                      ),
                                     ],
                                   ),
-                                  if (matchProgress != null)
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "$matchProgress'",
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        if (awayTeamLogo != null &&
+                                            awayTeamLogo.isNotEmpty)
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            padding: const EdgeInsets.all(8),
+                                            child: Image.network(
+                                              awayTeamLogo,
+                                              fit: BoxFit.contain,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
+                                                    Icons.sports_soccer,
+                                                    size: 40,
+                                                  ),
+                                            ),
+                                          )
+                                        else
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Icon(
+                                              Icons.sports_soccer,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          awayTeam,
                                           style: const TextStyle(
                                             color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
                                           ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
                                         ),
-                                      ),
+                                      ],
                                     ),
+                                  ),
                                 ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Round ${eventData['event_round'] ?? 'N/A'}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 14,
+                                ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
                         // Three boxes layout
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Left tall box
-                            Expanded(
-                              child: Container(
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.08,
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Left tall box
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
                                       ),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Data Box 1',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Right two boxes stacked
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            'Data Box 2',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            'Data Box 3',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                child: const Center(
-                                  child: Text(
-                                    'Data Box 1',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Right two boxes stacked
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: 94,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.08,
-                                          ),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'Data Box 2',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    height: 94,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.08,
-                                          ),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'Data Box 3',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         // Bottom card (Breakfast style)
                         Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
@@ -388,15 +544,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               const Text(
                                 '350 calories',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 14,
+                                  fontSize: 13,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 12),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
@@ -410,7 +566,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 0),
                       ],
                     ),
                   ),

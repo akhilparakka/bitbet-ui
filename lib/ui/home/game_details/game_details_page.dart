@@ -47,18 +47,18 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     String awayOdds,
   ) {
     final betAmount = double.tryParse(amount) ?? 0.0;
-    double odds = 0.0;
+    double cents = 0.0;
 
     if (_selectedBetType == 'home') {
-      odds = double.tryParse(homeOdds) ?? 0.0;
+      cents = double.tryParse(homeOdds) ?? 0.0;
     } else if (_selectedBetType == 'draw') {
-      odds = double.tryParse(drawOdds) ?? 0.0;
+      cents = double.tryParse(drawOdds) ?? 0.0;
     } else if (_selectedBetType == 'away') {
-      odds = double.tryParse(awayOdds) ?? 0.0;
+      cents = double.tryParse(awayOdds) ?? 0.0;
     }
 
     setState(() {
-      _potentialWinnings = betAmount * odds;
+      _potentialWinnings = cents > 0 ? betAmount / (cents / 100.0) : 0.0;
     });
   }
 
@@ -123,12 +123,17 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                     final name = outcome['outcome_name'] as String?;
                     final price = outcome['outcome_price'];
 
-                    if (name == 'Draw') {
-                      drawOdds = price?.toString() ?? 'N/A';
-                    } else if (name != null && homeTeam.contains(name)) {
-                      homeOdds = price?.toString() ?? 'N/A';
-                    } else if (name != null && awayTeam.contains(name)) {
-                      awayOdds = price?.toString() ?? 'N/A';
+                    if (price is int) {
+                      final cents = (price / 100).floor();
+                      final centsStr = cents.toString();
+
+                      if (name == 'Draw') {
+                        drawOdds = centsStr;
+                      } else if (name != null && homeTeam.contains(name)) {
+                        homeOdds = centsStr;
+                      } else if (name != null && awayTeam.contains(name)) {
+                        awayOdds = centsStr;
+                      }
                     }
                   }
                 }

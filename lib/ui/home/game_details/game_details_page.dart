@@ -14,8 +14,6 @@ class GameDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
-  double _sliderPosition = 0.0;
-  bool _isSliding = false;
   Timer? _timer;
   bool _hasInvalidated = false;
 
@@ -23,6 +21,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   final TextEditingController _betAmountController = TextEditingController();
   String _selectedBetType = 'home'; // 'home', 'draw', 'away'
   double _potentialWinnings = 0.0;
+  String _selectedTab = 'buy'; // 'buy' or 'sell'
+  double _userBalance = 0.00; // Mock balance
 
   @override
   void didChangeDependencies() {
@@ -67,7 +67,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final eventAsync = ref.watch(eventDetailsProvider(widget.eventId));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFF0F1419),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: eventAsync.when(
@@ -203,19 +203,12 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFFB8A4F5), Color(0xFFA89FF5)],
-                              ),
+                              color: const Color(0xFF1A2332),
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              border: Border.all(
+                                color: const Color(0xFF2A3544),
+                                width: 1,
+                              ),
                             ),
                             child: Column(
                               children: [
@@ -460,157 +453,343 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           const SizedBox(height: 16),
                           // Betting Interface Card
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: const Color(0xFF1A2332),
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              border: Border.all(
+                                color: const Color(0xFF2A3544),
+                                width: 1,
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Place Your Bet',
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                // Bet Selection Buttons
+                                // Buy/Sell Tabs with Market Dropdown
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: _buildBetOption(
-                                        homeTeam,
-                                        homeOdds,
-                                        'home',
+                                    // Buy Tab
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTab = 'buy';
+                                        });
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'Buy',
+                                            style: TextStyle(
+                                              color: _selectedTab == 'buy'
+                                                  ? Colors.white
+                                                  : const Color(0xFF6B7280),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          if (_selectedTab == 'buy')
+                                            Container(
+                                              height: 2,
+                                              width: 30,
+                                              color: Colors.white,
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: _buildBetOption(
-                                        'Draw',
-                                        drawOdds,
-                                        'draw',
+                                    const SizedBox(width: 24),
+                                    // Sell Tab
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTab = 'sell';
+                                        });
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'Sell',
+                                            style: TextStyle(
+                                              color: _selectedTab == 'sell'
+                                                  ? Colors.white
+                                                  : const Color(0xFF6B7280),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          if (_selectedTab == 'sell')
+                                            Container(
+                                              height: 2,
+                                              width: 30,
+                                              color: Colors.white,
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: _buildBetOption(
-                                        awayTeam,
-                                        awayOdds,
-                                        'away',
+                                    const Spacer(),
+                                    // Market Dropdown
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2A3544),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Text(
+                                            'Market',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Icon(
+                                            Icons.keyboard_arrow_down,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                // Bet Amount Input
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8F9FA),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Bet Amount',
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                const SizedBox(height: 16),
+                                // Team Selection Buttons
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTeamOption(
+                                        _selectedBetType == 'home'
+                                            ? homeTeam
+                                                  .substring(0, 3)
+                                                  .toUpperCase()
+                                            : _selectedBetType == 'away'
+                                            ? awayTeam
+                                                  .substring(0, 3)
+                                                  .toUpperCase()
+                                            : 'DRW',
+                                        _selectedBetType == 'home'
+                                            ? homeOdds
+                                            : _selectedBetType == 'away'
+                                            ? awayOdds
+                                            : drawOdds,
+                                        true,
+                                        homeTeam,
+                                        awayTeam,
+                                        homeOdds,
+                                        drawOdds,
+                                        awayOdds,
                                       ),
-                                      const SizedBox(height: 6),
-                                      TextField(
-                                        controller: _betAmountController,
-                                        keyboardType: TextInputType.number,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                        decoration: InputDecoration(
-                                          hintText: '0.00',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey.shade400,
-                                          ),
-                                          border: InputBorder.none,
-                                          prefixText: '\$ ',
-                                          prefixStyle: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        onChanged: (value) {
-                                          _calculateWinnings(
-                                            value,
-                                            homeOdds,
-                                            drawOdds,
-                                            awayOdds,
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Arrow Down Icon
-                                Center(
-                                  child: Icon(
-                                    Icons.arrow_downward,
-                                    color: Colors.grey.shade400,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Potential Winnings Display
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Color(0xFF00BCD4),
-                                        Color(0xFF00ACC1),
-                                      ],
                                     ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Potential Winnings',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.9,
-                                          ),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildTeamOption(
+                                        _selectedBetType == 'away'
+                                            ? awayTeam
+                                                  .substring(0, 3)
+                                                  .toUpperCase()
+                                            : _selectedBetType == 'home'
+                                            ? homeTeam
+                                                  .substring(0, 3)
+                                                  .toUpperCase()
+                                            : 'DRW',
+                                        _selectedBetType == 'away'
+                                            ? awayOdds
+                                            : _selectedBetType == 'home'
+                                            ? homeOdds
+                                            : drawOdds,
+                                        false,
+                                        homeTeam,
+                                        awayTeam,
+                                        homeOdds,
+                                        drawOdds,
+                                        awayOdds,
                                       ),
-                                      const SizedBox(height: 6),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                // Amount Section
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Amount',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      _betAmountController.text.isEmpty
+                                          ? '\$0'
+                                          : '\$${_betAmountController.text}',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Balance \$${_userBalance.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                // Quick Amount Buttons
+                                Row(
+                                  children: [
+                                    _buildQuickAmountButton(
+                                      '+\$1',
+                                      1,
+                                      homeOdds,
+                                      drawOdds,
+                                      awayOdds,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildQuickAmountButton(
+                                      '+\$20',
+                                      20,
+                                      homeOdds,
+                                      drawOdds,
+                                      awayOdds,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildQuickAmountButton(
+                                      '+\$100',
+                                      100,
+                                      homeOdds,
+                                      drawOdds,
+                                      awayOdds,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildQuickAmountButton(
+                                      'Max',
+                                      _userBalance,
+                                      homeOdds,
+                                      drawOdds,
+                                      awayOdds,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // To Win Section (Animated)
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  child: _betAmountController.text.isEmpty
+                                      ? Container()
+                                      : Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                const Text(
+                                                  'To win ',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                const Icon(
+                                                  Icons.trending_up,
+                                                  color: Color(0xFF10B981),
+                                                  size: 18,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              '\$${_potentialWinnings.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                color: Color(0xFF10B981),
+                                                fontSize: 36,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Avg. Price ${_selectedBetType == 'home'
+                                                      ? homeOdds
+                                                      : _selectedBetType == 'away'
+                                                      ? awayOdds
+                                                      : drawOdds}¢',
+                                                  style: TextStyle(
+                                                    color: Colors.white
+                                                        .withValues(alpha: 0.6),
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Icon(
+                                                  Icons.info_outline,
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.6),
+                                                  size: 14,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 16),
+                                          ],
+                                        ),
+                                ),
+                                // Unavailable Button or Place Bet Button
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _betAmountController.text.isEmpty
+                                        ? const Color(0xFF2A3544)
+                                        : const Color(0xFF0066CC),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (_betAmountController.text.isEmpty)
+                                        Icon(
+                                          Icons.block,
+                                          color: Colors.white.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                          size: 18,
+                                        ),
+                                      if (_betAmountController.text.isEmpty)
+                                        const SizedBox(width: 8),
                                       Text(
-                                        '\$ ${_potentialWinnings.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        _betAmountController.text.isEmpty
+                                            ? 'Unavailable'
+                                            : 'Place Bet',
+                                        style: TextStyle(
+                                          color:
+                                              _betAmountController.text.isEmpty
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.5,
+                                                )
+                                              : Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
@@ -622,142 +801,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           const SizedBox(height: 20),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-                // Bottom Slider Button
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final maxSlide = constraints.maxWidth - 120;
-                        return Stack(
-                          children: [
-                            // Background track with arrows and text
-                            Positioned.fill(
-                              child: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(width: 120),
-                                    // Arrow indicators
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.white.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                          size: 12,
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.white.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                          size: 12,
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.white.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          size: 12,
-                                        ),
-                                      ],
-                                    ),
-                                    const Spacer(),
-                                    // Text
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        right: 16.0,
-                                      ),
-                                      child: Text(
-                                        'Place Bet',
-                                        style: TextStyle(
-                                          color:
-                                              _sliderPosition > maxSlide * 0.7
-                                              ? Colors.transparent
-                                              : Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            AnimatedPositioned(
-                              duration: _isSliding
-                                  ? Duration.zero
-                                  : const Duration(milliseconds: 300),
-                              left: 4 + _sliderPosition,
-                              top: 4,
-                              child: GestureDetector(
-                                onPanStart: (_) {
-                                  setState(() {
-                                    _isSliding = true;
-                                  });
-                                },
-                                onPanUpdate: (details) {
-                                  setState(() {
-                                    _sliderPosition =
-                                        (_sliderPosition + details.delta.dx)
-                                            .clamp(0.0, maxSlide);
-                                  });
-                                },
-                                onPanEnd: (details) {
-                                  setState(() {
-                                    _isSliding = false;
-                                    if (_sliderPosition > maxSlide * 0.8) {
-                                      _completeSlide();
-                                    } else {
-                                      _sliderPosition = 0.0;
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  height: 52,
-                                  width: 112,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF00BCD4),
-                                    borderRadius: BorderRadius.circular(26),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Bet now',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
                     ),
                   ),
                 ),
@@ -892,9 +935,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           backgroundColor: Colors.red.shade400,
         ),
       );
-      setState(() {
-        _sliderPosition = 0.0;
-      });
+
       return;
     }
 
@@ -912,7 +953,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         setState(() {
-          _sliderPosition = 0.0;
           _betAmountController.clear();
           _potentialWinnings = 0.0;
         });
@@ -1027,5 +1067,109 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  Widget _buildTeamOption(
+    String teamAbbr,
+    String odds,
+    bool isSelected,
+    String homeTeam,
+    String awayTeam,
+    String homeOdds,
+    String drawOdds,
+    String awayOdds,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          // Toggle between home and away
+          if (_selectedBetType == 'home') {
+            _selectedBetType = 'away';
+          } else {
+            _selectedBetType = 'home';
+          }
+          // Recalculate winnings with new selection
+          if (_betAmountController.text.isNotEmpty) {
+            _calculateWinnings(
+              _betAmountController.text,
+              homeOdds,
+              drawOdds,
+              awayOdds,
+            );
+          }
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0066CC) : const Color(0xFF2A3544),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              teamAbbr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$odds¢',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAmountButton(
+    String label,
+    double amount,
+    String homeOdds,
+    String drawOdds,
+    String awayOdds,
+  ) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            final currentAmount =
+                double.tryParse(_betAmountController.text) ?? 0.0;
+            final newAmount = label == 'Max' ? amount : currentAmount + amount;
+            _betAmountController.text = newAmount.toStringAsFixed(0);
+            _calculateWinnings(
+              _betAmountController.text,
+              homeOdds,
+              drawOdds,
+              awayOdds,
+            );
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF374151),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

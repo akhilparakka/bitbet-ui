@@ -1,8 +1,7 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/providers/event_provider.dart';
-import 'team_form_page.dart';
+ import 'dart:async';
+ import 'package:flutter/material.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import '../../../domain/providers/event_provider.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -22,7 +21,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   String _selectedBetType = 'home'; // 'home', 'draw', 'away'
   double _potentialWinnings = 0.0;
   String _selectedTab = 'buy'; // 'buy' or 'sell'
-  double _userBalance = 0.00; // Mock balance
+   final double _userBalance = 0.00; // Mock balance
 
   @override
   void didChangeDependencies() {
@@ -57,9 +56,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       cents = double.tryParse(awayOdds) ?? 0.0;
     }
 
-    setState(() {
-      _potentialWinnings = cents > 0 ? betAmount / (cents / 100.0) : 0.0;
-    });
+  setState(() {
+    _potentialWinnings = cents > 0 ? betAmount / (cents / 100.0) : 0.0;
+  });
   }
 
   @override
@@ -98,12 +97,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 'Away Team';
             final homeTeamLogo = eventData['home_team_logo'] as String?;
             final awayTeamLogo = eventData['away_team_logo'] as String?;
-            final leagueName = 'Soccer';
-            final isLive =
-                eventData['event_status'] != null &&
-                eventData['event_status'] != 'Not Started' &&
-                eventData['completed'] == false;
-            final homeScore = eventData['home_score'];
+             final leagueName = 'Soccer';
+             final homeScore = eventData['home_score'];
             final awayScore = eventData['away_score'];
             final matchProgress = eventData['match_progress'];
             final eventStatus = eventData['event_status'] as String?;
@@ -133,11 +128,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         homeOdds = centsStr;
                       } else if (name != null && awayTeam.contains(name)) {
                         awayOdds = centsStr;
-                      }
-                    }
-                  }
-                }
-              }
+                     }
+                   }
+                 }
+               }
+             }
             }
 
             debugPrint('=== EVENT STATUS: $eventStatus ===');
@@ -271,7 +266,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                                 'ET',
                                               ].contains(eventStatus))
                                             ? 'LIVE'
-                                            : eventStatus ?? 'N/A',
+                                             : eventStatus,
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -564,60 +559,49 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                // Team Selection Buttons
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildTeamOption(
-                                        _selectedBetType == 'home'
-                                            ? homeTeam
-                                                  .substring(0, 3)
-                                                  .toUpperCase()
-                                            : _selectedBetType == 'away'
-                                            ? awayTeam
-                                                  .substring(0, 3)
-                                                  .toUpperCase()
-                                            : 'DRW',
-                                        _selectedBetType == 'home'
-                                            ? homeOdds
-                                            : _selectedBetType == 'away'
-                                            ? awayOdds
-                                            : drawOdds,
-                                        true,
-                                        homeTeam,
-                                        awayTeam,
-                                        homeOdds,
-                                        drawOdds,
-                                        awayOdds,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _buildTeamOption(
-                                        _selectedBetType == 'away'
-                                            ? awayTeam
-                                                  .substring(0, 3)
-                                                  .toUpperCase()
-                                            : _selectedBetType == 'home'
-                                            ? homeTeam
-                                                  .substring(0, 3)
-                                                  .toUpperCase()
-                                            : 'DRW',
-                                        _selectedBetType == 'away'
-                                            ? awayOdds
-                                            : _selectedBetType == 'home'
-                                            ? homeOdds
-                                            : drawOdds,
-                                        false,
-                                        homeTeam,
-                                        awayTeam,
-                                        homeOdds,
-                                        drawOdds,
-                                        awayOdds,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                 // Team Selection Buttons
+                                 Row(
+                                   children: [
+                                     Expanded(
+                                       child: _buildTeamOption(
+                                         homeTeam.substring(0, 3).toUpperCase(),
+                                         homeOdds,
+                                         'home',
+                                         homeTeam,
+                                         awayTeam,
+                                         homeOdds,
+                                         drawOdds,
+                                         awayOdds,
+                                       ),
+                                     ),
+                                     const SizedBox(width: 8),
+                                     Expanded(
+                                       child: _buildTeamOption(
+                                         'DRW',
+                                         drawOdds,
+                                         'draw',
+                                         homeTeam,
+                                         awayTeam,
+                                         homeOdds,
+                                         drawOdds,
+                                         awayOdds,
+                                       ),
+                                     ),
+                                     const SizedBox(width: 8),
+                                     Expanded(
+                                       child: _buildTeamOption(
+                                         awayTeam.substring(0, 3).toUpperCase(),
+                                         awayOdds,
+                                         'away',
+                                         homeTeam,
+                                         awayTeam,
+                                         homeOdds,
+                                         drawOdds,
+                                         awayOdds,
+                                       ),
+                                     ),
+                                   ],
+                                 ),
                                 const SizedBox(height: 20),
                                 // Amount Section
                                 Row(
@@ -817,250 +801,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildBetOption(String label, String odds, String betType) {
-    final isSelected = _selectedBetType == betType;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedBetType = betType;
-          // Recalculate winnings with new selection
-          if (_betAmountController.text.isNotEmpty) {
-            _calculateWinnings(
-              _betAmountController.text,
-              betType == 'home' ? odds : '0',
-              betType == 'draw' ? odds : '0',
-              betType == 'away' ? odds : '0',
-            );
-          }
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF00BCD4), Color(0xFF00ACC1)],
-                )
-              : null,
-          color: isSelected ? null : const Color(0xFFF8F9FA),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF00BCD4) : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              odds,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamLogo(String? logoUrl, String teamName) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (logoUrl != null && logoUrl.isNotEmpty)
-            Image.network(
-              logoUrl,
-              height: 80,
-              width: 80,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
-                  Icons.sports_soccer,
-                  size: 60,
-                  color: Colors.blue.shade300,
-                );
-              },
-            )
-          else
-            Icon(Icons.sports_soccer, size: 60, color: Colors.blue.shade300),
-          const SizedBox(height: 8),
-          Text(
-            teamName,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _completeSlide() {
-    // Validate bet amount
-    final betAmount = double.tryParse(_betAmountController.text) ?? 0.0;
-
-    if (betAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter a valid bet amount'),
-          backgroundColor: Colors.red.shade400,
-        ),
-      );
-
-      return;
-    }
-
-    // Show success message with bet details
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Bet placed! \$${betAmount.toStringAsFixed(2)} to win \$${_potentialWinnings.toStringAsFixed(2)}',
-        ),
-        backgroundColor: const Color(0xFF00BCD4),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        setState(() {
-          _betAmountController.clear();
-          _potentialWinnings = 0.0;
-        });
-      }
-    });
-  }
-
-  Widget _buildInfoBox(String title, Widget child, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamFormPreview(Map<String, dynamic> eventData) {
-    final homeForm = eventData['home_team']?.first?['form_last_5'] ?? 'N/A';
-    final awayForm = eventData['away_team']?.first?['form_last_5'] ?? 'N/A';
-    return Column(
-      children: [
-        Text(
-          'Home: $homeForm',
-          style: const TextStyle(color: Color(0xFF757575)),
-        ),
-        Text(
-          'Away: $awayForm',
-          style: const TextStyle(color: Color(0xFF757575)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLineupsPreview(Map<String, dynamic> eventData) {
-    return const Text(
-      'Lineups not available',
-      style: TextStyle(color: Color(0xFF757575)),
-    );
-  }
-
-  void _showTeamFormModal(Map<String, dynamic> eventData) {
-    final homeTeam =
-        (eventData['home_team'] as List?)?.first?['team_name'] ?? 'Home Team';
-    final awayTeam =
-        (eventData['away_team'] as List?)?.first?['team_name'] ?? 'Away Team';
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => TeamFormPage(
-          eventId: widget.eventId,
-          eventName: eventData['event_name'] ?? 'Event Details',
-          homeTeamName: homeTeam,
-          awayTeamName: awayTeam,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 200),
-      ),
-    );
-  }
-
-  void _showLineupsModal(Map<String, dynamic> eventData) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lineups'),
-        content: const Text('Lineups not available yet'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _startTimer() {
     _stopTimer(); // Ensure no duplicate timers
@@ -1077,22 +818,18 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   Widget _buildTeamOption(
     String teamAbbr,
     String odds,
-    bool isSelected,
+    String betType,
     String homeTeam,
     String awayTeam,
     String homeOdds,
     String drawOdds,
     String awayOdds,
   ) {
+    final isSelected = _selectedBetType == betType;
     return GestureDetector(
       onTap: () {
         setState(() {
-          // Toggle between home and away
-          if (_selectedBetType == 'home') {
-            _selectedBetType = 'away';
-          } else {
-            _selectedBetType = 'home';
-          }
+          _selectedBetType = betType;
           // Recalculate winnings with new selection
           if (_betAmountController.text.isNotEmpty) {
             _calculateWinnings(

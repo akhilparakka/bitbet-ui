@@ -125,9 +125,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
                     if (name == 'Draw') {
                       drawOdds = price?.toString() ?? 'N/A';
-                    } else if (name != null && name.contains(homeTeam)) {
+                    } else if (name != null && homeTeam.contains(name)) {
                       homeOdds = price?.toString() ?? 'N/A';
-                    } else if (name != null && name.contains(awayTeam)) {
+                    } else if (name != null && awayTeam.contains(name)) {
                       awayOdds = price?.toString() ?? 'N/A';
                     }
                   }

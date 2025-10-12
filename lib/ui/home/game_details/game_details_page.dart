@@ -1,7 +1,7 @@
- import 'dart:async';
- import 'package:flutter/material.dart';
- import 'package:flutter_riverpod/flutter_riverpod.dart';
- import '../../../domain/providers/event_provider.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/providers/event_provider.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -21,7 +21,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   String _selectedBetType = 'home'; // 'home', 'draw', 'away'
   double _potentialWinnings = 0.0;
   String _selectedTab = 'buy'; // 'buy' or 'sell'
-   final double _userBalance = 0.00; // Mock balance
+  final double _userBalance = 0.00; // Mock balance
 
   @override
   void didChangeDependencies() {
@@ -56,9 +56,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       cents = double.tryParse(awayOdds) ?? 0.0;
     }
 
-  setState(() {
-    _potentialWinnings = cents > 0 ? betAmount / (cents / 100.0) : 0.0;
-  });
+    setState(() {
+      _potentialWinnings = cents > 0 ? betAmount / (cents / 100.0) : 0.0;
+    });
   }
 
   @override
@@ -97,8 +97,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 'Away Team';
             final homeTeamLogo = eventData['home_team_logo'] as String?;
             final awayTeamLogo = eventData['away_team_logo'] as String?;
-             final leagueName = 'Soccer';
-             final homeScore = eventData['home_score'];
+            final leagueName = 'Soccer';
+            final homeScore = eventData['home_score'];
             final awayScore = eventData['away_score'];
             final matchProgress = eventData['match_progress'];
             final eventStatus = eventData['event_status'] as String?;
@@ -128,11 +128,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         homeOdds = centsStr;
                       } else if (name != null && awayTeam.contains(name)) {
                         awayOdds = centsStr;
-                     }
-                   }
-                 }
-               }
-             }
+                      }
+                    }
+                  }
+                }
+              }
             }
 
             debugPrint('=== EVENT STATUS: $eventStatus ===');
@@ -266,7 +266,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                                 'ET',
                                               ].contains(eventStatus))
                                             ? 'LIVE'
-                                             : eventStatus,
+                                            : eventStatus,
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -559,49 +559,49 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                 // Team Selection Buttons
-                                 Row(
-                                   children: [
-                                     Expanded(
-                                       child: _buildTeamOption(
-                                         homeTeam.substring(0, 3).toUpperCase(),
-                                         homeOdds,
-                                         'home',
-                                         homeTeam,
-                                         awayTeam,
-                                         homeOdds,
-                                         drawOdds,
-                                         awayOdds,
-                                       ),
-                                     ),
-                                     const SizedBox(width: 8),
-                                     Expanded(
-                                       child: _buildTeamOption(
-                                         'DRW',
-                                         drawOdds,
-                                         'draw',
-                                         homeTeam,
-                                         awayTeam,
-                                         homeOdds,
-                                         drawOdds,
-                                         awayOdds,
-                                       ),
-                                     ),
-                                     const SizedBox(width: 8),
-                                     Expanded(
-                                       child: _buildTeamOption(
-                                         awayTeam.substring(0, 3).toUpperCase(),
-                                         awayOdds,
-                                         'away',
-                                         homeTeam,
-                                         awayTeam,
-                                         homeOdds,
-                                         drawOdds,
-                                         awayOdds,
-                                       ),
-                                     ),
-                                   ],
-                                 ),
+                                // Team Selection Buttons
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildTeamOption(
+                                        homeTeam.substring(0, 3).toUpperCase(),
+                                        homeOdds,
+                                        'home',
+                                        homeTeam,
+                                        awayTeam,
+                                        homeOdds,
+                                        drawOdds,
+                                        awayOdds,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildTeamOption(
+                                        'DRW',
+                                        drawOdds,
+                                        'draw',
+                                        homeTeam,
+                                        awayTeam,
+                                        homeOdds,
+                                        drawOdds,
+                                        awayOdds,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildTeamOption(
+                                        awayTeam.substring(0, 3).toUpperCase(),
+                                        awayOdds,
+                                        'away',
+                                        homeTeam,
+                                        awayTeam,
+                                        homeOdds,
+                                        drawOdds,
+                                        awayOdds,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 20),
                                 // Amount Section
                                 Row(
@@ -801,10 +801,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-
-
   void _startTimer() {
-    _stopTimer(); // Ensure no duplicate timers
+    _stopTimer();
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       ref.invalidate(eventDetailsProvider(widget.eventId));
     });

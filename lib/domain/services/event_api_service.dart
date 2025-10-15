@@ -39,4 +39,19 @@ class EventApiService {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>?> fetchEventPricing(String eventId) async {
+    try {
+      final url = Uri.parse('$_baseUrl/events/$eventId/pricing');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      // Error fetching event pricing: $e
+    }
+    return null;
+  }
 }

@@ -3,7 +3,7 @@ class AppConfig {
 
   static String get baseUrl {
     return isProduction
-        ? 'http://68.233.102.220:3000'
+        ? 'http://ec2-13-239-244-30.ap-southeast-2.compute.amazonaws.com:3000'
         : 'http://localhost:3000';
   }
 

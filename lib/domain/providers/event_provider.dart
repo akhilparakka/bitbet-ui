@@ -18,3 +18,9 @@ final teamFormProvider = FutureProvider.family<Map<String, dynamic>?, String>((
   final service = ref.read(eventApiServiceProvider);
   return await service.fetchTeamForm(eventId);
 });
+
+final eventPricingProvider =
+    FutureProvider.family<Map<String, dynamic>?, String>((ref, eventId) async {
+      final service = ref.read(eventApiServiceProvider);
+      return await service.fetchEventPricing(eventId);
+    });

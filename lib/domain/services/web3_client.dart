@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:palette_generator/palette_generator.dart';
@@ -136,6 +137,53 @@ class Web3BetClient {
       return balance;
     } catch (e) {
       return EtherAmount.inWei(BigInt.zero);
+    }
+  }
+
+  /// Get USDT balance (returns human-readable value)
+  Future<double> getUsdtBalance(String usdtContractAddress) async {
+    if (_credentials == null || _address == null) {
+      throw Exception('User not logged in');
+    }
+
+    try {
+      final rpcUrl = dotenv.env['RPC_URL'] ?? 'http://localhost:8545';
+      final client = Web3Client(rpcUrl, Client());
+      final userAddress = EthereumAddress.fromHex(_address!);
+      final tokenAddress = EthereumAddress.fromHex(usdtContractAddress);
+
+      // Simple ERC20 ABI for balanceOf and decimals
+      final contract = DeployedContract(
+        ContractAbi.fromJson(
+          '[{"constant":true,"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"}]',
+          'ERC20',
+        ),
+        tokenAddress,
+      );
+
+      // Get decimals
+      final decimalsFunction = contract.function('decimals');
+      final decimalsResult = await client.call(
+        contract: contract,
+        function: decimalsFunction,
+        params: [],
+      );
+      final decimals = (decimalsResult.first as BigInt).toInt();
+
+      // Get balance
+      final balanceFunction = contract.function('balanceOf');
+      final balanceResult = await client.call(
+        contract: contract,
+        function: balanceFunction,
+        params: [userAddress],
+      );
+      final balance = balanceResult.first as BigInt;
+
+      // Convert to human-readable format
+      return balance.toDouble() / pow(10, decimals);
+    } catch (e) {
+      debugPrint('Error getting USDT balance: $e');
+      return 0.0;
     }
   }
 

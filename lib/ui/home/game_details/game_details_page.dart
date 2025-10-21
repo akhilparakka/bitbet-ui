@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../domain/providers/event_provider.dart';
 import '../../../domain/services/web3_client.dart';
 
@@ -25,7 +26,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   double _shares = 0.0;
   double _sharePrice = 0.0;
   String _selectedTab = 'buy'; // 'buy' or 'sell'
-  final double _userBalance = 0.00;
+  double _userBalance = 0.00;
 
   // Betting state
   bool _isPlacingBet = false;
@@ -36,6 +37,24 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   void initState() {
     super.initState();
     _startPricingTimer();
+    _loadUserBalance();
+  }
+
+  Future<void> _loadUserBalance() async {
+    try {
+      final web3Client = Web3BetClient();
+      final usdtAddress = dotenv.env['USDT_CONTRACT_ADDRESS'];
+      if (usdtAddress != null && usdtAddress.isNotEmpty) {
+        final balance = await web3Client.getUsdtBalance(usdtAddress);
+        if (mounted) {
+          setState(() {
+            _userBalance = balance;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading USDT balance: $e');
+    }
   }
 
   @override
@@ -222,6 +241,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       // Clear bet amount
       _betAmountController.clear();
       _calculateWinnings('', null);
+
+      // Reload balance after successful bet
+      _loadUserBalance();
     } catch (e) {
       setState(() {
         _isPlacingBet = false;

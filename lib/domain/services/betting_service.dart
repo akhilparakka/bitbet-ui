@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:http/http.dart' as http;
-import '../models/event_contracts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BettingService {

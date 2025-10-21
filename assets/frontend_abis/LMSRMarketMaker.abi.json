@@ -1,0 +1,26 @@
+[
+  {
+    "type": "function",
+    "name": "calcNetCost",
+    "inputs": [
+      {
+        "name": "market",
+        "type": "address",
+        "internalType": "contract Market"
+      },
+      {
+        "name": "outcomeTokenAmounts",
+        "type": "int256[]",
+        "internalType": "int256[]"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "netCost",
+        "type": "int256",
+        "internalType": "int256"
+      }
+    ],
+    "stateMutability": "view"
+  }
+]

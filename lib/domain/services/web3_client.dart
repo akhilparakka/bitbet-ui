@@ -6,7 +6,9 @@ import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'user_api_service.dart';
+import 'betting_service.dart';
 
 // Login result for type safety
 class LoginResult {
@@ -135,6 +137,20 @@ class Web3BetClient {
     } catch (e) {
       return EtherAmount.inWei(BigInt.zero);
     }
+  }
+
+  /// Get BettingService instance
+  BettingService? getBettingService() {
+    if (_credentials == null) {
+      return null;
+    }
+
+    final rpcUrl =
+        dotenv.env['RPC_URL'] ??
+        'https://eth-sepolia.g.alchemy.com/v2/xuu9ST6cfCwJ-pgZpykfVDsYLhW9pT6k';
+    final client = Web3Client(rpcUrl, Client());
+
+    return BettingService(web3Client: client, credentials: _credentials!);
   }
 
   dynamic get address => _address;

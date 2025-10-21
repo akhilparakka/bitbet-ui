@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/event_provider.dart';
+import '../../../domain/services/web3_client.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -25,6 +26,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   double _sharePrice = 0.0;
   String _selectedTab = 'buy'; // 'buy' or 'sell'
   final double _userBalance = 0.00;
+
+  // Betting state
+  bool _isPlacingBet = false;
+  String? _betStatusMessage;
+  String? _betErrorMessage;
 
   @override
   void initState() {
@@ -106,6 +112,142 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     _liveTimer = null;
   }
 
+  /// Place a bet on selected outcome
+  Future<void> _placeBet() async {
+    // Validate inputs
+    if (_betAmountController.text.isEmpty) {
+      setState(() {
+        _betErrorMessage = 'Please enter a bet amount';
+      });
+      return;
+    }
+
+    final betAmount = double.tryParse(_betAmountController.text);
+    if (betAmount == null || betAmount <= 0) {
+      setState(() {
+        _betErrorMessage = 'Invalid bet amount';
+      });
+      return;
+    }
+
+    setState(() {
+      _isPlacingBet = true;
+      _betErrorMessage = null;
+      _betStatusMessage = 'Initializing...';
+    });
+
+    try {
+      // Get betting service
+      final bettingService = Web3BetClient().getBettingService();
+      if (bettingService == null) {
+        throw Exception('Please login first');
+      }
+
+      // Map bet type to outcome index
+      final outcomeIndex = _selectedBetType == 'home'
+          ? 0
+          : _selectedBetType == 'draw'
+          ? 1
+          : 2;
+
+      // Get contract addresses from pricing data
+      final pricingData = await ref.read(
+        eventPricingProvider(widget.eventId).future,
+      );
+
+      if (pricingData == null) {
+        throw Exception('Failed to load contract addresses');
+      }
+
+      final marketAddress = pricingData['market_address'] as String?;
+      final collateralAddress =
+          pricingData['collateral_token_address'] as String?;
+      final marketMakerAddress = pricingData['market_maker_address'] as String?;
+
+      if (marketAddress == null ||
+          collateralAddress == null ||
+          marketMakerAddress == null) {
+        throw Exception('Contract addresses not available for this event');
+      }
+
+      // Place the bet
+      final txHash = await bettingService.buyOutcome(
+        eventId: widget.eventId,
+        outcomeIndex: outcomeIndex,
+        betAmountUSDC: _betAmountController.text,
+        marketAddress: marketAddress,
+        collateralTokenAddress: collateralAddress,
+        marketMakerAddress: marketMakerAddress,
+        onStatusUpdate: (status) {
+          setState(() {
+            _betStatusMessage = status;
+          });
+        },
+      );
+
+      // Success!
+      setState(() {
+        _isPlacingBet = false;
+        _betStatusMessage = null;
+      });
+
+      // Show success dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Bet Placed!'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Your bet was placed successfully!'),
+                const SizedBox(height: 8),
+                Text(
+                  'Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Clear bet amount
+      _betAmountController.clear();
+      _calculateWinnings('', null);
+    } catch (e) {
+      setState(() {
+        _isPlacingBet = false;
+        _betStatusMessage = null;
+        _betErrorMessage = e.toString();
+      });
+
+      // Show error dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text(_betErrorMessage ?? 'Unknown error'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final eventAsync = ref.watch(eventDetailsProvider(widget.eventId));
@@ -160,63 +302,17 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
             return Column(
               children: [
-                // Fixed Header
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 20.0,
-                    top: 40.0,
-                    right: 20.0,
-                    bottom: 20.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: Colors.black87,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        leagueName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(width: 40),
-                    ],
-                  ),
-                ),
                 // Scrollable Content
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 0),
+                      padding: const EdgeInsets.fromLTRB(20.0, 60.0, 20.0, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Top Card (Your Progress style)
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1A2332),
                               borderRadius: BorderRadius.circular(20),
@@ -465,7 +561,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
                           // Betting Interface Card
                           pricingAsync.when(
                             loading: () => Container(
@@ -828,50 +924,89 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                               ],
                                             ),
                                     ),
-                                    // Unavailable Button or Place Bet Button
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: _betAmountController.text.isEmpty
-                                            ? const Color(0xFF2A3544)
-                                            : const Color(0xFF0066CC),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (_betAmountController.text.isEmpty)
-                                            Icon(
-                                              Icons.block,
-                                              color: Colors.white.withValues(
-                                                alpha: 0.5,
-                                              ),
-                                              size: 18,
-                                            ),
-                                          if (_betAmountController.text.isEmpty)
-                                            const SizedBox(width: 8),
-                                          Text(
-                                            _betAmountController.text.isEmpty
-                                                ? 'Unavailable'
-                                                : 'Place Bet',
-                                            style: TextStyle(
-                                              color:
-                                                  _betAmountController
+                                    // Place Bet Button
+                                    GestureDetector(
+                                      onTap:
+                                          _betAmountController.text.isEmpty ||
+                                              _isPlacingBet
+                                          ? null
+                                          : _placeBet,
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              _betAmountController
                                                       .text
-                                                      .isEmpty
-                                                  ? Colors.white.withValues(
-                                                      alpha: 0.5,
-                                                    )
-                                                  : Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                                      .isEmpty ||
+                                                  _isPlacingBet
+                                              ? const Color(0xFF2A3544)
+                                              : const Color(0xFF0066CC),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
-                                        ],
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            if (_isPlacingBet)
+                                              const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(Colors.white),
+                                                ),
+                                              ),
+                                            if (_isPlacingBet)
+                                              const SizedBox(width: 8),
+                                            if (!_isPlacingBet &&
+                                                _betAmountController
+                                                    .text
+                                                    .isEmpty)
+                                              Icon(
+                                                Icons.block,
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                                size: 18,
+                                              ),
+                                            if (!_isPlacingBet &&
+                                                _betAmountController
+                                                    .text
+                                                    .isEmpty)
+                                              const SizedBox(width: 8),
+                                            Text(
+                                              _isPlacingBet
+                                                  ? _betStatusMessage ??
+                                                        'Processing...'
+                                                  : _betAmountController
+                                                        .text
+                                                        .isEmpty
+                                                  ? 'Unavailable'
+                                                  : 'Place Bet',
+                                              style: TextStyle(
+                                                color:
+                                                    _betAmountController
+                                                            .text
+                                                            .isEmpty ||
+                                                        _isPlacingBet
+                                                    ? Colors.white.withValues(
+                                                        alpha: 0.5,
+                                                      )
+                                                    : Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],

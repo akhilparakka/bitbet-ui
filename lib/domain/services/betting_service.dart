@@ -3,12 +3,99 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../models/transaction_preview.dart';
 
 class BettingService {
   final Web3Client web3Client;
   final EthPrivateKey credentials;
 
   BettingService({required this.web3Client, required this.credentials});
+
+  /// Simulate a bet transaction and return preview details
+  Future<TransactionPreview> simulateBet({
+    required String eventName,
+    required String betType,
+    required int outcomeIndex,
+    required String betAmountUSDC,
+    required String marketAddress,
+    required String collateralTokenAddress,
+    required String marketMakerAddress,
+  }) async {
+    try {
+      // Load contract ABIs
+      final marketAbi = await _loadAbi('StandardMarket.abi.json');
+      final collateralAbi = await _loadAbi('ERC20.abi.json');
+      final marketMakerAbi = await _loadAbi('LMSRMarketMaker.abi.json');
+
+      // Create contract instances
+      final marketContract = DeployedContract(
+        ContractAbi.fromJson(marketAbi, 'StandardMarket'),
+        EthereumAddress.fromHex(marketAddress),
+      );
+
+      final collateralToken = DeployedContract(
+        ContractAbi.fromJson(collateralAbi, 'ERC20'),
+        EthereumAddress.fromHex(collateralTokenAddress),
+      );
+
+      final marketMaker = DeployedContract(
+        ContractAbi.fromJson(marketMakerAbi, 'LMSRMarketMaker'),
+        EthereumAddress.fromHex(marketMakerAddress),
+      );
+
+      // Get token decimals
+      final decimals = await _getDecimals(collateralToken);
+      final betAmount = double.parse(betAmountUSDC);
+      final betAmountWei = BigInt.from(betAmount * pow(10, decimals));
+
+      // Get price quote
+      final estimatedCost = await _getQuote(
+        marketMaker,
+        marketAddress,
+        outcomeIndex,
+        betAmountWei,
+      );
+
+      final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
+
+      // Calculate shares and potential payout
+      final estimatedCostDecimal = estimatedCost.toDouble() / pow(10, decimals);
+      final maxCostDecimal = maxCost.toDouble() / pow(10, decimals);
+      final shares = betAmount;
+      final potentialPayout = shares * 1.0; // Each share pays 1 USDT if it wins
+      final netProfit = potentialPayout - betAmount;
+
+      // Get gas price
+      final gasPrice = await web3Client.getGasPrice();
+      final gasPriceGwei = gasPrice.getInWei.toDouble() / 1e9;
+
+      // Estimate gas (approve + buy)
+      final estimatedGas = 100000 + 500000; // Approve + Buy
+      final estimatedGasCost =
+          (estimatedGas * gasPrice.getInWei.toDouble()) / 1e18;
+
+      return TransactionPreview(
+        eventName: eventName,
+        betType: betType,
+        betAmount: betAmount,
+        estimatedCost: estimatedCostDecimal,
+        maxCost: maxCostDecimal,
+        shares: shares,
+        potentialPayout: potentialPayout,
+        netProfit: netProfit,
+        marketAddress: marketAddress,
+        collateralTokenAddress: collateralTokenAddress,
+        marketMakerAddress: marketMakerAddress,
+        estimatedGas: estimatedGas,
+        gasPrice: gasPriceGwei,
+        estimatedGasCost: estimatedGasCost,
+        decimals: decimals,
+      );
+    } catch (e) {
+      debugPrint('Error simulating bet: $e');
+      rethrow;
+    }
+  }
 
   /// Main function to place a bet
   Future<String> buyOutcome({

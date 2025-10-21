@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../domain/providers/event_provider.dart';
 import '../../../domain/services/web3_client.dart';
+import 'transaction_preview_sheet.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -152,7 +153,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     setState(() {
       _isPlacingBet = true;
       _betErrorMessage = null;
-      _betStatusMessage = 'Initializing...';
+      _betStatusMessage = 'Simulating transaction...';
     });
 
     try {
@@ -169,19 +170,30 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ? 1
           : 2;
 
-      // Get contract addresses from pricing data
+      // Get bet type display name
+      final betTypeDisplay = _selectedBetType == 'home'
+          ? 'Home Win'
+          : _selectedBetType == 'draw'
+          ? 'Draw'
+          : 'Away Win';
+
+      // Get contract addresses and event data
       final pricingData = await ref.read(
         eventPricingProvider(widget.eventId).future,
       );
+      final eventData = await ref.read(
+        eventDetailsProvider(widget.eventId).future,
+      );
 
-      if (pricingData == null) {
-        throw Exception('Failed to load contract addresses');
+      if (pricingData == null || eventData == null) {
+        throw Exception('Failed to load event data');
       }
 
       final marketAddress = pricingData['market_address'] as String?;
       final collateralAddress =
           pricingData['collateral_token_address'] as String?;
       final marketMakerAddress = pricingData['market_maker_address'] as String?;
+      final eventName = eventData['event_name'] as String? ?? 'Unknown Event';
 
       if (marketAddress == null ||
           collateralAddress == null ||
@@ -189,61 +201,110 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         throw Exception('Contract addresses not available for this event');
       }
 
-      // Place the bet
-      final txHash = await bettingService.buyOutcome(
-        eventId: widget.eventId,
+      // Simulate the transaction
+      final preview = await bettingService.simulateBet(
+        eventName: eventName,
+        betType: betTypeDisplay,
         outcomeIndex: outcomeIndex,
         betAmountUSDC: _betAmountController.text,
         marketAddress: marketAddress,
         collateralTokenAddress: collateralAddress,
         marketMakerAddress: marketMakerAddress,
-        onStatusUpdate: (status) {
-          setState(() {
-            _betStatusMessage = status;
-          });
-        },
       );
 
-      // Success!
+      // Hide loading state
       setState(() {
         _isPlacingBet = false;
         _betStatusMessage = null;
       });
 
-      // Show success dialog
+      // Show preview bottom sheet
       if (mounted) {
-        showDialog(
+        final shouldProceed = await showModalBottomSheet<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Bet Placed!'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Your bet was placed successfully!'),
-                const SizedBox(height: 8),
-                Text(
-                  'Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}',
-                  style: const TextStyle(fontSize: 12),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.25,
+            ),
+            child: TransactionPreviewSheet(
+              preview: preview,
+              onProceed: () => Navigator.pop(context, true),
+              onCancel: () => Navigator.pop(context, false),
+            ),
+          ),
+        );
+
+        // If user cancelled, return
+        if (shouldProceed != true) {
+          return;
+        }
+
+        // User confirmed, proceed with transaction
+        setState(() {
+          _isPlacingBet = true;
+          _betStatusMessage = 'Processing transaction...';
+        });
+
+        // Execute the actual transaction
+        final txHash = await bettingService.buyOutcome(
+          eventId: widget.eventId,
+          outcomeIndex: outcomeIndex,
+          betAmountUSDC: _betAmountController.text,
+          marketAddress: marketAddress,
+          collateralTokenAddress: collateralAddress,
+          marketMakerAddress: marketMakerAddress,
+          onStatusUpdate: (status) {
+            if (mounted) {
+              setState(() {
+                _betStatusMessage = status;
+              });
+            }
+          },
+        );
+
+        // Success!
+        setState(() {
+          _isPlacingBet = false;
+          _betStatusMessage = null;
+        });
+
+        // Show success dialog
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Bet Placed!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Your bet was placed successfully!'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+          );
+        }
+
+        // Clear bet amount
+        _betAmountController.clear();
+        _calculateWinnings('', null);
+
+        // Reload balance after successful bet
+        _loadUserBalance();
       }
-
-      // Clear bet amount
-      _betAmountController.clear();
-      _calculateWinnings('', null);
-
-      // Reload balance after successful bet
-      _loadUserBalance();
     } catch (e) {
       setState(() {
         _isPlacingBet = false;

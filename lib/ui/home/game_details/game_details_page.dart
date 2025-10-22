@@ -92,7 +92,13 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final outcomeData = pricingData[_selectedBetType];
     if (outcomeData == null) return;
 
-    final sharePrice = (outcomeData['share_price'] as num?)?.toDouble() ?? 0.0;
+    // Handle both string and number types from API
+    final sharePriceValue = outcomeData['share_price'];
+    final sharePrice = sharePriceValue is num
+        ? sharePriceValue.toDouble()
+        : (sharePriceValue is String
+              ? double.tryParse(sharePriceValue) ?? 0.0
+              : 0.0);
     if (sharePrice <= 0) return;
 
     final shares = betAmount / sharePrice;
@@ -201,8 +207,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
       // Get share price from pricing data
       final outcomeData = pricingData[_selectedBetType];
-      final sharePrice =
-          (outcomeData?['share_price'] as num?)?.toDouble() ?? 0.0;
+
+      // Handle both string and number types from API
+      final sharePriceValue = outcomeData?['share_price'];
+      final sharePrice = sharePriceValue is num
+          ? sharePriceValue.toDouble()
+          : (sharePriceValue is String
+                ? double.tryParse(sharePriceValue) ?? 0.0
+                : 0.0);
 
       if (sharePrice <= 0) {
         throw Exception('Share price not available');
@@ -1126,8 +1138,21 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     Map<String, dynamic> pricingData,
   ) {
     final isSelected = _selectedBetType == betType;
-    final multiplier = (outcomeData['multiplier'] as num?)?.toDouble() ?? 0.0;
-    final probability = (outcomeData['probability'] as num?)?.toDouble() ?? 0.0;
+
+    // Handle both string and number types from API
+    final multiplierValue = outcomeData['multiplier'];
+    final multiplier = multiplierValue is num
+        ? multiplierValue.toDouble()
+        : (multiplierValue is String
+              ? double.tryParse(multiplierValue) ?? 0.0
+              : 0.0);
+
+    final probabilityValue = outcomeData['probability'];
+    final probability = probabilityValue is num
+        ? probabilityValue.toDouble()
+        : (probabilityValue is String
+              ? double.tryParse(probabilityValue) ?? 0.0
+              : 0.0);
 
     return GestureDetector(
       onTap: () {

@@ -31,7 +31,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
   // Betting state
   bool _isPlacingBet = false;
-  String? _betStatusMessage;
   String? _betErrorMessage;
 
   @override
@@ -153,7 +152,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     setState(() {
       _isPlacingBet = true;
       _betErrorMessage = null;
-      _betStatusMessage = 'Simulating transaction...';
     });
 
     try {
@@ -201,12 +199,22 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         throw Exception('Contract addresses not available for this event');
       }
 
+      // Get share price from pricing data
+      final outcomeData = pricingData[_selectedBetType];
+      final sharePrice =
+          (outcomeData?['share_price'] as num?)?.toDouble() ?? 0.0;
+
+      if (sharePrice <= 0) {
+        throw Exception('Share price not available');
+      }
+
       // Simulate the transaction
       final preview = await bettingService.simulateBet(
         eventName: eventName,
         betType: betTypeDisplay,
         outcomeIndex: outcomeIndex,
         betAmountUSDC: _betAmountController.text,
+        sharePrice: sharePrice,
         marketAddress: marketAddress,
         collateralTokenAddress: collateralAddress,
         marketMakerAddress: marketMakerAddress,
@@ -215,7 +223,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       // Hide loading state
       setState(() {
         _isPlacingBet = false;
-        _betStatusMessage = null;
       });
 
       // Show preview bottom sheet
@@ -224,14 +231,24 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
-          builder: (context) => Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.25,
-            ),
-            child: TransactionPreviewSheet(
-              preview: preview,
-              onProceed: () => Navigator.pop(context, true),
-              onCancel: () => Navigator.pop(context, false),
+          isDismissible: true, // Allow dismissing by tapping outside
+          enableDrag: false,
+          builder: (context) => GestureDetector(
+            onTap: () =>
+                Navigator.pop(context, false), // Close on background tap
+            behavior: HitTestBehavior.opaque,
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap from bubbling up from the sheet
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.25,
+                ),
+                child: TransactionPreviewSheet(
+                  preview: preview,
+                  onProceed: () => Navigator.pop(context, true),
+                  onCancel: () => Navigator.pop(context, false),
+                ),
+              ),
             ),
           ),
         );
@@ -244,7 +261,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         // User confirmed, proceed with transaction
         setState(() {
           _isPlacingBet = true;
-          _betStatusMessage = 'Processing transaction...';
         });
 
         // Execute the actual transaction
@@ -252,22 +268,18 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           eventId: widget.eventId,
           outcomeIndex: outcomeIndex,
           betAmountUSDC: _betAmountController.text,
+          sharePrice: sharePrice,
           marketAddress: marketAddress,
           collateralTokenAddress: collateralAddress,
           marketMakerAddress: marketMakerAddress,
           onStatusUpdate: (status) {
-            if (mounted) {
-              setState(() {
-                _betStatusMessage = status;
-              });
-            }
+            // Status updates not needed in UI
           },
         );
 
         // Success!
         setState(() {
           _isPlacingBet = false;
-          _betStatusMessage = null;
         });
 
         // Show success dialog
@@ -308,7 +320,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     } catch (e) {
       setState(() {
         _isPlacingBet = false;
-        _betStatusMessage = null;
         _betErrorMessage = e.toString();
       });
 
@@ -1026,7 +1037,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                                       .isEmpty ||
                                                   _isPlacingBet
                                               ? const Color(0xFF2A3544)
-                                              : const Color(0xFF0066CC),
+                                              : const Color(0xFF6C63FF),
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -1065,29 +1076,26 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                                     .text
                                                     .isEmpty)
                                               const SizedBox(width: 8),
-                                            Text(
-                                              _isPlacingBet
-                                                  ? _betStatusMessage ??
-                                                        'Processing...'
-                                                  : _betAmountController
+                                            if (!_isPlacingBet)
+                                              Text(
+                                                _betAmountController
                                                         .text
                                                         .isEmpty
-                                                  ? 'Unavailable'
-                                                  : 'Place Bet',
-                                              style: TextStyle(
-                                                color:
-                                                    _betAmountController
-                                                            .text
-                                                            .isEmpty ||
-                                                        _isPlacingBet
-                                                    ? Colors.white.withValues(
-                                                        alpha: 0.5,
-                                                      )
-                                                    : Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
+                                                    ? 'Unavailable'
+                                                    : 'Place Bet',
+                                                style: TextStyle(
+                                                  color:
+                                                      _betAmountController
+                                                          .text
+                                                          .isEmpty
+                                                      ? Colors.white.withValues(
+                                                          alpha: 0.5,
+                                                        )
+                                                      : Colors.white,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
-                                            ),
                                           ],
                                         ),
                                       ),
@@ -1134,7 +1142,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0066CC) : const Color(0xFF2A3544),
+          color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2A3544),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

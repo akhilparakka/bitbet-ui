@@ -76,7 +76,7 @@ class TransactionPreviewSheet extends StatelessWidget {
                 // Potential Payout
                 _buildRow(
                   'Potential Win',
-                  '${preview.formattedPotentialPayout} ${preview.tokenSymbol}',
+                  '~${preview.formattedPotentialPayout} ${preview.tokenSymbol}',
                   valueColor: Colors.greenAccent,
                 ),
                 const SizedBox(height: 16),

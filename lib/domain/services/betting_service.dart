@@ -17,6 +17,7 @@ class BettingService {
     required String betType,
     required int outcomeIndex,
     required String betAmountUSDC,
+    required double sharePrice,
     required String marketAddress,
     required String collateralTokenAddress,
     required String marketMakerAddress,
@@ -46,24 +47,29 @@ class BettingService {
       // Get token decimals
       final decimals = await _getDecimals(collateralToken);
       final betAmount = double.parse(betAmountUSDC);
-      final betAmountWei = BigInt.from(betAmount * pow(10, decimals));
 
-      // Get price quote
+      // Calculate shares from bet amount and share price
+      // User wants to spend betAmount USDT, calculate how many shares they get
+      final shares = betAmount / sharePrice;
+      final sharesWei = BigInt.from(shares * pow(10, decimals));
+
+      // Get price quote for the calculated shares
       final estimatedCost = await _getQuote(
         marketMaker,
         marketAddress,
         outcomeIndex,
-        betAmountWei,
+        sharesWei, // Pass SHARES not betAmount
       );
 
       final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
 
-      // Calculate shares and potential payout
+      // Calculate potential payout and profit
       final estimatedCostDecimal = estimatedCost.toDouble() / pow(10, decimals);
       final maxCostDecimal = maxCost.toDouble() / pow(10, decimals);
-      final shares = betAmount;
-      final potentialPayout = shares * 1.0; // Each share pays 1 USDT if it wins
-      final netProfit = potentialPayout - betAmount;
+      final potentialPayout = shares; // Each share pays 1 USDT if it wins
+      final netProfit =
+          potentialPayout -
+          estimatedCostDecimal; // Profit = payout - actual cost
 
       // Get gas price
       final gasPrice = await web3Client.getGasPrice();
@@ -101,7 +107,9 @@ class BettingService {
   Future<String> buyOutcome({
     required String eventId,
     required int outcomeIndex, // 0=Home, 1=Draw, 2=Away
-    required String betAmountUSDC, // "100" (human readable)
+    required String
+    betAmountUSDC, // "100" (human readable USDT amount user wants to spend)
+    required double sharePrice, // Current share price from pricing API
     required String marketAddress,
     required String collateralTokenAddress,
     required String marketMakerAddress,
@@ -119,7 +127,6 @@ class BettingService {
       debugPrint('Collateral Address: $collateralTokenAddress');
       debugPrint('Market Maker Address: $marketMakerAddress');
 
-      // STEP 2: Load contract ABIs
       onStatusUpdate?.call('Loading contracts...');
       debugPrint('Loading ABIs...');
       final marketAbi = await _loadAbi('StandardMarket.abi.json');
@@ -127,7 +134,6 @@ class BettingService {
       final marketMakerAbi = await _loadAbi('LMSRMarketMaker.abi.json');
       debugPrint('ABIs loaded successfully');
 
-      // STEP 3: Create contract instances
       debugPrint('Creating contract instances...');
 
       debugPrint('Creating market contract...');
@@ -151,17 +157,21 @@ class BettingService {
       );
       debugPrint('Market maker contract created');
 
-      // STEP 4: Convert amount to wei (USDC uses 6 decimals!)
       debugPrint('Getting token decimals...');
       final decimals = await _getDecimals(collateralToken);
       debugPrint('Token decimals: $decimals');
 
-      final betAmountWei = BigInt.from(
-        double.parse(betAmountUSDC) * pow(10, decimals),
-      );
-      debugPrint('Bet amount in wei: $betAmountWei');
+      final betAmount = double.parse(betAmountUSDC);
+      debugPrint('User wants to spend: $betAmount USDC');
+      debugPrint('Current share price: $sharePrice');
 
-      // STEP 5: Check user balance
+      // Calculate how many shares the user can buy
+      final shares = betAmount / sharePrice;
+      debugPrint('Calculated shares: $shares');
+
+      final sharesWei = BigInt.from(shares * pow(10, decimals));
+      debugPrint('Shares in wei: $sharesWei');
+
       onStatusUpdate?.call('Checking balance...');
       debugPrint('Getting user address...');
       final userAddress = await credentials.extractAddress();
@@ -171,24 +181,29 @@ class BettingService {
       final balance = await _getBalance(collateralToken, userAddress);
       debugPrint('User balance: $balance');
 
-      if (balance < betAmountWei) {
+      // Check if balance covers rough estimate
+      final roughEstimate = BigInt.from(betAmount * 1.1 * pow(10, decimals));
+      if (balance < roughEstimate) {
         throw Exception(
           'Insufficient balance. You have ${balance / BigInt.from(pow(10, decimals))} USDC',
         );
       }
 
-      // STEP 6: Get price quote (optional but recommended)
-      debugPrint('Getting price quote...');
+      // STEP 6: Get price quote for the shares
+      debugPrint('Getting price quote for $shares shares...');
       final estimatedCost = await _getQuote(
         marketMaker,
         marketAddress,
         outcomeIndex,
-        betAmountWei,
+        sharesWei,
       );
 
       debugPrint(
         'Estimated cost: ${estimatedCost / BigInt.from(pow(10, decimals))} USDC',
       );
+
+      // Calculate maxCost with 5% slippage buffer
+      final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
 
       // STEP 7: Approve collateral token (if needed)
       final currentAllowance = await _getAllowance(
@@ -197,27 +212,25 @@ class BettingService {
         EthereumAddress.fromHex(marketAddress),
       );
 
-      if (currentAllowance < betAmountWei) {
+      if (currentAllowance < maxCost) {
         onStatusUpdate?.call('Approving USDC...');
         debugPrint('Approving USDC...');
         await _approveToken(
           collateralToken,
           EthereumAddress.fromHex(marketAddress),
-          betAmountWei,
+          maxCost, // Approve maxCost amount
         );
         debugPrint('Approval confirmed!');
       }
 
       // STEP 8: Place the bet
-      final maxCost =
-          (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100); // 5% slippage
 
       onStatusUpdate?.call('Placing bet...');
-      debugPrint('Placing bet...');
+      debugPrint('Placing bet with $shares shares...');
       final txHash = await _executeBuy(
         marketContract,
         outcomeIndex,
-        betAmountWei,
+        sharesWei, // Pass SHARES, not betAmount
         maxCost,
         onStatusUpdate: onStatusUpdate,
       );

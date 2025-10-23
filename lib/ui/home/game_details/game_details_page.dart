@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../domain/providers/event_provider.dart';
+import '../../../domain/providers/user_bets_provider.dart';
+import '../../../domain/providers/user_provider.dart';
 import '../../../domain/services/web3_client.dart';
 import 'transaction_preview_sheet.dart';
 
@@ -293,6 +295,12 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         setState(() {
           _isPlacingBet = false;
         });
+
+        // Invalidate bets data to refresh My Bets section
+        final userId = await ref.read(userIdProvider.future);
+        if (userId != null) {
+          ref.invalidate(userBetsProvider(userId));
+        }
 
         // Show success dialog
         if (mounted) {

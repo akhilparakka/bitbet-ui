@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
+import 'package:bitbet/ui/home/nav_sections/my_bets_section.dart';
 import 'package:bitbet/ui/custom_widgets/navigation_sidebar.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
 import 'package:bitbet/ui/search/search_page.dart';
@@ -86,11 +87,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final Map<String, Widget> _sectionWidgets = {
     'All Games': const AllGamesSection(),
     'Favorites': const FavoritesSection(),
-    'My Bets': const Text(
-      "My Bets Section\nTrack your betting history and active bets",
-      style: TextStyle(color: Colors.white, fontSize: 18),
-      textAlign: TextAlign.center,
-    ),
+    'My Bets': const MyBetsSection(),
     'Discover': const Text(
       "Discover Section\nFind new and trending games",
       style: TextStyle(color: Colors.white, fontSize: 18),

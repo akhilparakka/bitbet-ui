@@ -6,6 +6,7 @@ import '../../../domain/providers/event_provider.dart';
 import '../../../domain/providers/user_bets_provider.dart';
 import '../../../domain/providers/user_provider.dart';
 import '../../../domain/services/web3_client.dart';
+import '../../custom_widgets/shimmer_widget.dart';
 import 'transaction_preview_sheet.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
@@ -33,6 +34,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
   // Betting state
   bool _isPlacingBet = false;
+  bool _isButtonPressed = false;
   String? _betErrorMessage;
 
   @override
@@ -643,95 +645,74 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   }
 
   Widget _buildTopCardSkeleton() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A2332),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFF2A3544),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Container(
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2A3544),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 80,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A3544),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ],
+    return ShimmerWidget(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A2332),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF2A3544),
+            width: 1,
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A3544),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 12,
-                      width: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A3544),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 32,
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 14,
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A3544),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                ],
-              ),
-              Expanded(
-                child: Column(
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 80,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A3544),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A3544),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 12,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A3544),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
                   children: [
                     Container(
                       width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A3544),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 12,
-                      width: 50,
+                      height: 32,
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A3544),
                         borderRadius: BorderRadius.circular(4),
@@ -739,19 +720,42 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 14,
-            width: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A3544),
-              borderRadius: BorderRadius.circular(4),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A3544),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 12,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A3544),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Container(
+              height: 14,
+              width: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A3544),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1000,14 +1004,21 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        '\$${_grossWinnings.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                                                AnimatedSwitcher(
+                                                  duration: const Duration(milliseconds: 300),
+                                                  transitionBuilder: (child, animation) {
+                                                    return ScaleTransition(scale: animation, child: child);
+                                                  },
+                                                  child: Text(
+                                                    '\$${_grossWinnings.toStringAsFixed(2)}',
+                                                    key: ValueKey<double>(_grossWinnings),
+                                                    style: const TextStyle(
+                                                      color: Color(0xFF10B981),
+                                                      fontSize: 36,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
                       Row(
                         children: [
                           Text(
@@ -1043,48 +1054,55 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             onTap: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
                 ? null
                 : _placeBet,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
-                    ? const Color(0xFF2A3544)
-                    : const Color(0xFF6C63FF),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_isPlacingBet)
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            onTapDown: (_) => setState(() => _isButtonPressed = true),
+            onTapUp: (_) => setState(() => _isButtonPressed = false),
+            onTapCancel: () => setState(() => _isButtonPressed = false),
+            child: AnimatedScale(
+              scale: _isButtonPressed ? 0.95 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
+                      ? const Color(0xFF2A3544)
+                      : const Color(0xFF6C63FF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isPlacingBet)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
                       ),
-                    ),
-                  if (_isPlacingBet) const SizedBox(width: 8),
-                  if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
-                    Icon(
-                      Icons.block,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 18,
-                    ),
-                  if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
-                    const SizedBox(width: 8),
-                  if (!_isPlacingBet)
-                    Text(
-                      _betAmountController.text.isEmpty || pricingData == null ? 'Unavailable' : 'Place Bet',
-                      style: TextStyle(
-                        color: _betAmountController.text.isEmpty || pricingData == null
-                            ? Colors.white.withValues(alpha: 0.5)
-                            : Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    if (_isPlacingBet) const SizedBox(width: 8),
+                    if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                      Icon(
+                        Icons.block,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 18,
                       ),
-                    ),
-                ],
+                    if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                      const SizedBox(width: 8),
+                    if (!_isPlacingBet)
+                      Text(
+                        _betAmountController.text.isEmpty || pricingData == null ? 'Unavailable' : 'Place Bet',
+                        style: TextStyle(
+                          color: _betAmountController.text.isEmpty || pricingData == null
+                              ? Colors.white.withValues(alpha: 0.5)
+                              : Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1103,39 +1121,43 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
     // Handle loading state
     if (outcomeData == null) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A3544),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(
-              teamAbbr,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+      return ShimmerWidget(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A3544),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Container(
+                height: 18,
+                width: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3A4554),
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Loading...',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
+              const SizedBox(height: 4),
+              Container(
+                height: 17,
+                width: 35,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3A4554),
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            const Text(
-              '...',
-              style: TextStyle(
-                color: Color(0x80FFFFFF),
-                fontSize: 11,
+              const SizedBox(height: 2),
+              Container(
+                height: 14,
+                width: 25,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3A4554),
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -1165,11 +1187,22 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           }
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2A3544),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.white24 : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? Colors.purple.withOpacity(0.3) : Colors.transparent,
+              blurRadius: 8,
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -1208,35 +1241,48 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     double amount,
     Map<String, dynamic>? pricingData,
   ) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: pricingData == null ? null : () {
-          setState(() {
-            final currentAmount =
-                double.tryParse(_betAmountController.text) ?? 0.0;
-            final newAmount = label == 'Max' ? amount : currentAmount + amount;
-            _betAmountController.text = newAmount.toStringAsFixed(0);
-            _calculateWinnings(_betAmountController.text, pricingData);
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: pricingData == null ? const Color(0xFF2A3544) : const Color(0xFF374151),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: pricingData == null ? Colors.white.withValues(alpha: 0.5) : Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
+    final buttonContent = Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: pricingData == null ? const Color(0xFF2A3544) : const Color(0xFF374151),
+        borderRadius: BorderRadius.circular(8),
       ),
+      child: Center(
+        child: pricingData == null
+            ? Container(
+                height: 15,
+                width: 45,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3A4554),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              )
+            : Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+      ),
+    );
+
+    return Expanded(
+      child: pricingData == null
+          ? ShimmerWidget(child: buttonContent)
+          : GestureDetector(
+              onTap: () {
+                setState(() {
+                  final currentAmount =
+                      double.tryParse(_betAmountController.text) ?? 0.0;
+                  final newAmount = label == 'Max' ? amount : currentAmount + amount;
+                  _betAmountController.text = newAmount.toStringAsFixed(0);
+                  _calculateWinnings(_betAmountController.text, pricingData);
+                });
+              },
+              child: buttonContent,
+            ),
     );
   }
 }

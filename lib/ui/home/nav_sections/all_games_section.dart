@@ -14,10 +14,12 @@ class AllGamesSection extends StatefulWidget {
   State<AllGamesSection> createState() => _AllGamesSectionState();
 }
 
-class _AllGamesSectionState extends State<AllGamesSection> {
+class _AllGamesSectionState extends State<AllGamesSection>
+    with SingleTickerProviderStateMixin {
   Map<String, bool> favoriteMap = {};
   int selectedIconIndex = 0;
   String selectedSportGroup = 'Soccer';
+  late AnimationController _animationController;
 
   String formatEventDateTime(String? dateTimeStr) {
     if (dateTimeStr == null) return '';
@@ -57,10 +59,25 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     } catch (e) {
       return '';
     }
-  }
+   }
 
-  @override
-  Widget build(BuildContext context) {
+   @override
+   void initState() {
+     super.initState();
+     _animationController = AnimationController(
+       duration: const Duration(milliseconds: 800),
+       vsync: this,
+     )..forward();
+   }
+
+   @override
+   void dispose() {
+     _animationController.dispose();
+     super.dispose();
+   }
+
+   @override
+   Widget build(BuildContext context) {
     return Container(
       color: Colors.transparent,
       child: CustomScrollView(
@@ -197,12 +214,37 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                             );
                              return SingleChildScrollView(
                                child: Column(
-                                 children: pageMatches
-                                     .map(
-                                       (match) =>
-                                           _buildQuickPickItem(match, ref),
-                                     )
-                                     .toList(),
+                                 children: pageMatches.asMap().entries.map(
+                                   (entry) {
+                                     final index = entry.key;
+                                     final match = entry.value;
+                                     return AnimatedBuilder(
+                                       animation: _animationController,
+                                       builder: (context, child) {
+                                         final delay = index * 0.1;
+                                         final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+                                           CurvedAnimation(
+                                             parent: _animationController,
+                                             curve: Interval(delay, 1.0, curve: Curves.easeOut),
+                                           ),
+                                         );
+                                         return FadeTransition(
+                                           opacity: animation,
+                                           child: SlideTransition(
+                                             position: animation.drive(
+                                               Tween<Offset>(
+                                                 begin: const Offset(0, 0.1),
+                                                 end: Offset.zero,
+                                               ),
+                                             ),
+                                             child: child,
+                                           ),
+                                         );
+                                       },
+                                       child: _buildQuickPickItem(match, ref),
+                                     );
+                                   },
+                                 ).toList(),
                                ),
                              );
                           },

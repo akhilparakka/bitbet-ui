@@ -24,6 +24,8 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
     {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
   ];
 
+  bool _isPressed = false;
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -74,39 +76,46 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
   Widget _buildNavButton(String section, String iconPath, bool isSelected) {
     return GestureDetector(
       onTap: () => widget.onSectionChanged(section),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2D2D2D) : Colors.transparent,
-          borderRadius: BorderRadius.circular(26),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(
-              iconPath,
-              width: 20,
-              height: 20,
-              colorFilter: ColorFilter.mode(
-                isSelected ? Colors.white : const Color(0xFF666666),
-                BlendMode.srcIn,
-              ),
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 300),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF2D2D2D) : Colors.transparent,
+            borderRadius: BorderRadius.circular(26),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                iconPath,
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(
+                  isSelected ? Colors.white : const Color(0xFF666666),
+                  BlendMode.srcIn,
                 ),
-                child: Text(section),
               ),
+              if (isSelected) ...[
+                const SizedBox(width: 8),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 300),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  child: Text(section),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -132,7 +141,10 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
           ],
         ),
         child: Center(
-          child: Icon(Icons.search, color: const Color(0xFF888888), size: 26),
+          child: RotationTransition(
+            turns: const AlwaysStoppedAnimation(0.125), // 45 degrees
+            child: Icon(Icons.search, color: const Color(0xFF888888), size: 26),
+          ),
         ),
       ),
     );

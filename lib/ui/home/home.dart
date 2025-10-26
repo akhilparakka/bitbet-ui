@@ -147,6 +147,10 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: AnimatedBuilder(
           animation: _slideController,
           builder: (context, child) {
+            final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+              CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+            );
+
             return Stack(
               children: [
                 if (_outgoingSection != null && _isAnimating)
@@ -155,17 +159,20 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: _sectionWidgets[_outgoingSection!],
                   ),
 
-                Opacity(
-                  opacity: _isAnimating && _outgoingSection != null
-                      ? _slideController.value
-                      : 1.0,
-                  child: _sectionWidgets[section] ??
-                      Center(
-                        child: Text(
-                          "Section '$section' not found",
-                          style: const TextStyle(color: Colors.red, fontSize: 16),
+                ScaleTransition(
+                  scale: _isAnimating && _outgoingSection != null ? scaleAnimation : const AlwaysStoppedAnimation(1.0),
+                  child: Opacity(
+                    opacity: _isAnimating && _outgoingSection != null
+                        ? _slideController.value
+                        : 1.0,
+                    child: _sectionWidgets[section] ??
+                        Center(
+                          child: Text(
+                            "Section '$section' not found",
+                            style: const TextStyle(color: Colors.red, fontSize: 16),
+                          ),
                         ),
-                      ),
+                  ),
                 ),
               ],
             );

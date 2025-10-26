@@ -1,15 +1,54 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/transaction_preview.dart';
 
 class BettingService {
+  // USDT always has 6 decimals - hardcoded for performance
+  static const int USDT_DECIMALS = 6;
+
+  // ABI cache - loaded once at app start for performance
+  static final Map<String, String> _abiCache = {};
+  static bool _abisLoaded = false;
+
   final Web3Client web3Client;
   final EthPrivateKey credentials;
 
   BettingService({required this.web3Client, required this.credentials});
+
+  /// Initialize ABIs once at app startup (call from main.dart)
+  static Future<void> initializeAbis() async {
+    if (_abisLoaded) return;
+
+    debugPrint('🔧 Loading contract ABIs...');
+    _abiCache['StandardMarket'] = await rootBundle.loadString(
+      'assets/frontend_abis/StandardMarket.abi.json',
+    );
+    _abiCache['ERC20'] = await rootBundle.loadString(
+      'assets/frontend_abis/ERC20.abi.json',
+    );
+    _abiCache['LMSRMarketMaker'] = await rootBundle.loadString(
+      'assets/frontend_abis/LMSRMarketMaker.abi.json',
+    );
+    _abisLoaded = true;
+    debugPrint('✅ ABIs loaded and cached');
+  }
+
+  /// Get cached ABI (fast synchronous access)
+  String _getAbi(String name) {
+    if (!_abisLoaded) {
+      throw Exception(
+        'ABIs not initialized. Call BettingService.initializeAbis() first.',
+      );
+    }
+    final abi = _abiCache[name];
+    if (abi == null) {
+      throw Exception('ABI not found in cache: $name');
+    }
+    return abi;
+  }
 
   /// Simulate a bet transaction and return preview details
   Future<TransactionPreview> simulateBet({
@@ -23,35 +62,33 @@ class BettingService {
     required String marketMakerAddress,
   }) async {
     try {
-      // Load contract ABIs
-      final marketAbi = await _loadAbi('StandardMarket.abi.json');
-      final collateralAbi = await _loadAbi('ERC20.abi.json');
-      final marketMakerAbi = await _loadAbi('LMSRMarketMaker.abi.json');
+      // Get cached ABIs (instant - no I/O)
+      // final marketAbi = _getAbi('StandardMarket');
+      // final collateralAbi = _getAbi('ERC20');
+      final marketMakerAbi = _getAbi('LMSRMarketMaker');
 
       // Create contract instances
-      final marketContract = DeployedContract(
-        ContractAbi.fromJson(marketAbi, 'StandardMarket'),
-        EthereumAddress.fromHex(marketAddress),
-      );
+      // final marketContract = DeployedContract(
+      //   ContractAbi.fromJson(marketAbi, 'StandardMarket'),
+      //   EthereumAddress.fromHex(marketAddress),
+      // );
 
-      final collateralToken = DeployedContract(
-        ContractAbi.fromJson(collateralAbi, 'ERC20'),
-        EthereumAddress.fromHex(collateralTokenAddress),
-      );
+      // final collateralToken = DeployedContract(
+      //   ContractAbi.fromJson(collateralAbi, 'ERC20'),
+      //   EthereumAddress.fromHex(collateralTokenAddress),
+      // );
 
       final marketMaker = DeployedContract(
         ContractAbi.fromJson(marketMakerAbi, 'LMSRMarketMaker'),
         EthereumAddress.fromHex(marketMakerAddress),
       );
 
-      // Get token decimals
-      final decimals = await _getDecimals(collateralToken);
       final betAmount = double.parse(betAmountUSDC);
 
       // Calculate shares from bet amount and share price
       // User wants to spend betAmount USDT, calculate how many shares they get
       final shares = betAmount / sharePrice;
-      final sharesWei = BigInt.from(shares * pow(10, decimals));
+      final sharesWei = BigInt.from(shares * pow(10, USDT_DECIMALS));
 
       // Get price quote for the calculated shares
       final estimatedCost = await _getQuote(
@@ -64,8 +101,9 @@ class BettingService {
       final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
 
       // Calculate potential payout and profit
-      final estimatedCostDecimal = estimatedCost.toDouble() / pow(10, decimals);
-      final maxCostDecimal = maxCost.toDouble() / pow(10, decimals);
+      final estimatedCostDecimal =
+          estimatedCost.toDouble() / pow(10, USDT_DECIMALS);
+      final maxCostDecimal = maxCost.toDouble() / pow(10, USDT_DECIMALS);
       final potentialPayout = shares; // Each share pays 1 USDT if it wins
       final netProfit =
           potentialPayout -
@@ -95,7 +133,7 @@ class BettingService {
         estimatedGas: estimatedGas,
         gasPrice: gasPriceGwei,
         estimatedGasCost: estimatedGasCost,
-        decimals: decimals,
+        decimals: USDT_DECIMALS,
       );
     } catch (e) {
       debugPrint('Error simulating bet: $e');
@@ -116,9 +154,7 @@ class BettingService {
     Function(String)? onStatusUpdate,
   }) async {
     try {
-      // STEP 1: Contract addresses provided directly from frontend
       onStatusUpdate?.call('Loading contracts...');
-
       debugPrint('=== BETTING DEBUG ===');
       debugPrint('Event ID: $eventId');
       debugPrint('Outcome Index: $outcomeIndex');
@@ -127,39 +163,32 @@ class BettingService {
       debugPrint('Collateral Address: $collateralTokenAddress');
       debugPrint('Market Maker Address: $marketMakerAddress');
 
-      onStatusUpdate?.call('Loading contracts...');
-      debugPrint('Loading ABIs...');
-      final marketAbi = await _loadAbi('StandardMarket.abi.json');
-      final collateralAbi = await _loadAbi('ERC20.abi.json');
-      final marketMakerAbi = await _loadAbi('LMSRMarketMaker.abi.json');
-      debugPrint('ABIs loaded successfully');
+      // Get cached ABIs (instant - no I/O)
+      debugPrint('Loading ABIs from cache...');
+      final marketAbi = _getAbi('StandardMarket');
+      final collateralAbi = _getAbi('ERC20');
+      final marketMakerAbi = _getAbi('LMSRMarketMaker');
+      debugPrint('ABIs loaded from cache (instant)');
 
       debugPrint('Creating contract instances...');
-
-      debugPrint('Creating market contract...');
       final marketContract = DeployedContract(
         ContractAbi.fromJson(marketAbi, 'StandardMarket'),
         EthereumAddress.fromHex(marketAddress),
       );
-      debugPrint('Market contract created');
 
-      debugPrint('Creating collateral token contract...');
       final collateralToken = DeployedContract(
         ContractAbi.fromJson(collateralAbi, 'ERC20'),
         EthereumAddress.fromHex(collateralTokenAddress),
       );
-      debugPrint('Collateral token contract created');
 
-      debugPrint('Creating market maker contract...');
       final marketMaker = DeployedContract(
         ContractAbi.fromJson(marketMakerAbi, 'LMSRMarketMaker'),
         EthereumAddress.fromHex(marketMakerAddress),
       );
-      debugPrint('Market maker contract created');
+      debugPrint('Contract instances created');
 
-      debugPrint('Getting token decimals...');
-      final decimals = await _getDecimals(collateralToken);
-      debugPrint('Token decimals: $decimals');
+      // Use hardcoded USDT decimals (no RPC call needed)
+      debugPrint('Using USDT decimals: $USDT_DECIMALS (hardcoded)');
 
       final betAmount = double.parse(betAmountUSDC);
       debugPrint('User wants to spend: $betAmount USDC');
@@ -168,50 +197,56 @@ class BettingService {
       // Calculate how many shares the user can buy
       final shares = betAmount / sharePrice;
       debugPrint('Calculated shares: $shares');
-
-      final sharesWei = BigInt.from(shares * pow(10, decimals));
+      final sharesWei = BigInt.from(shares * pow(10, USDT_DECIMALS));
       debugPrint('Shares in wei: $sharesWei');
 
-      onStatusUpdate?.call('Checking balance...');
+      onStatusUpdate?.call('Checking price and balance...');
       debugPrint('Getting user address...');
       final userAddress = await credentials.extractAddress();
       debugPrint('User address: ${userAddress.hex}');
 
-      debugPrint('Checking balance...');
-      final balance = await _getBalance(collateralToken, userAddress);
-      debugPrint('User balance: $balance');
-
-      // Check if balance covers rough estimate
-      final roughEstimate = BigInt.from(betAmount * 1.1 * pow(10, decimals));
-      if (balance < roughEstimate) {
-        throw Exception(
-          'Insufficient balance. You have ${balance / BigInt.from(pow(10, decimals))} USDC',
-        );
-      }
-
-      // STEP 6: Get price quote for the shares
-      debugPrint('Getting price quote for $shares shares...');
-      final estimatedCost = await _getQuote(
-        marketMaker,
-        marketAddress,
-        outcomeIndex,
-        sharesWei,
+      // PARALLEL RPC CALLS - Execute all 3 simultaneously for speed
+      debugPrint(
+        'Fetching balance, allowance, and on-chain quote in parallel...',
       );
+      final results = await Future.wait([
+        _getBalance(collateralToken, userAddress),
+        _getAllowance(
+          collateralToken,
+          userAddress,
+          EthereumAddress.fromHex(marketAddress),
+        ),
+        _getQuote(marketMaker, marketAddress, outcomeIndex, sharesWei),
+      ]);
+
+      final balance = results[0];
+      final currentAllowance = results[1];
+      final estimatedCost = results[2];
 
       debugPrint(
-        'Estimated cost: ${estimatedCost / BigInt.from(pow(10, decimals))} USDC',
+        'User balance: ${balance / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+      );
+      debugPrint(
+        'Current allowance: ${currentAllowance / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+      );
+      debugPrint(
+        'On-chain quote: ${estimatedCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
       );
 
       // Calculate maxCost with 5% slippage buffer
       final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
-
-      // STEP 7: Approve collateral token (if needed)
-      final currentAllowance = await _getAllowance(
-        collateralToken,
-        userAddress,
-        EthereumAddress.fromHex(marketAddress),
+      debugPrint(
+        'Max cost (with slippage): ${maxCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
       );
 
+      // Check if balance covers the cost
+      if (balance < maxCost) {
+        throw Exception(
+          'Insufficient balance. You have ${balance / BigInt.from(pow(10, USDT_DECIMALS))} USDT, need ${maxCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        );
+      }
+
+      // Approve collateral token (if needed)
       if (currentAllowance < maxCost) {
         onStatusUpdate?.call('Approving USDC...');
         debugPrint('Approving USDC...');
@@ -221,10 +256,11 @@ class BettingService {
           maxCost, // Approve maxCost amount
         );
         debugPrint('Approval confirmed!');
+      } else {
+        debugPrint('Sufficient allowance already exists, skipping approval');
       }
 
-      // STEP 8: Place the bet
-
+      // Place the bet
       onStatusUpdate?.call('Placing bet...');
       debugPrint('Placing bet with $shares shares...');
       final txHash = await _executeBuy(
@@ -244,40 +280,6 @@ class BettingService {
   }
 
   // ============ HELPER FUNCTIONS ============
-
-  /// Load ABI from assets
-  Future<String> _loadAbi(String filename) async {
-    return await rootBundle.loadString('assets/frontend_abis/$filename');
-  }
-
-  /// Get token decimals
-  Future<int> _getDecimals(DeployedContract token) async {
-    try {
-      debugPrint('Calling decimals() function...');
-      final decimalsFunction = token.function('decimals');
-      debugPrint('Function found: ${decimalsFunction.name}');
-
-      final result = await web3Client
-          .call(contract: token, function: decimalsFunction, params: [])
-          .timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw Exception(
-                'RPC call timeout - check if Anvil is accessible',
-              );
-            },
-          );
-      debugPrint('decimals() call result: $result');
-
-      final decimals = (result.first as BigInt).toInt();
-      debugPrint('Parsed decimals: $decimals');
-      return decimals;
-    } catch (e) {
-      debugPrint('ERROR in _getDecimals: $e');
-      debugPrint('Stack trace: ${StackTrace.current}');
-      rethrow;
-    }
-  }
 
   /// Get token balance
   Future<BigInt> _getBalance(
@@ -337,7 +339,6 @@ class BettingService {
     BigInt amount,
   ) async {
     final approveFunction = token.function('approve');
-
     final txHash = await web3Client.sendTransaction(
       credentials,
       Transaction.callContract(
@@ -363,7 +364,6 @@ class BettingService {
     Function(String)? onStatusUpdate,
   }) async {
     final buyFunction = market.function('buy');
-
     final txHash = await web3Client.sendTransaction(
       credentials,
       Transaction.callContract(
@@ -381,29 +381,46 @@ class BettingService {
     return txHash;
   }
 
-  /// Wait for transaction confirmation
+  /// Wait for transaction confirmation with exponential backoff
   Future<void> _waitForConfirmation(String txHash) async {
     int attempts = 0;
-    const maxAttempts = 60; // 2 minutes max (2 sec intervals)
+    const maxAttempts = 30; // Reduced from 60
+
+    // Start at 500ms, double each time up to 3s max
+    const initialDelayMs = 500;
+    const maxDelayMs = 3000;
+
+    debugPrint('⏳ Waiting for transaction confirmation: $txHash');
 
     while (attempts < maxAttempts) {
       try {
         final receipt = await web3Client.getTransactionReceipt(txHash);
         if (receipt != null) {
           if (receipt.status == null || !receipt.status!) {
-            throw Exception('Transaction failed');
+            throw Exception('Transaction failed on-chain');
           }
-          debugPrint('Transaction confirmed: $txHash');
+          debugPrint('✅ Transaction confirmed in ${attempts + 1} attempts');
           return;
         }
       } catch (e) {
-        debugPrint('Waiting for confirmation... attempt $attempts');
+        if (e.toString().contains('failed')) rethrow;
+        // Ignore receipt not found errors, continue polling
       }
 
-      await Future.delayed(const Duration(seconds: 2));
+      // Exponential backoff: 500ms → 1s → 2s → 3s → 3s...
+      final delayMs = (initialDelayMs * pow(2, attempts)).toInt().clamp(
+        0,
+        maxDelayMs,
+      );
+      debugPrint(
+        '⏳ Attempt ${attempts + 1}: waiting ${delayMs}ms before next check',
+      );
+      await Future.delayed(Duration(milliseconds: delayMs));
       attempts++;
     }
 
-    throw Exception('Transaction confirmation timeout');
+    throw Exception(
+      'Transaction confirmation timeout after ${maxAttempts * maxDelayMs ~/ 1000}s',
+    );
   }
 }

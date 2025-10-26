@@ -103,32 +103,9 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF0F1419),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: _colorLoaded && _dominantColor != null
-              ? RadialGradient(
-                  center: const Alignment(
-                    -0.8,
-                    -0.8,
-                  ), // Approximate position of profile icon
-                  radius: _colorAnimationValue * 3.0,
-                  colors: [
-                    _dominantColor!.withValues(alpha: 0.4),
-                    _dominantColor!.withValues(alpha: 0.3),
-                    _dominantColor!.withValues(alpha: 0.2),
-                    _dominantColor!.withValues(alpha: 0.1),
-                    _dominantColor!.withValues(alpha: 0.05),
-                  ],
-                  stops: [0.0, 0.2, 0.4, 0.6, 0.8],
-                )
-              : const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: _defaultColors,
-                  stops: [0.0, 0.3, 0.7, 1.0],
-                ),
-        ),
+        color: const Color(0xFF0F1419),
         child: Material(
           color: Colors.transparent,
           child: Stack(
@@ -187,7 +164,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00BCD4),
+                    color: const Color(0xFF6C63FF),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: IconButton(
@@ -299,7 +276,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _slideController.dispose();
-    _colorAnimationController.dispose();
     super.dispose();
   }
 }

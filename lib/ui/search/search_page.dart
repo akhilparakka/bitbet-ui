@@ -51,21 +51,9 @@ class SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF0F1419),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1F2937), // Darker blue-gray
-              Color(0xFF253342), // Darker lighter
-              Color(0xFF1F2937), // Back to dark
-              Color(0xFF0F1419), // Even darker at bottom
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
+        color: const Color(0xFF0F1419),
         child: Material(
           color: Colors.transparent,
           child: Stack(

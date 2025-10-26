@@ -3,12 +3,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bitbet/domain/app_routes.dart';
 import 'package:bitbet/core/config/app_config.dart';
+import 'package:bitbet/domain/services/betting_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load();
 
   // Validate configuration
   AppConfig.validateConfig();
+
+  // Initialize ABI cache for faster betting transactions
+  await BettingService.initializeAbis();
 
   runApp(const ProviderScope(child: MyApp()));
 }

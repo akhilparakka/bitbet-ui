@@ -371,770 +371,724 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       backgroundColor: const Color(0xFF0F1419),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: eventAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) =>
-              Center(child: Text('Error loading event: $error')),
-          data: (eventData) {
-            if (eventData == null) {
-              return const Center(child: Text('Event not found'));
-            }
+        child: _buildContent(eventAsync.value),
+      ),
+    );
+  }
 
-            debugPrint('=== EVENT DATA: $eventData ===');
+  Widget _buildContent(Map<String, dynamic>? eventData) {
+    final pricingAsync = ref.watch(eventPricingProvider(widget.eventId));
 
-            // Start/stop timer for live events
-            if (eventData['event_status'] == 'live') {
-              _startLiveTimer();
-            } else {
-              _stopLiveTimer();
-            }
+    // Handle live timer based on event data
+    if (eventData != null) {
+      if (eventData['event_status'] == 'live') {
+        _startLiveTimer();
+      } else {
+        _stopLiveTimer();
+      }
+    }
 
-            final homeTeam =
-                (eventData['home_team'] as List?)?.first?['team_name'] ??
-                eventData['home_team_name'] ??
-                'Home Team';
-            final awayTeam =
-                (eventData['away_team'] as List?)?.first?['team_name'] ??
-                eventData['away_team_name'] ??
-                'Away Team';
-            final homeTeamLogo = eventData['home_team_logo'] as String?;
-            final awayTeamLogo = eventData['away_team_logo'] as String?;
-            final leagueName = 'Soccer';
-            final homeScore = eventData['home_score'];
-            final awayScore = eventData['away_score'];
-            final matchProgress = eventData['match_progress'];
-            final eventStatus = eventData['event_status'] as String?;
-            final contractDeployed = eventData['contract_deployed'] == true;
+    return Column(
+      children: [
+        // Scrollable Content
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 60.0, 20.0, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Card (Your Progress style)
+                  _buildTopCard(eventData),
+                  const SizedBox(height: 24),
+                  // Betting Interface Card
+                  _buildBettingCard(eventData, pricingAsync.value),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-            debugPrint('=== EVENT STATUS: $eventStatus ===');
-            debugPrint('=== HOME SCORE: $homeScore ===');
-            debugPrint('=== AWAY SCORE: $awayScore ===');
-            debugPrint('=== MATCH PROGRESS: $matchProgress ===');
-            debugPrint(
-              '=== IS NOT STARTED: ${eventStatus == 'Not Started' || eventStatus == null} ===',
-            );
+  Widget _buildTopCard(Map<String, dynamic>? eventData) {
+    if (eventData == null) {
+      return _buildTopCardSkeleton();
+    }
 
-            return Column(
-              children: [
-                // Scrollable Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 60.0, 20.0, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Top Card (Your Progress style)
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A2332),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFF2A3544),
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        (eventData['event_league'] as List?)
-                                                ?.first?['league_name'] ??
-                                            leagueName,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            (eventStatus == 'Not Started' ||
-                                                eventStatus == null)
-                                            ? Colors.white.withValues(
-                                                alpha: 0.3,
-                                              )
-                                            : ([
-                                                '1H',
-                                                '2H',
-                                                'HT',
-                                                'ET',
-                                              ].contains(eventStatus))
-                                            ? Colors.red
-                                            : Colors.white.withValues(
-                                                alpha: 0.3,
-                                              ),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        (eventStatus == 'Not Started' ||
-                                                eventStatus == null)
-                                            ? 'Not Started'
-                                            : ([
-                                                '1H',
-                                                '2H',
-                                                'HT',
-                                                'ET',
-                                              ].contains(eventStatus))
-                                            ? 'LIVE'
-                                            : eventStatus,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          if (homeTeamLogo != null &&
-                                              homeTeamLogo.isNotEmpty)
-                                            Container(
-                                              width: 60,
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              padding: const EdgeInsets.all(8),
-                                              child: Image.network(
-                                                homeTeamLogo,
-                                                fit: BoxFit.contain,
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) => const Icon(
-                                                      Icons.sports_soccer,
-                                                      size: 40,
-                                                    ),
-                                              ),
-                                            )
-                                          else
-                                            Container(
-                                              width: 60,
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: const Icon(
-                                                Icons.sports_soccer,
-                                                size: 40,
-                                              ),
-                                            ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            homeTeam,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          (eventStatus == 'Not Started' ||
-                                                  eventStatus == null)
-                                              ? 'VS'
-                                              : '$homeScore - $awayScore',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        if ([
-                                              '1H',
-                                              '2H',
-                                              'HT',
-                                              'ET',
-                                            ].contains(eventStatus) &&
-                                            matchProgress != null)
-                                          Container(
-                                            margin: const EdgeInsets.only(
-                                              top: 4,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              "$matchProgress'",
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          if (awayTeamLogo != null &&
-                                              awayTeamLogo.isNotEmpty)
-                                            Container(
-                                              width: 60,
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              padding: const EdgeInsets.all(8),
-                                              child: Image.network(
-                                                awayTeamLogo,
-                                                fit: BoxFit.contain,
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) => const Icon(
-                                                      Icons.sports_soccer,
-                                                      size: 40,
-                                                    ),
-                                              ),
-                                            )
-                                          else
-                                            Container(
-                                              width: 60,
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: const Icon(
-                                                Icons.sports_soccer,
-                                                size: 40,
-                                              ),
-                                            ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            awayTeam,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Round ${eventData['event_round'] ?? 'N/A'}',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Betting Interface Card
-                          pricingAsync.when(
-                            loading: () => Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A2332),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF2A3544),
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            error: (error, stack) => Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A2332),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF2A3544),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Error loading pricing: $error',
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ),
-                            data: (pricingData) {
-                              if (pricingData == null || !contractDeployed) {
-                                return Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1A2332),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: const Color(0xFF2A3544),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Betting not available',
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                  ),
-                                );
-                              }
+    debugPrint('=== EVENT DATA: $eventData ===');
 
-                              final homeData =
-                                  pricingData['home'] as Map<String, dynamic>?;
-                              final drawData =
-                                  pricingData['draw'] as Map<String, dynamic>?;
-                              final awayData =
-                                  pricingData['away'] as Map<String, dynamic>?;
+    final homeTeam =
+        (eventData['home_team'] as List?)?.first?['team_name'] ??
+        eventData['home_team_name'] ??
+        'Home Team';
+    final awayTeam =
+        (eventData['away_team'] as List?)?.first?['team_name'] ??
+        eventData['away_team_name'] ??
+        'Away Team';
+    final homeTeamLogo = eventData['home_team_logo'] as String?;
+    final awayTeamLogo = eventData['away_team_logo'] as String?;
+    final leagueName = 'Soccer';
+    final homeScore = eventData['home_score'];
+    final awayScore = eventData['away_score'];
+    final matchProgress = eventData['match_progress'];
+    final eventStatus = eventData['event_status'] as String?;
 
-                              return Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1A2332),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: const Color(0xFF2A3544),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Buy/Sell Tabs with Market Dropdown
-                                    Row(
-                                      children: [
-                                        // Buy Tab
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedTab = 'buy';
-                                            });
-                                          },
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                'Buy',
-                                                style: TextStyle(
-                                                  color: _selectedTab == 'buy'
-                                                      ? Colors.white
-                                                      : const Color(0xFF6B7280),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              if (_selectedTab == 'buy')
-                                                Container(
-                                                  height: 2,
-                                                  width: 30,
-                                                  color: Colors.white,
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 24),
-                                        // Sell Tab
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedTab = 'sell';
-                                            });
-                                          },
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                'Sell',
-                                                style: TextStyle(
-                                                  color: _selectedTab == 'sell'
-                                                      ? Colors.white
-                                                      : const Color(0xFF6B7280),
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              if (_selectedTab == 'sell')
-                                                Container(
-                                                  height: 2,
-                                                  width: 30,
-                                                  color: Colors.white,
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        // Market Dropdown
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF2A3544),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: const Row(
-                                            children: [
-                                              Text(
-                                                'Market',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              SizedBox(width: 4),
-                                              Icon(
-                                                Icons.keyboard_arrow_down,
-                                                color: Colors.white,
-                                                size: 18,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    // Team Selection Buttons
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: _buildTeamOption(
-                                            homeTeam
-                                                .substring(0, 3)
-                                                .toUpperCase(),
-                                            'home',
-                                            homeData!,
-                                            pricingData,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: _buildTeamOption(
-                                            'DRW',
-                                            'draw',
-                                            drawData!,
-                                            pricingData,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: _buildTeamOption(
-                                            awayTeam
-                                                .substring(0, 3)
-                                                .toUpperCase(),
-                                            'away',
-                                            awayData!,
-                                            pricingData,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 20),
-                                    // Amount Section
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Amount',
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.9,
-                                            ),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          _betAmountController.text.isEmpty
-                                              ? '\$0'
-                                              : '\$${_betAmountController.text}',
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.7,
-                                            ),
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.w300,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Balance \$${_userBalance.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    // Quick Amount Buttons
-                                    Row(
-                                      children: [
-                                        _buildQuickAmountButton(
-                                          '+\$1',
-                                          1,
-                                          pricingData,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        _buildQuickAmountButton(
-                                          '+\$20',
-                                          20,
-                                          pricingData,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        _buildQuickAmountButton(
-                                          '+\$100',
-                                          100,
-                                          pricingData,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        _buildQuickAmountButton(
-                                          'Max',
-                                          _userBalance,
-                                          pricingData,
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    // To Win Section (Animated)
-                                    AnimatedSize(
-                                      duration: const Duration(
-                                        milliseconds: 300,
-                                      ),
-                                      curve: Curves.easeInOut,
-                                      child: _betAmountController.text.isEmpty
-                                          ? Container()
-                                          : Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    const Text(
-                                                      'To win ',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 16,
-                                                      ),
-                                                    ),
-                                                    const Icon(
-                                                      Icons.trending_up,
-                                                      color: Color(0xFF10B981),
-                                                      size: 18,
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  '\$${_grossWinnings.toStringAsFixed(2)}',
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF10B981),
-                                                    fontSize: 36,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                // const SizedBox(height: 4),
-                                                // Text(
-                                                //   'You\'ll get ${_shares.toStringAsFixed(2)} shares @ \$${_sharePrice.toStringAsFixed(2)}',
-                                                //   style: TextStyle(
-                                                //     color: Colors.white
-                                                //         .withValues(alpha: 0.6),
-                                                //     fontSize: 12,
-                                                //   ),
-                                                // ),
-                                                // const SizedBox(height: 8),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      'Profit: ',
-                                                      style: TextStyle(
-                                                        color: Colors.white
-                                                            .withValues(
-                                                              alpha: 0.7,
-                                                            ),
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      '+\$${_netProfit.toStringAsFixed(2)}',
-                                                      style: const TextStyle(
-                                                        color: Color(
-                                                          0xFF10B981,
-                                                        ),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      ' (${(_netProfit / (double.tryParse(_betAmountController.text) ?? 1) * 100).toStringAsFixed(1)}%)',
-                                                      style: TextStyle(
-                                                        color: Colors.white
-                                                            .withValues(
-                                                              alpha: 0.6,
-                                                            ),
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 16),
-                                              ],
-                                            ),
-                                    ),
-                                    // Place Bet Button
-                                    GestureDetector(
-                                      onTap:
-                                          _betAmountController.text.isEmpty ||
-                                              _isPlacingBet
-                                          ? null
-                                          : _placeBet,
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              _betAmountController
-                                                      .text
-                                                      .isEmpty ||
-                                                  _isPlacingBet
-                                              ? const Color(0xFF2A3544)
-                                              : const Color(0xFF6C63FF),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            if (_isPlacingBet)
-                                              const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(Colors.white),
-                                                ),
-                                              ),
-                                            if (_isPlacingBet)
-                                              const SizedBox(width: 8),
-                                            if (!_isPlacingBet &&
-                                                _betAmountController
-                                                    .text
-                                                    .isEmpty)
-                                              Icon(
-                                                Icons.block,
-                                                color: Colors.white.withValues(
-                                                  alpha: 0.5,
-                                                ),
-                                                size: 18,
-                                              ),
-                                            if (!_isPlacingBet &&
-                                                _betAmountController
-                                                    .text
-                                                    .isEmpty)
-                                              const SizedBox(width: 8),
-                                            if (!_isPlacingBet)
-                                              Text(
-                                                _betAmountController
-                                                        .text
-                                                        .isEmpty
-                                                    ? 'Unavailable'
-                                                    : 'Place Bet',
-                                                style: TextStyle(
-                                                  color:
-                                                      _betAmountController
-                                                          .text
-                                                          .isEmpty
-                                                      ? Colors.white.withValues(
-                                                          alpha: 0.5,
-                                                        )
-                                                      : Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
+    debugPrint('=== EVENT STATUS: $eventStatus ===');
+    debugPrint('=== HOME SCORE: $homeScore ===');
+    debugPrint('=== AWAY SCORE: $awayScore ===');
+    debugPrint('=== MATCH PROGRESS: $matchProgress ===');
+    debugPrint(
+      '=== IS NOT STARTED: ${eventStatus == 'Not Started' || eventStatus == null} ===',
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2332),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2A3544),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  (eventData['event_league'] as List?)
+                          ?.first?['league_name'] ??
+                      leagueName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: (eventStatus == 'Not Started' || eventStatus == null)
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : (['1H', '2H', 'HT', 'ET'].contains(eventStatus))
+                          ? Colors.red
+                          : Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  (eventStatus == 'Not Started' || eventStatus == null)
+                      ? 'Not Started'
+                      : (['1H', '2H', 'HT', 'ET'].contains(eventStatus))
+                          ? 'LIVE'
+                          : eventStatus,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    if (homeTeamLogo != null && homeTeamLogo.isNotEmpty)
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.network(
+                          homeTeamLogo,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.sports_soccer, size: 40),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.sports_soccer, size: 40),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      homeTeam,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  Text(
+                    (eventStatus == 'Not Started' || eventStatus == null)
+                        ? 'VS'
+                        : '$homeScore - $awayScore',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (['1H', '2H', 'HT', 'ET'].contains(eventStatus) &&
+                      matchProgress != null)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "$matchProgress'",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (awayTeamLogo != null && awayTeamLogo.isNotEmpty)
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.network(
+                          awayTeamLogo,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.sports_soccer, size: 40),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.sports_soccer, size: 40),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      awayTeam,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Round ${eventData['event_round'] ?? 'N/A'}',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2332),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2A3544),
+          width: 1,
         ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Container(
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A3544),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 80,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A3544),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 12,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A3544),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A3544),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A3544),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 12,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A3544),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 14,
+            width: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A3544),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBettingCard(Map<String, dynamic>? eventData, Map<String, dynamic>? pricingData) {
+    final contractDeployed = eventData?['contract_deployed'] == true;
+
+    if (!contractDeployed) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A2332),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF2A3544),
+            width: 1,
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            'Betting not available',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
+    final homeTeam = (eventData!['home_team'] as List?)?.first?['team_name'] ??
+        eventData['home_team_name'] ?? 'Home';
+    final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ??
+        eventData['away_team_name'] ?? 'Away';
+
+    final homeData = pricingData?['home'] as Map<String, dynamic>?;
+    final drawData = pricingData?['draw'] as Map<String, dynamic>?;
+    final awayData = pricingData?['away'] as Map<String, dynamic>?;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2332),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2A3544),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Buy/Sell Tabs with Market Dropdown
+          Row(
+            children: [
+              // Buy Tab
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedTab = 'buy';
+                  });
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      'Buy',
+                      style: TextStyle(
+                        color: _selectedTab == 'buy'
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (_selectedTab == 'buy')
+                      Container(
+                        height: 2,
+                        width: 30,
+                        color: Colors.white,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              // Sell Tab
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedTab = 'sell';
+                  });
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      'Sell',
+                      style: TextStyle(
+                        color: _selectedTab == 'sell'
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (_selectedTab == 'sell')
+                      Container(
+                        height: 2,
+                        width: 30,
+                        color: Colors.white,
+                      ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // Market Dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Text(
+                      'Market',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Team Selection Buttons
+          Row(
+            children: [
+              Expanded(
+                child: _buildTeamOption(
+                  homeTeam.substring(0, 3).toUpperCase(),
+                  'home',
+                  homeData,
+                  pricingData,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTeamOption(
+                  'DRW',
+                  'draw',
+                  drawData,
+                  pricingData,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTeamOption(
+                  awayTeam.substring(0, 3).toUpperCase(),
+                  'away',
+                  awayData,
+                  pricingData,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Amount Section
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Amount',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _betAmountController.text.isEmpty
+                    ? '\$0'
+                    : '\$${_betAmountController.text}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 32,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Balance \$${_userBalance.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Quick Amount Buttons
+          Row(
+            children: [
+              _buildQuickAmountButton('+\$1', 1, pricingData),
+              const SizedBox(width: 8),
+              _buildQuickAmountButton('+\$20', 20, pricingData),
+              const SizedBox(width: 8),
+              _buildQuickAmountButton('+\$100', 100, pricingData),
+              const SizedBox(width: 8),
+              _buildQuickAmountButton('Max', _userBalance, pricingData),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // To Win Section (Animated)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: _betAmountController.text.isEmpty
+                ? Container()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'To win ',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.trending_up,
+                            color: Color(0xFF10B981),
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '\$${_grossWinnings.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            'Profit: ',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            '+\$${_netProfit.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            ' (${(_netProfit / (double.tryParse(_betAmountController.text) ?? 1) * 100).toStringAsFixed(1)}%)',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+          ),
+          // Place Bet Button
+          GestureDetector(
+            onTap: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
+                ? null
+                : _placeBet,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
+                    ? const Color(0xFF2A3544)
+                    : const Color(0xFF6C63FF),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isPlacingBet)
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  if (_isPlacingBet) const SizedBox(width: 8),
+                  if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                    Icon(
+                      Icons.block,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      size: 18,
+                    ),
+                  if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                    const SizedBox(width: 8),
+                  if (!_isPlacingBet)
+                    Text(
+                      _betAmountController.text.isEmpty || pricingData == null ? 'Unavailable' : 'Place Bet',
+                      style: TextStyle(
+                        color: _betAmountController.text.isEmpty || pricingData == null
+                            ? Colors.white.withValues(alpha: 0.5)
+                            : Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1142,10 +1096,49 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   Widget _buildTeamOption(
     String teamAbbr,
     String betType,
-    Map<String, dynamic> outcomeData,
-    Map<String, dynamic> pricingData,
+    Map<String, dynamic>? outcomeData,
+    Map<String, dynamic>? pricingData,
   ) {
     final isSelected = _selectedBetType == betType;
+
+    // Handle loading state
+    if (outcomeData == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A3544),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              teamAbbr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Loading...',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              '...',
+              style: TextStyle(
+                color: Color(0x80FFFFFF),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     // Handle both string and number types from API
     final multiplierValue = outcomeData['multiplier'];
@@ -1213,11 +1206,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   Widget _buildQuickAmountButton(
     String label,
     double amount,
-    Map<String, dynamic> pricingData,
+    Map<String, dynamic>? pricingData,
   ) {
     return Expanded(
       child: GestureDetector(
-        onTap: () {
+        onTap: pricingData == null ? null : () {
           setState(() {
             final currentAmount =
                 double.tryParse(_betAmountController.text) ?? 0.0;
@@ -1229,14 +1222,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF374151),
+            color: pricingData == null ? const Color(0xFF2A3544) : const Color(0xFF374151),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: pricingData == null ? Colors.white.withValues(alpha: 0.5) : Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

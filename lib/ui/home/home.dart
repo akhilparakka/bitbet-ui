@@ -142,22 +142,26 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return SizedBox(
       width: double.infinity,
       height: double.infinity,
-      child: AnimatedBuilder(
-        animation: _slideController,
-        builder: (context, child) {
-          final screenHeight = MediaQuery.of(context).size.height;
-          return Stack(
-            children: [
-              if (_outgoingSection != null && _isAnimating)
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: AnimatedBuilder(
+          animation: _slideController,
+          builder: (context, child) {
+            final screenHeight = MediaQuery.of(context).size.height;
+
+            return Stack(
+              children: [
+                if (_outgoingSection != null && _isAnimating)
+                  Transform.translate(
+                    offset: _slideUp
+                        ? Offset(0, -_slideController.value * screenHeight)
+                        : Offset(0, _slideController.value * screenHeight),
+                    child: _sectionWidgets[_outgoingSection!],
+                  ),
+
                 Transform.translate(
-                  offset: _slideUp
-                      ? Offset(0, -_slideController.value * screenHeight)
-                      : Offset(0, _slideController.value * screenHeight),
-                  child: _sectionWidgets[_outgoingSection!],
-                ),
-              Transform.translate(
-                offset: _isAnimating && _outgoingSection != null
-                    ? _slideUp
+                  offset: _isAnimating && _outgoingSection != null
+                      ? _slideUp
                           ? Offset(
                               0,
                               (1.0 - _slideController.value) * screenHeight,
@@ -166,19 +170,20 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               0,
                               -(1.0 - _slideController.value) * screenHeight,
                             )
-                    : Offset.zero,
-                child:
-                    _sectionWidgets[section] ??
-                    Center(
-                      child: Text(
-                        "Section '$section' not found",
-                        style: const TextStyle(color: Colors.red, fontSize: 16),
+                      : Offset.zero,
+                  child:
+                      _sectionWidgets[section] ??
+                      Center(
+                        child: Text(
+                          "Section '$section' not found",
+                          style: const TextStyle(color: Colors.red, fontSize: 16),
+                        ),
                       ),
-                    ),
-              ),
-            ],
-          );
-        },
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

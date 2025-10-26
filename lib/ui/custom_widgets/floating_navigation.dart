@@ -20,22 +20,22 @@ class FloatingNavigation extends StatefulWidget {
 class _FloatingNavigationState extends State<FloatingNavigation> {
   final List<Map<String, String>> navItems = [
     {'name': 'All Games', 'icon': 'assets/svg/games.svg'},
-    {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
     {'name': 'Favorites', 'icon': 'assets/svg/favorites.svg'},
+    {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
       bottom: 30,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Main navigation pill
-            Container(
+      left: 30,
+      right: 30,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          // Main navigation pill
+          Expanded(
+            child: Container(
               height: 60,
               decoration: BoxDecoration(
                 color: const Color(0xFF1A1A1A),
@@ -51,7 +51,7 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
                 ],
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: navItems.map((item) {
                   final isSelected = widget.selectedSection == item['name'];
                   return _buildNavButton(
@@ -62,11 +62,11 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
                 }).toList(),
               ),
             ),
-            const SizedBox(width: 16),
-            // Quick action button (search)
-            _buildQuickActionButton(),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          // Quick action button (search)
+          _buildQuickActionButton(),
+        ],
       ),
     );
   }
@@ -77,11 +77,7 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 20 : 16,
-          vertical: 12,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF2D2D2D) : Colors.transparent,
           borderRadius: BorderRadius.circular(26),

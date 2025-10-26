@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
 import 'package:bitbet/ui/home/nav_sections/my_bets_section.dart';
-import 'package:bitbet/ui/custom_widgets/navigation_sidebar.dart';
+import 'package:bitbet/ui/custom_widgets/floating_navigation.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
 import 'package:bitbet/ui/search/search_page.dart';
 import 'package:bitbet/domain/services/web3_client.dart';
+import 'package:flutter/material.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -18,20 +18,9 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String selectedSection = 'All Games';
   late AnimationController _slideController;
-  late AnimationController _colorAnimationController;
   bool _isAnimating = false;
   String? _outgoingSection;
   bool _slideUp = true;
-  Color? _dominantColor;
-  bool _colorLoaded = false;
-  double _colorAnimationValue = 0.0;
-
-  static const List<Color> _defaultColors = [
-    Color(0xFF1F2937), // Darker blue-gray
-    Color(0xFF253342), // Darker lighter
-    Color(0xFF1F2937), // Back to dark
-    Color(0xFF0F1419), // Even darker at bottom
-  ];
 
   @override
   void initState() {
@@ -40,40 +29,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-
     _slideController.value = 1.0;
-
-    _colorAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _colorAnimationController.addListener(() {
-      setState(() {
-        _colorAnimationValue = _colorAnimationController.value;
-      });
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Web3BetClient().loadUserData();
       if (mounted) setState(() {});
-      await _loadDominantColor();
     });
-  }
-
-  Future<void> _loadDominantColor() async {
-    final client = Web3BetClient();
-    final wasCached = client.hasCachedColor;
-    final color = await client.getDominantColor();
-    setState(() {
-      _dominantColor = color ?? Colors.blueGrey;
-      _colorLoaded = true;
-    });
-    if (!wasCached) {
-      _colorAnimationController.forward(from: 0.0);
-    } else {
-      _colorAnimationController.value = 1.0;
-    }
   }
 
   final List<String> _navOrder = [
@@ -110,24 +71,15 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           color: Colors.transparent,
           child: Stack(
             children: [
-              Row(
+              // Main content area - now takes full width
+              Column(
                 children: [
-                  CustomNavigationSidebar(
-                    selectedSection: selectedSection,
-                    onSectionChanged: _onSectionChanged,
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        CustomHeader(title: selectedSection),
-                        Expanded(
-                          child: _buildContentForSection(selectedSection),
-                        ),
-                      ],
-                    ),
-                  ),
+                  CustomHeader(title: selectedSection),
+                  Expanded(child: _buildContentForSection(selectedSection)),
                 ],
               ),
+
+              // Profile button (top-left)
               Positioned(
                 top: 70,
                 left: 20,
@@ -157,41 +109,27 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 40,
-                right: 20,
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6C63FF),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                      size: 32,
+
+              // New floating navigation
+              FloatingNavigation(
+                selectedSection: selectedSection,
+                onSectionChanged: _onSectionChanged,
+                onQuickActionTap: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const SearchPage(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                      transitionDuration: const Duration(milliseconds: 200),
                     ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const SearchPage(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                          transitionDuration: const Duration(milliseconds: 200),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),
@@ -208,7 +146,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         animation: _slideController,
         builder: (context, child) {
           final screenHeight = MediaQuery.of(context).size.height;
-
           return Stack(
             children: [
               if (_outgoingSection != null && _isAnimating)
@@ -218,7 +155,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       : Offset(0, _slideController.value * screenHeight),
                   child: _sectionWidgets[_outgoingSection!],
                 ),
-
               Transform.translate(
                 offset: _isAnimating && _outgoingSection != null
                     ? _slideUp
@@ -261,7 +197,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     _slideController.value = 0.0;
-
     await _slideController.animateTo(
       1.0,
       duration: const Duration(milliseconds: 300),

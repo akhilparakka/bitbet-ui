@@ -66,10 +66,10 @@ class _AllGamesSectionState extends State<AllGamesSection> {
       child: CustomScrollView(
         slivers: [
           // Quick picks header
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(12, 16.0, 16.0, 16.0),
-              child: Row(
+           SliverToBoxAdapter(
+             child: Container(
+               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16.0),
+               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
@@ -195,19 +195,16 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: pageMatches
-                                      .map(
-                                        (match) =>
-                                            _buildQuickPickItem(match, ref),
-                                      )
-                                      .toList(),
-                                ),
-                              ),
-                            );
+                             return SingleChildScrollView(
+                               child: Column(
+                                 children: pageMatches
+                                     .map(
+                                       (match) =>
+                                           _buildQuickPickItem(match, ref),
+                                     )
+                                     .toList(),
+                               ),
+                             );
                           },
                         ),
                       );

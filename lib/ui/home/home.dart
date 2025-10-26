@@ -147,32 +147,19 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: AnimatedBuilder(
           animation: _slideController,
           builder: (context, child) {
-            final screenHeight = MediaQuery.of(context).size.height;
-
             return Stack(
               children: [
                 if (_outgoingSection != null && _isAnimating)
-                  Transform.translate(
-                    offset: _slideUp
-                        ? Offset(0, -_slideController.value * screenHeight)
-                        : Offset(0, _slideController.value * screenHeight),
+                  Opacity(
+                    opacity: 1.0 - _slideController.value,
                     child: _sectionWidgets[_outgoingSection!],
                   ),
 
-                Transform.translate(
-                  offset: _isAnimating && _outgoingSection != null
-                      ? _slideUp
-                          ? Offset(
-                              0,
-                              (1.0 - _slideController.value) * screenHeight,
-                            ) // Slide up from bottom
-                          : Offset(
-                              0,
-                              -(1.0 - _slideController.value) * screenHeight,
-                            )
-                      : Offset.zero,
-                  child:
-                      _sectionWidgets[section] ??
+                Opacity(
+                  opacity: _isAnimating && _outgoingSection != null
+                      ? _slideController.value
+                      : 1.0,
+                  child: _sectionWidgets[section] ??
                       Center(
                         child: Text(
                           "Section '$section' not found",

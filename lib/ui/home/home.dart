@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  String selectedSection = 'All Games';
+  String selectedSection = 'Home';
   late AnimationController _slideController;
   bool _isAnimating = false;
   String? _outgoingSection;
@@ -38,7 +38,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   final List<String> _navOrder = [
-    'All Games',
+    'Home',
     'Favorites',
     'My Bets',
     'Discover',
@@ -46,7 +46,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   ];
 
   final Map<String, Widget> _sectionWidgets = {
-    'All Games': const AllGamesSection(),
+    'Home': const AllGamesSection(),
     'Favorites': const FavoritesSection(),
     'My Bets': const MyBetsSection(),
     'Discover': const Text(

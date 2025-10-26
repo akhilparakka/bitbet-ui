@@ -30,6 +30,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   double _shares = 0.0;
   double _sharePrice = 0.0;
   String _selectedTab = 'buy'; // 'buy' or 'sell'
+  bool _isBasicMode = true; // Basic or Advanced mode
   double _userBalance = 0.00;
 
   // Betting state
@@ -868,34 +869,20 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 ),
               ),
               const Spacer(),
-              // Market Dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A3544),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Text(
-                      'Market',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
-                ),
-              ),
+                                        // Basic/Advanced Mode Switcher
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF2A3544),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              _buildModeButton('Basic', _isBasicMode),
+                                              _buildModeButton('Advanced', !_isBasicMode),
+                                            ],
+                                          ),
+                                        ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1283,6 +1270,27 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               },
               child: buttonContent,
             ),
+    );
+  }
+
+  Widget _buildModeButton(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () => setState(() => _isBasicMode = label == 'Basic'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF6C63FF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 }

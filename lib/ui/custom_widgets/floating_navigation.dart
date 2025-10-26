@@ -19,7 +19,7 @@ class FloatingNavigation extends StatefulWidget {
 
 class _FloatingNavigationState extends State<FloatingNavigation> {
   final List<Map<String, String>> navItems = [
-    {'name': 'All Games', 'icon': 'assets/svg/games.svg'},
+    {'name': 'Home', 'icon': 'assets/svg/home.svg'},
     {'name': 'Favorites', 'icon': 'assets/svg/favorites.svg'},
     {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
   ];

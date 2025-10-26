@@ -33,6 +33,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   bool _isBasicMode = true; // Basic or Advanced mode
   double _userBalance = 0.00;
 
+  // Sell state
+  String _selectedSellOutcome = 'home'; // 'home', 'draw', 'away'
+  double _sellAmount = 0.0;
+  double _sellWinnings = 0.0;
+
   // Betting state
   bool _isPlacingBet = false;
   bool _isButtonPressed = false;
@@ -78,6 +83,57 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     _stopLiveTimer();
     _betAmountController.dispose();
     super.dispose();
+  }
+
+  Map<String, double> _getHoldingsForMarket(List<dynamic>? holdings, String eventId) {
+    final Map<String, double> marketHoldings = {'home': 0.0, 'draw': 0.0, 'away': 0.0};
+
+    if (holdings == null) return marketHoldings;
+
+    for (final holding in holdings) {
+      if (holding.eventId == eventId) {
+        final outcomeKey = holding.outcomeIndex == 0
+            ? 'home'
+            : holding.outcomeIndex == 1
+                ? 'draw'
+                : 'away';
+        final shares = double.tryParse(holding.shares) ?? 0.0;
+        marketHoldings[outcomeKey] = marketHoldings[outcomeKey]! + shares;
+      }
+    }
+
+    return marketHoldings;
+  }
+
+  void _calculateSellWinnings(String amount, Map<String, dynamic>? pricingData) {
+    if (pricingData == null) return;
+
+    final sellAmount = double.tryParse(amount) ?? 0.0;
+    if (sellAmount <= 0) {
+      setState(() {
+        _sellWinnings = 0.0;
+      });
+      return;
+    }
+
+    final outcomeData = pricingData[_selectedSellOutcome];
+    if (outcomeData == null) return;
+
+    // Handle both string and number types from API
+    final sharePriceValue = outcomeData['share_price'];
+    final sharePrice = sharePriceValue is num
+        ? sharePriceValue.toDouble()
+        : (sharePriceValue is String
+              ? double.tryParse(sharePriceValue) ?? 0.0
+              : 0.0);
+    if (sharePrice <= 0) return;
+
+    // For selling, we get the share price directly (no division needed)
+    final winnings = sellAmount * sharePrice;
+
+    setState(() {
+      _sellWinnings = winnings;
+    });
   }
 
   void _calculateWinnings(String amount, Map<String, dynamic>? pricingData) {
@@ -140,6 +196,37 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   void _stopLiveTimer() {
     _liveTimer?.cancel();
     _liveTimer = null;
+  }
+
+  /// Sell tokens for selected outcome
+  Future<void> _sellTokens() async {
+    // TODO: Implement actual sell functionality
+    setState(() {
+      _isPlacingBet = true;
+    });
+
+    // Simulate processing time
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() {
+      _isPlacingBet = false;
+    });
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Feature Coming Soon'),
+          content: const Text('Token selling functionality will be available soon!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   /// Place a bet on selected outcome
@@ -498,7 +585,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           : eventStatus,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+            fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -818,16 +905,16 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 },
                 child: Column(
                   children: [
-                    Text(
-                      'Buy',
-                      style: TextStyle(
-                        color: _selectedTab == 'buy'
-                            ? Colors.white
-                            : const Color(0xFF6B7280),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      Text(
+                        _getBuyTabLabel(),
+                        style: TextStyle(
+                          color: _selectedTab == 'buy'
+                              ? Colors.white
+                              : const Color(0xFF6B7280),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 4),
                     if (_selectedTab == 'buy')
                       Container(
@@ -838,7 +925,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   ],
                 ),
               ),
-              const SizedBox(width: 24),
+               const SizedBox(width: 16),
               // Sell Tab
               GestureDetector(
                 onTap: () {
@@ -848,16 +935,16 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 },
                 child: Column(
                   children: [
-                    Text(
-                      'Sell',
-                      style: TextStyle(
-                        color: _selectedTab == 'sell'
-                            ? Colors.white
-                            : const Color(0xFF6B7280),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      Text(
+                        _getSellTabLabel(),
+                        style: TextStyle(
+                          color: _selectedTab == 'sell'
+                              ? Colors.white
+                              : const Color(0xFF6B7280),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 4),
                     if (_selectedTab == 'sell')
                       Container(
@@ -869,116 +956,158 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 ),
               ),
               const Spacer(),
-                                        // Basic/Advanced Mode Switcher
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF2A3544),
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              _buildModeButton('Basic', _isBasicMode),
-                                              _buildModeButton('Advanced', !_isBasicMode),
-                                            ],
-                                          ),
-                                        ),
+                                         // Basic/Advanced Mode Switcher
+                                         Container(
+                                           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                                           decoration: BoxDecoration(
+                                             color: const Color(0xFF2A3544),
+                                             borderRadius: BorderRadius.circular(16),
+                                           ),
+                                           child: Row(
+                                             children: [
+                                               _buildModeButton('Basic', _isBasicMode),
+                                               _buildModeButton('Advanced', !_isBasicMode),
+                                             ],
+                                           ),
+                                         ),
             ],
           ),
           const SizedBox(height: 16),
-          // Team Selection Buttons
-          Row(
-            children: [
-              Expanded(
-                child: _buildTeamOption(
-                  homeTeam.substring(0, 3).toUpperCase(),
-                  'home',
-                  homeData,
-                  pricingData,
+          // Team Selection Buttons or Holdings Display
+          if (_selectedTab == 'buy')
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTeamOption(
+                    homeTeam.substring(0, 3).toUpperCase(),
+                    'home',
+                    homeData,
+                    pricingData,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildTeamOption(
-                  'DRW',
-                  'draw',
-                  drawData,
-                  pricingData,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildTeamOption(
+                    'DRW',
+                    'draw',
+                    drawData,
+                    pricingData,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildTeamOption(
-                  awayTeam.substring(0, 3).toUpperCase(),
-                  'away',
-                  awayData,
-                  pricingData,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildTeamOption(
+                    awayTeam.substring(0, 3).toUpperCase(),
+                    'away',
+                    awayData,
+                    pricingData,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            _buildSellHoldingsSection(eventData, pricingData),
           const SizedBox(height: 20),
           // Amount Section
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Amount',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+          if (_selectedTab == 'buy') ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Amount',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                _betAmountController.text.isEmpty
-                    ? '\$0'
-                    : '\$${_betAmountController.text}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 32,
-                  fontWeight: FontWeight.w300,
+                const Spacer(),
+                Text(
+                  _betAmountController.text.isEmpty
+                      ? '\$0'
+                      : '\$${_betAmountController.text}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 32,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Balance \$${_userBalance.toStringAsFixed(2)}',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 12,
+              ],
             ),
-          ),
+            const SizedBox(height: 4),
+            Text(
+              'Balance \$${_userBalance.toStringAsFixed(2)}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
+            ),
+          ] else ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Amount',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  _sellAmount == 0.0
+                      ? '0'
+                      : '${_sellAmount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 32,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'shares',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           // Quick Amount Buttons
-          Row(
-            children: [
-              _buildQuickAmountButton('+\$1', 1, pricingData),
-              const SizedBox(width: 8),
-              _buildQuickAmountButton('+\$20', 20, pricingData),
-              const SizedBox(width: 8),
-              _buildQuickAmountButton('+\$100', 100, pricingData),
-              const SizedBox(width: 8),
-              _buildQuickAmountButton('Max', _userBalance, pricingData),
-            ],
-          ),
+          if (_selectedTab == 'buy')
+            Row(
+              children: [
+                _buildQuickAmountButton('+\$1', 1, pricingData),
+                const SizedBox(width: 8),
+                _buildQuickAmountButton('+\$20', 20, pricingData),
+                const SizedBox(width: 8),
+                _buildQuickAmountButton('+\$100', 100, pricingData),
+                const SizedBox(width: 8),
+                _buildQuickAmountButton('Max', _userBalance, pricingData),
+              ],
+            )
+          else
+            _buildSellQuickAmountButtons(pricingData),
           const SizedBox(height: 16),
-          // To Win Section (Animated)
+          // To Win / You Receive Section (Animated)
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: _betAmountController.text.isEmpty
+            child: (_selectedTab == 'buy' && _betAmountController.text.isEmpty) ||
+                    (_selectedTab == 'sell' && _sellAmount == 0.0)
                 ? Container()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Text(
-                            'To win ',
-                            style: TextStyle(
+                          Text(
+                            _selectedTab == 'buy' ? 'To win ' : 'You receive ',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                             ),
@@ -991,56 +1120,58 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                                                AnimatedSwitcher(
-                                                  duration: const Duration(milliseconds: 300),
-                                                  transitionBuilder: (child, animation) {
-                                                    return ScaleTransition(scale: animation, child: child);
-                                                  },
-                                                  child: Text(
-                                                    '\$${_grossWinnings.toStringAsFixed(2)}',
-                                                    key: ValueKey<double>(_grossWinnings),
-                                                    style: const TextStyle(
-                                                      color: Color(0xFF10B981),
-                                                      fontSize: 36,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                      Row(
-                        children: [
-                          Text(
-                            'Profit: ',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 12,
-                            ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(scale: animation, child: child);
+                        },
+                        child: Text(
+                          '\$${(_selectedTab == 'buy' ? _grossWinnings : _sellWinnings).toStringAsFixed(2)}',
+                          key: ValueKey<double>(_selectedTab == 'buy' ? _grossWinnings : _sellWinnings),
+                          style: const TextStyle(
+                            color: Color(0xFF10B981),
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Text(
-                            '+\$${_netProfit.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Color(0xFF10B981),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            ' (${(_netProfit / (double.tryParse(_betAmountController.text) ?? 1) * 100).toStringAsFixed(1)}%)',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      if (_selectedTab == 'buy')
+                        Row(
+                          children: [
+                            Text(
+                              'Profit: ',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              '+\$${_netProfit.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              ' (${(_netProfit / (double.tryParse(_betAmountController.text) ?? 1) * 100).toStringAsFixed(1)}%)',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: 16),
                     ],
                   ),
           ),
-          // Place Bet Button
+          // Place Bet / Sell Tokens Button
           GestureDetector(
-            onTap: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
+            onTap: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || _isPlacingBet || pricingData == null)) ||
+                    (_selectedTab == 'sell' && (_sellAmount == 0.0 || _isPlacingBet || pricingData == null))
                 ? null
-                : _placeBet,
+                : (_selectedTab == 'buy' ? _placeBet : _sellTokens),
             onTapDown: (_) => setState(() => _isButtonPressed = true),
             onTapUp: (_) => setState(() => _isButtonPressed = false),
             onTapCancel: () => setState(() => _isButtonPressed = false),
@@ -1051,7 +1182,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: _betAmountController.text.isEmpty || _isPlacingBet || pricingData == null
+                  color: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || _isPlacingBet || pricingData == null)) ||
+                          (_selectedTab == 'sell' && (_sellAmount == 0.0 || _isPlacingBet || pricingData == null))
                       ? const Color(0xFF2A3544)
                       : const Color(0xFF6C63FF),
                   borderRadius: BorderRadius.circular(12),
@@ -1069,19 +1201,31 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         ),
                       ),
                     if (_isPlacingBet) const SizedBox(width: 8),
-                    if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                    if (!_isPlacingBet && (
+                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
+                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
+                    ))
                       Icon(
                         Icons.block,
                         color: Colors.white.withValues(alpha: 0.5),
                         size: 18,
                       ),
-                    if (!_isPlacingBet && (_betAmountController.text.isEmpty || pricingData == null))
+                    if (!_isPlacingBet && (
+                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
+                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
+                    ))
                       const SizedBox(width: 8),
                     if (!_isPlacingBet)
                       Text(
-                        _betAmountController.text.isEmpty || pricingData == null ? 'Unavailable' : 'Place Bet',
+                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
+                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
+                            ? 'Unavailable'
+                            : (_selectedTab == 'buy'
+                                ? (_isBasicMode ? 'Place Bet' : 'Place Multi Bets')
+                                : (_isBasicMode ? 'Sell Tokens' : 'Short')),
                         style: TextStyle(
-                          color: _betAmountController.text.isEmpty || pricingData == null
+                          color: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
+                                  (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
                               ? Colors.white.withValues(alpha: 0.5)
                               : Colors.white,
                           fontSize: 16,
@@ -1273,20 +1417,459 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
+  Widget _buildSellHoldingsSection(Map<String, dynamic>? eventData, Map<String, dynamic>? pricingData) {
+    final userId = ref.watch(userIdProvider).value;
+    if (userId == null) {
+      return const Center(
+        child: Text(
+          'Please login to view holdings',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    final userBetsAsync = ref.watch(userBetsProvider(userId));
+
+    // Show skeleton loaders while loading
+    if (userBetsAsync.isLoading) {
+      return Row(
+        children: [
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 18,
+                      width: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 17,
+                      width: 35,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      height: 14,
+                      width: 25,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 18,
+                      width: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 17,
+                      width: 35,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      height: 14,
+                      width: 25,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 18,
+                      width: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      height: 17,
+                      width: 35,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      height: 14,
+                      width: 25,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4554),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final holdings = userBetsAsync.value?['holdings'] as List<dynamic>?;
+
+    final eventId = eventData?['id']?.toString() ?? widget.eventId;
+    final marketHoldings = _getHoldingsForMarket(holdings, eventId);
+
+    final hasAnyHoldings = marketHoldings.values.any((holding) => holding > 0);
+
+    if (!hasAnyHoldings) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A3544),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'No tokens to sell',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
+    final homeTeam = (eventData!['home_team'] as List?)?.first?['team_name'] ??
+        eventData['home_team_name'] ?? 'Home';
+    final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ??
+        eventData['away_team_name'] ?? 'Away';
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            if (marketHoldings['home']! > 0)
+              Expanded(
+                child: _buildSellHoldingOption(
+                  homeTeam.substring(0, 3).toUpperCase(),
+                  'home',
+                  marketHoldings['home']!,
+                  pricingData,
+                ),
+              ),
+            if (marketHoldings['home']! > 0) const SizedBox(width: 8),
+            if (marketHoldings['draw']! > 0)
+              Expanded(
+                child: _buildSellHoldingOption(
+                  'DRW',
+                  'draw',
+                  marketHoldings['draw']!,
+                  pricingData,
+                ),
+              ),
+            if (marketHoldings['draw']! > 0 && marketHoldings['away']! > 0) const SizedBox(width: 8),
+            if (marketHoldings['away']! > 0)
+              Expanded(
+                child: _buildSellHoldingOption(
+                  awayTeam.substring(0, 3).toUpperCase(),
+                  'away',
+                  marketHoldings['away']!,
+                  pricingData,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSellQuickAmountButtons(Map<String, dynamic>? pricingData) {
+    final userId = ref.watch(userIdProvider).value;
+    if (userId == null) return const SizedBox.shrink();
+
+    final userBetsAsync = ref.watch(userBetsProvider(userId));
+
+    // Show skeleton buttons while loading
+    if (userBetsAsync.isLoading) {
+      return Row(
+        children: [
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Container(
+                    height: 15,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A4554),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Container(
+                    height: 15,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A4554),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Container(
+                    height: 15,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A4554),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ShimmerWidget(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Container(
+                    height: 15,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3A4554),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final holdings = userBetsAsync.value?['holdings'] as List<dynamic>?;
+
+    final eventData = ref.watch(eventDetailsProvider(widget.eventId)).value;
+    final eventId = eventData?['id']?.toString() ?? widget.eventId;
+    final marketHoldings = _getHoldingsForMarket(holdings, eventId);
+    final maxAmountTokens = marketHoldings[_selectedSellOutcome] ?? 0.0;
+    final maxAmountShares = maxAmountTokens / 1000000;
+
+    return Row(
+      children: [
+        _buildSellAmountButton('25%', maxAmountShares * 0.25, pricingData),
+        const SizedBox(width: 8),
+        _buildSellAmountButton('50%', maxAmountShares * 0.5, pricingData),
+        const SizedBox(width: 8),
+        _buildSellAmountButton('75%', maxAmountShares * 0.75, pricingData),
+        const SizedBox(width: 8),
+        _buildSellAmountButton('Max', maxAmountShares, pricingData),
+      ],
+    );
+  }
+
+  Widget _buildSellAmountButton(String label, double amount, Map<String, dynamic>? pricingData) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _sellAmount = amount;
+            _calculateSellWinnings(amount.toString(), pricingData);
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF374151),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSellHoldingOption(
+    String teamAbbr,
+    String outcome,
+    double holdingAmount,
+    Map<String, dynamic>? pricingData,
+  ) {
+    final isSelected = _selectedSellOutcome == outcome;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSellOutcome = outcome;
+          // Reset sell amount when changing outcome
+          _sellAmount = 0.0;
+          _sellWinnings = 0.0;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2A3544),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.white24 : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? Colors.purple.withOpacity(0.3) : Colors.transparent,
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              teamAbbr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${(holdingAmount / 1000000).toStringAsFixed(2)}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'shares',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getBuyTabLabel() {
+    return _isBasicMode ? 'Buy' : 'Multi Buy';
+  }
+
+  String _getSellTabLabel() {
+    return _isBasicMode ? 'Sell' : 'Short';
+  }
+
   Widget _buildModeButton(String label, bool isSelected) {
     return GestureDetector(
       onTap: () => setState(() => _isBasicMode = label == 'Basic'),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF6C63FF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

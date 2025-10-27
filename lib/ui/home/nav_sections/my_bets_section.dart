@@ -673,9 +673,6 @@ class _MyBetsSectionState extends State<MyBetsSection> {
         : 'Unknown';
     final cost = double.parse(bet.costOrProfit) / 1e6;
     final shares = double.parse(bet.shares) / 1e6;
-    final date = DateTime.fromMillisecondsSinceEpoch(
-      int.parse(bet.blockTimestamp) * 1000,
-    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

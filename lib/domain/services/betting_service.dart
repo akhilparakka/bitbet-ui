@@ -197,12 +197,13 @@ class BettingService {
       // Calculate how many shares the user can buy
       final shares = betAmount / sharePrice;
       debugPrint('Calculated shares: $shares');
-      final sharesWei = BigInt.from(shares * pow(10, USDT_DECIMALS));
+      // Outcome tokens have 18 decimals, so convert shares to wei using 18 decimals
+      final sharesWei = BigInt.from(shares * pow(10, 18));
       debugPrint('Shares in wei: $sharesWei');
 
       onStatusUpdate?.call('Checking price and balance...');
       debugPrint('Getting user address...');
-      final userAddress = await credentials.extractAddress();
+      final userAddress = credentials.address;
       debugPrint('User address: ${userAddress.hex}');
 
       // PARALLEL RPC CALLS - Execute all 3 simultaneously for speed
@@ -381,6 +382,32 @@ class BettingService {
     return txHash;
   }
 
+  /// Execute sell transaction
+  Future<String> _executeSell(
+    DeployedContract market,
+    int outcomeIndex,
+    BigInt tokenCount,
+    BigInt minProfit, {
+    Function(String)? onStatusUpdate,
+  }) async {
+    final sellFunction = market.function('sell');
+    final txHash = await web3Client.sendTransaction(
+      credentials,
+      Transaction.callContract(
+        contract: market,
+        function: sellFunction,
+        parameters: [BigInt.from(outcomeIndex), tokenCount, minProfit],
+        maxGas: 300000, // Set explicit gas limit for sell
+      ),
+      chainId: int.parse(dotenv.env['CHAIN_ID'] ?? '31337'), // Use env chain ID
+    );
+
+    // Wait for confirmation
+    onStatusUpdate?.call('Confirming transaction...');
+    await _waitForConfirmation(txHash);
+    return txHash;
+  }
+
   /// Wait for transaction confirmation with exponential backoff
   Future<void> _waitForConfirmation(String txHash) async {
     int attempts = 0;
@@ -422,5 +449,185 @@ class BettingService {
     throw Exception(
       'Transaction confirmation timeout after ${maxAttempts * maxDelayMs ~/ 1000}s',
     );
+  }
+
+  /// Main function to sell outcome tokens
+  Future<String> sellOutcome({
+    required String eventId,
+    required int outcomeIndex, // 0=Home, 1=Draw, 2=Away
+    required String tokenCount, // Human-readable shares (e.g., "100")
+    required String marketAddress,
+    required String marketMakerAddress,
+    required String eventContractAddress,
+    required double slippagePercent, // e.g., 10.0 for 10% slippage protection
+    Function(String)? onStatusUpdate,
+  }) async {
+    try {
+      onStatusUpdate?.call('Loading contracts...');
+      debugPrint('=== SELLING TOKENS ===');
+      debugPrint('Event ID: $eventId');
+      debugPrint('Outcome Index: $outcomeIndex');
+      debugPrint('Token Count: $tokenCount shares');
+      debugPrint('Market Address: $marketAddress');
+      debugPrint('Event Contract: $eventContractAddress');
+      debugPrint('Slippage Protection: $slippagePercent%');
+
+      // Get cached ABIs (instant - no I/O)
+      debugPrint('Loading ABIs from cache...');
+      final marketAbi = _getAbi('StandardMarket');
+      final erc20Abi = _getAbi('ERC20');
+      final marketMakerAbi = _getAbi('LMSRMarketMaker');
+      debugPrint('ABIs loaded from cache (instant)');
+
+      debugPrint('Creating contract instances...');
+      final marketContract = DeployedContract(
+        ContractAbi.fromJson(marketAbi, 'StandardMarket'),
+        EthereumAddress.fromHex(marketAddress),
+      );
+
+      final marketMaker = DeployedContract(
+        ContractAbi.fromJson(marketMakerAbi, 'LMSRMarketMaker'),
+        EthereumAddress.fromHex(marketMakerAddress),
+      );
+
+      final eventContract = DeployedContract(
+        ContractAbi.fromJson(
+          '[{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"outcomeTokens","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}]',
+          'Event',
+        ),
+        EthereumAddress.fromHex(eventContractAddress),
+      );
+
+      // Use hardcoded USDT decimals (no RPC call needed)
+      debugPrint('Using USDT decimals: $USDT_DECIMALS (hardcoded)');
+
+      final tokenCountNum = double.parse(tokenCount);
+      debugPrint('User wants to sell: $tokenCountNum outcome tokens');
+
+      onStatusUpdate?.call('Checking market status and balances...');
+      debugPrint('Getting user address...');
+      final userAddress = credentials.address;
+      debugPrint('User address: ${userAddress.hex}');
+
+      // Check market stage - must be MarketFunded (stage = 1)
+      final stageFunction = marketContract.function('stage');
+      final stageResult = await web3Client.call(
+        contract: marketContract,
+        function: stageFunction,
+        params: [],
+      );
+      final marketStage = stageResult.first as BigInt;
+      debugPrint('Market stage: $marketStage');
+
+      if (marketStage != BigInt.one) {
+        throw Exception(
+          'Market is not active for selling. Current stage: $marketStage',
+        );
+      }
+
+      // Get outcome token address from event contract
+      debugPrint('Getting outcome token address for index $outcomeIndex...');
+      final outcomeTokensFunction = eventContract.function('outcomeTokens');
+      final outcomeTokenResult = await web3Client.call(
+        contract: eventContract,
+        function: outcomeTokensFunction,
+        params: [BigInt.from(outcomeIndex)],
+      );
+      final outcomeTokenAddress =
+          (outcomeTokenResult.first as EthereumAddress).hex;
+      debugPrint('Outcome token address: $outcomeTokenAddress');
+
+      // Create outcome token contract
+      final outcomeTokenContract = DeployedContract(
+        ContractAbi.fromJson(erc20Abi, 'ERC20'),
+        EthereumAddress.fromHex(outcomeTokenAddress),
+      );
+
+      // Get outcome token decimals to convert properly
+      final decimalsFunction = outcomeTokenContract.function('decimals');
+      final decimalsResult = await web3Client.call(
+        contract: outcomeTokenContract,
+        function: decimalsFunction,
+        params: [],
+      );
+      final tokenDecimals = (decimalsResult.first as BigInt).toInt();
+      debugPrint('Outcome token decimals: $tokenDecimals');
+
+      // Convert human-readable amount to wei using token decimals
+      final tokenCountWei = BigInt.from(tokenCountNum * pow(10, tokenDecimals));
+      debugPrint('Token count in wei: $tokenCountWei');
+
+      // Check outcome token balance
+      final tokenBalance = await _getBalance(outcomeTokenContract, userAddress);
+      final tokenBalanceHuman =
+          tokenBalance.toDouble() / pow(10, tokenDecimals);
+      debugPrint(
+        'Outcome token balance: $tokenBalance (raw), $tokenBalanceHuman (human readable)',
+      );
+
+      // Check if we have enough tokens
+      if (tokenBalance < tokenCountWei) {
+        throw Exception(
+          'Insufficient outcome token balance. Have: $tokenBalanceHuman tokens, Need: $tokenCountNum tokens',
+        );
+      }
+
+      // Estimate profit using LMSR calculation (sell proceeds = buy cost for same amount)
+      onStatusUpdate?.call('Estimating sale proceeds...');
+      final estimatedProfit = await _getQuote(
+        marketMaker,
+        marketAddress,
+        outcomeIndex,
+        tokenCountWei,
+      );
+      final minProfit =
+          estimatedProfit *
+          BigInt.from((100 - slippagePercent.toInt())) ~/
+          BigInt.from(100);
+
+      debugPrint(
+        'Estimated profit: ${estimatedProfit / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+      );
+      debugPrint(
+        'Min profit (with $slippagePercent% slippage): ${minProfit / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+      );
+
+      // Check and approve outcome tokens
+      final currentAllowance = await _getAllowance(
+        outcomeTokenContract,
+        userAddress,
+        EthereumAddress.fromHex(marketAddress),
+      );
+
+      if (currentAllowance < tokenCountWei) {
+        onStatusUpdate?.call('Approving outcome tokens...');
+        debugPrint('Approving outcome tokens...');
+        await _approveToken(
+          outcomeTokenContract,
+          EthereumAddress.fromHex(marketAddress),
+          tokenCountWei,
+        );
+        debugPrint('Approval confirmed!');
+      } else {
+        debugPrint('Sufficient allowance already exists, skipping approval');
+      }
+
+      // Execute sell
+      onStatusUpdate?.call('Selling tokens...');
+      debugPrint('Selling $tokenCountWei tokens...');
+      final txHash = await _executeSell(
+        marketContract,
+        outcomeIndex,
+        tokenCountWei,
+        minProfit,
+        onStatusUpdate: onStatusUpdate,
+      );
+
+      debugPrint('Tokens sold! Transaction: $txHash');
+      return txHash;
+    } catch (e) {
+      debugPrint('Error selling tokens: $e');
+      rethrow;
+    }
   }
 }

@@ -20,7 +20,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _slideController;
   bool _isAnimating = false;
   String? _outgoingSection;
-  bool _slideUp = true;
 
   @override
   void initState() {
@@ -36,14 +35,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (mounted) setState(() {});
     });
   }
-
-  final List<String> _navOrder = [
-    'Home',
-    'Favorites',
-    'My Bets',
-    'Discover',
-    'Leaderboards',
-  ];
 
   final Map<String, Widget> _sectionWidgets = {
     'Home': const AllGamesSection(),
@@ -160,16 +151,22 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
 
                 ScaleTransition(
-                  scale: _isAnimating && _outgoingSection != null ? scaleAnimation : const AlwaysStoppedAnimation(1.0),
+                  scale: _isAnimating && _outgoingSection != null
+                      ? scaleAnimation
+                      : const AlwaysStoppedAnimation(1.0),
                   child: Opacity(
                     opacity: _isAnimating && _outgoingSection != null
                         ? _slideController.value
                         : 1.0,
-                    child: _sectionWidgets[section] ??
+                    child:
+                        _sectionWidgets[section] ??
                         Center(
                           child: Text(
                             "Section '$section' not found",
-                            style: const TextStyle(color: Colors.red, fontSize: 16),
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                   ),
@@ -184,10 +181,6 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _onSectionChanged(String section) async {
     if (_isAnimating || selectedSection == section) return;
-
-    final currentIndex = _navOrder.indexOf(selectedSection);
-    final newIndex = _navOrder.indexOf(section);
-    _slideUp = newIndex > currentIndex;
 
     setState(() {
       _isAnimating = true;

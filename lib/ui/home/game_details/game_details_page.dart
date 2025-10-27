@@ -6,8 +6,10 @@ import '../../../domain/providers/event_provider.dart';
 import '../../../domain/providers/user_bets_provider.dart';
 import '../../../domain/providers/user_provider.dart';
 import '../../../domain/services/web3_client.dart';
+import '../../../domain/models/transaction_preview.dart';
 import '../../custom_widgets/shimmer_widget.dart';
 import 'transaction_preview_sheet.dart';
+import 'sell_transaction_preview_sheet.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -85,8 +87,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     super.dispose();
   }
 
-  Map<String, double> _getHoldingsForMarket(List<dynamic>? holdings, String eventId) {
-    final Map<String, double> marketHoldings = {'home': 0.0, 'draw': 0.0, 'away': 0.0};
+  Map<String, double> _getHoldingsForMarket(
+    List<dynamic>? holdings,
+    String eventId,
+  ) {
+    final Map<String, double> marketHoldings = {
+      'home': 0.0,
+      'draw': 0.0,
+      'away': 0.0,
+    };
 
     if (holdings == null) return marketHoldings;
 
@@ -95,8 +104,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         final outcomeKey = holding.outcomeIndex == 0
             ? 'home'
             : holding.outcomeIndex == 1
-                ? 'draw'
-                : 'away';
+            ? 'draw'
+            : 'away';
         final shares = double.tryParse(holding.shares) ?? 0.0;
         marketHoldings[outcomeKey] = marketHoldings[outcomeKey]! + shares;
       }
@@ -105,7 +114,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     return marketHoldings;
   }
 
-  void _calculateSellWinnings(String amount, Map<String, dynamic>? pricingData) {
+  void _calculateSellWinnings(
+    String amount,
+    Map<String, dynamic>? pricingData,
+  ) {
     if (pricingData == null) return;
 
     final sellAmount = double.tryParse(amount) ?? 0.0;
@@ -128,11 +140,13 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               : 0.0);
     if (sharePrice <= 0) return;
 
-    // For selling, we get the share price directly (no division needed)
-    final winnings = sellAmount * sharePrice;
+    // For selling, estimate proceeds based on current share price
+    // TODO: This should use proper LMSR sell calculation, not just sharePrice * amount
+    // For now, this gives a reasonable estimate
+    final estimatedProceeds = sellAmount * sharePrice;
 
     setState(() {
-      _sellWinnings = winnings;
+      _sellWinnings = estimatedProceeds;
     });
   }
 
@@ -200,32 +214,228 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
 
   /// Sell tokens for selected outcome
   Future<void> _sellTokens() async {
-    // TODO: Implement actual sell functionality
+    // Validate inputs
+    if (_sellAmount <= 0) {
+      setState(() {
+        _betErrorMessage = 'Please enter amount to sell';
+      });
+      return;
+    }
+
     setState(() {
       _isPlacingBet = true;
+      _betErrorMessage = null;
     });
 
-    // Simulate processing time
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Get betting service
+      final bettingService = Web3BetClient().getBettingService();
+      if (bettingService == null) {
+        throw Exception('Please login first');
+      }
 
-    setState(() {
-      _isPlacingBet = false;
-    });
-
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Feature Coming Soon'),
-          content: const Text('Token selling functionality will be available soon!'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      // Get event and pricing data
+      final pricingData = await ref.read(
+        eventPricingProvider(widget.eventId).future,
       );
+      final eventData = await ref.read(
+        eventDetailsProvider(widget.eventId).future,
+      );
+
+      if (pricingData == null || eventData == null) {
+        throw Exception('Failed to load event data');
+      }
+
+      // Get contract addresses
+      final marketAddress = pricingData['market_address'] as String?;
+      final marketMakerAddress = pricingData['market_maker_address'] as String?;
+      // For now, try to get event contract from various possible fields
+      final eventContractAddress =
+          eventData['event_contract_address'] as String? ??
+          eventData['contract_address'] as String? ??
+          pricingData['event_contract_address'] as String?;
+
+      debugPrint('=== CONTRACT ADDRESSES ===');
+      debugPrint('Market Address: $marketAddress');
+      debugPrint('Event Contract Address: $eventContractAddress');
+      debugPrint('Available event fields: ${eventData.keys.join(', ')}');
+      debugPrint('Available pricing fields: ${pricingData.keys.join(', ')}');
+
+      if (marketAddress == null) {
+        throw Exception('Market contract address not available');
+      }
+
+      if (marketMakerAddress == null) {
+        throw Exception('Market maker contract address not available');
+      }
+
+      if (eventContractAddress == null) {
+        throw Exception(
+          'Event contract address not available in API response. Required fields: event_contract_address, contract_address, or pricing.event_contract_address. Available event fields: ${eventData.keys.join(', ')}',
+        );
+      }
+
+      // Map bet type to outcome index
+      final outcomeIndex = _selectedSellOutcome == 'home'
+          ? 0
+          : _selectedSellOutcome == 'draw'
+          ? 1
+          : 2;
+
+      // Get bet type display name
+      final outcomeDisplay = _selectedSellOutcome == 'home'
+          ? 'Home Win'
+          : _selectedSellOutcome == 'draw'
+          ? 'Draw'
+          : 'Away Win';
+
+      // Create transaction preview (simplified for sell)
+      final preview = TransactionPreview(
+        eventName: eventData['event_name'] ?? 'Unknown Event',
+        betType: outcomeDisplay,
+        betAmount: _sellAmount, // This is tokens, not USDT
+        estimatedCost: 0.0, // Not applicable for sell
+        maxCost: 0.0, // Not applicable for sell
+        shares: _sellAmount,
+        potentialPayout: _sellWinnings,
+        netProfit: _sellWinnings, // Simplified
+        marketAddress: marketAddress,
+        collateralTokenAddress: '', // Not needed for sell
+        marketMakerAddress: '', // Not needed for sell
+        estimatedGas: 300000,
+        gasPrice: 20.0, // Placeholder
+        estimatedGasCost: 0.006, // Placeholder
+        decimals: 6,
+      );
+
+      // Hide loading state for preview
+      setState(() {
+        _isPlacingBet = false;
+      });
+
+      // Show preview bottom sheet
+      if (mounted) {
+        final shouldProceed = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          isDismissible: true,
+          enableDrag: false,
+          builder: (context) => GestureDetector(
+            onTap: () => Navigator.pop(context, false),
+            behavior: HitTestBehavior.opaque,
+            child: GestureDetector(
+              onTap: () {},
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.25,
+                ),
+                child: SellTransactionPreviewSheet(
+                  preview: preview,
+                  onProceed: () => Navigator.pop(context, true),
+                  onCancel: () => Navigator.pop(context, false),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // If user cancelled, return
+        if (shouldProceed != true) {
+          return;
+        }
+
+        // User confirmed, proceed with transaction
+        setState(() {
+          _isPlacingBet = true;
+        });
+
+        // Execute the actual sell transaction
+        final txHash = await bettingService.sellOutcome(
+          eventId: widget.eventId,
+          outcomeIndex: outcomeIndex,
+          tokenCount: _sellAmount.toString(),
+          marketAddress: marketAddress,
+          marketMakerAddress: marketMakerAddress,
+          eventContractAddress: eventContractAddress,
+          slippagePercent: 10.0, // Default 10% slippage protection
+          onStatusUpdate: (status) {
+            setState(() {
+              _betErrorMessage = status;
+            });
+          },
+        );
+
+        // Success!
+        setState(() {
+          _isPlacingBet = false;
+        });
+
+        // Invalidate bets data to refresh holdings
+        final userId = await ref.read(userIdProvider.future);
+        if (userId != null) {
+          ref.invalidate(userBetsProvider(userId));
+        }
+
+        // Reload balance after successful sell
+        _loadUserBalance();
+
+        // Show success dialog
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Tokens Sold!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Your tokens were sold successfully!'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Clear sell amount
+        setState(() {
+          _sellAmount = 0.0;
+          _sellWinnings = 0.0;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isPlacingBet = false;
+        _betErrorMessage = e.toString();
+      });
+
+      // Show error dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text(_betErrorMessage ?? 'Unknown error'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
@@ -455,14 +665,12 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final eventAsync = ref.watch(eventDetailsProvider(widget.eventId));
-    final pricingAsync = ref.watch(eventPricingProvider(widget.eventId));
+    ref.watch(eventPricingProvider(widget.eventId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1419),
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: _buildContent(eventAsync.value),
-      ),
+      body: SafeArea(child: _buildContent(eventAsync.value)),
     );
   }
 
@@ -508,8 +716,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       return _buildTopCardSkeleton();
     }
 
-    debugPrint('=== EVENT DATA: $eventData ===');
-
     final homeTeam =
         (eventData['home_team'] as List?)?.first?['team_name'] ??
         eventData['home_team_name'] ??
@@ -526,9 +732,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final matchProgress = eventData['match_progress'];
     final eventStatus = eventData['event_status'] as String?;
 
-    debugPrint('=== EVENT STATUS: $eventStatus ===');
-    debugPrint('=== HOME SCORE: $homeScore ===');
-    debugPrint('=== AWAY SCORE: $awayScore ===');
     debugPrint('=== MATCH PROGRESS: $matchProgress ===');
     debugPrint(
       '=== IS NOT STARTED: ${eventStatus == 'Not Started' || eventStatus == null} ===',
@@ -539,10 +742,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2332),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFF2A3544),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF2A3544), width: 1),
       ),
       child: Column(
         children: [
@@ -551,8 +751,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             children: [
               Expanded(
                 child: Text(
-                  (eventData['event_league'] as List?)
-                          ?.first?['league_name'] ??
+                  (eventData['event_league'] as List?)?.first?['league_name'] ??
                       leagueName,
                   style: const TextStyle(
                     color: Colors.white,
@@ -573,19 +772,19 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   color: (eventStatus == 'Not Started' || eventStatus == null)
                       ? Colors.white.withValues(alpha: 0.3)
                       : (['1H', '2H', 'HT', 'ET'].contains(eventStatus))
-                          ? Colors.red
-                          : Colors.white.withValues(alpha: 0.3),
+                      ? Colors.red
+                      : Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   (eventStatus == 'Not Started' || eventStatus == null)
                       ? 'Not Started'
                       : (['1H', '2H', 'HT', 'ET'].contains(eventStatus))
-                          ? 'LIVE'
-                          : eventStatus,
+                      ? 'LIVE'
+                      : eventStatus,
                   style: const TextStyle(
                     color: Colors.white,
-            fontSize: 10,
+                    fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -739,10 +938,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A2332),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFF2A3544),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFF2A3544), width: 1),
         ),
         child: Column(
           children: [
@@ -848,7 +1044,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildBettingCard(Map<String, dynamic>? eventData, Map<String, dynamic>? pricingData) {
+  Widget _buildBettingCard(
+    Map<String, dynamic>? eventData,
+    Map<String, dynamic>? pricingData,
+  ) {
     final contractDeployed = eventData?['contract_deployed'] == true;
 
     if (!contractDeployed) {
@@ -857,10 +1056,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A2332),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFF2A3544),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFF2A3544), width: 1),
         ),
         child: const Center(
           child: Text(
@@ -871,10 +1067,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       );
     }
 
-    final homeTeam = (eventData!['home_team'] as List?)?.first?['team_name'] ??
-        eventData['home_team_name'] ?? 'Home';
-    final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ??
-        eventData['away_team_name'] ?? 'Away';
+    final homeTeam =
+        (eventData!['home_team'] as List?)?.first?['team_name'] ??
+        eventData['home_team_name'] ??
+        'Home';
+    final awayTeam =
+        (eventData['away_team'] as List?)?.first?['team_name'] ??
+        eventData['away_team_name'] ??
+        'Away';
 
     final homeData = pricingData?['home'] as Map<String, dynamic>?;
     final drawData = pricingData?['draw'] as Map<String, dynamic>?;
@@ -885,10 +1085,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2332),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFF2A3544),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF2A3544), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -905,27 +1102,23 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 },
                 child: Column(
                   children: [
-                      Text(
-                        _getBuyTabLabel(),
-                        style: TextStyle(
-                          color: _selectedTab == 'buy'
-                              ? Colors.white
-                              : const Color(0xFF6B7280),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      _getBuyTabLabel(),
+                      style: TextStyle(
+                        color: _selectedTab == 'buy'
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
                     const SizedBox(height: 4),
                     if (_selectedTab == 'buy')
-                      Container(
-                        height: 2,
-                        width: 30,
-                        color: Colors.white,
-                      ),
+                      Container(height: 2, width: 30, color: Colors.white),
                   ],
                 ),
               ),
-               const SizedBox(width: 16),
+              const SizedBox(width: 16),
               // Sell Tab
               GestureDetector(
                 onTap: () {
@@ -935,41 +1128,37 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 },
                 child: Column(
                   children: [
-                      Text(
-                        _getSellTabLabel(),
-                        style: TextStyle(
-                          color: _selectedTab == 'sell'
-                              ? Colors.white
-                              : const Color(0xFF6B7280),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      _getSellTabLabel(),
+                      style: TextStyle(
+                        color: _selectedTab == 'sell'
+                            ? Colors.white
+                            : const Color(0xFF6B7280),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
                     const SizedBox(height: 4),
                     if (_selectedTab == 'sell')
-                      Container(
-                        height: 2,
-                        width: 30,
-                        color: Colors.white,
-                      ),
+                      Container(height: 2, width: 30, color: Colors.white),
                   ],
                 ),
               ),
               const Spacer(),
-                                         // Basic/Advanced Mode Switcher
-                                         Container(
-                                           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                                           decoration: BoxDecoration(
-                                             color: const Color(0xFF2A3544),
-                                             borderRadius: BorderRadius.circular(16),
-                                           ),
-                                           child: Row(
-                                             children: [
-                                               _buildModeButton('Basic', _isBasicMode),
-                                               _buildModeButton('Advanced', !_isBasicMode),
-                                             ],
-                                           ),
-                                         ),
+              // Basic/Advanced Mode Switcher
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A3544),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    _buildModeButton('Basic', _isBasicMode),
+                    _buildModeButton('Advanced', !_isBasicMode),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -987,12 +1176,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _buildTeamOption(
-                    'DRW',
-                    'draw',
-                    drawData,
-                    pricingData,
-                  ),
+                  child: _buildTeamOption('DRW', 'draw', drawData, pricingData),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1058,7 +1242,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 Text(
                   _sellAmount == 0.0
                       ? '0'
-                      : '${_sellAmount.toStringAsFixed(2)}',
+                      : _sellAmount < 0.01
+                      ? _sellAmount.toStringAsExponential(2)
+                      : _sellAmount.toStringAsFixed(2),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 32,
@@ -1097,7 +1283,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            child: (_selectedTab == 'buy' && _betAmountController.text.isEmpty) ||
+            child:
+                (_selectedTab == 'buy' && _betAmountController.text.isEmpty) ||
                     (_selectedTab == 'sell' && _sellAmount == 0.0)
                 ? Container()
                 : Column(
@@ -1123,11 +1310,23 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         transitionBuilder: (child, animation) {
-                          return ScaleTransition(scale: animation, child: child);
+                          return ScaleTransition(
+                            scale: animation,
+                            child: child,
+                          );
                         },
                         child: Text(
-                          '\$${(_selectedTab == 'buy' ? _grossWinnings : _sellWinnings).toStringAsFixed(2)}',
-                          key: ValueKey<double>(_selectedTab == 'buy' ? _grossWinnings : _sellWinnings),
+                          () {
+                            final amount = _selectedTab == 'buy'
+                                ? _grossWinnings
+                                : _sellWinnings;
+                            return '\$${amount < 0.01 ? amount.toStringAsExponential(2) : amount.toStringAsFixed(2)}';
+                          }(),
+                          key: ValueKey<double>(
+                            _selectedTab == 'buy'
+                                ? _grossWinnings
+                                : _sellWinnings,
+                          ),
                           style: const TextStyle(
                             color: Color(0xFF10B981),
                             fontSize: 36,
@@ -1168,8 +1367,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ),
           // Place Bet / Sell Tokens Button
           GestureDetector(
-            onTap: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || _isPlacingBet || pricingData == null)) ||
-                    (_selectedTab == 'sell' && (_sellAmount == 0.0 || _isPlacingBet || pricingData == null))
+            onTap:
+                (_selectedTab == 'buy' &&
+                        (_betAmountController.text.isEmpty ||
+                            _isPlacingBet ||
+                            pricingData == null)) ||
+                    (_selectedTab == 'sell' &&
+                        (_sellAmount == 0.0 ||
+                            _isPlacingBet ||
+                            pricingData == null))
                 ? null
                 : (_selectedTab == 'buy' ? _placeBet : _sellTokens),
             onTapDown: (_) => setState(() => _isButtonPressed = true),
@@ -1182,8 +1388,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || _isPlacingBet || pricingData == null)) ||
-                          (_selectedTab == 'sell' && (_sellAmount == 0.0 || _isPlacingBet || pricingData == null))
+                  color:
+                      (_selectedTab == 'buy' &&
+                              (_betAmountController.text.isEmpty ||
+                                  _isPlacingBet ||
+                                  pricingData == null)) ||
+                          (_selectedTab == 'sell' &&
+                              (_sellAmount == 0.0 ||
+                                  _isPlacingBet ||
+                                  pricingData == null))
                       ? const Color(0xFF2A3544)
                       : const Color(0xFF6C63FF),
                   borderRadius: BorderRadius.circular(12),
@@ -1197,35 +1410,51 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     if (_isPlacingBet) const SizedBox(width: 8),
-                    if (!_isPlacingBet && (
-                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
-                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
-                    ))
+                    if (!_isPlacingBet &&
+                        ((_selectedTab == 'buy' &&
+                                (_betAmountController.text.isEmpty ||
+                                    pricingData == null)) ||
+                            (_selectedTab == 'sell' &&
+                                (_sellAmount == 0.0 || pricingData == null))))
                       Icon(
                         Icons.block,
                         color: Colors.white.withValues(alpha: 0.5),
                         size: 18,
                       ),
-                    if (!_isPlacingBet && (
-                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
-                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
-                    ))
+                    if (!_isPlacingBet &&
+                        ((_selectedTab == 'buy' &&
+                                (_betAmountController.text.isEmpty ||
+                                    pricingData == null)) ||
+                            (_selectedTab == 'sell' &&
+                                (_sellAmount == 0.0 || pricingData == null))))
                       const SizedBox(width: 8),
                     if (!_isPlacingBet)
                       Text(
-                        (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
-                        (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
+                        (_selectedTab == 'buy' &&
+                                    (_betAmountController.text.isEmpty ||
+                                        pricingData == null)) ||
+                                (_selectedTab == 'sell' &&
+                                    (_sellAmount == 0.0 || pricingData == null))
                             ? 'Unavailable'
                             : (_selectedTab == 'buy'
-                                ? (_isBasicMode ? 'Place Bet' : 'Place Multi Bets')
-                                : (_isBasicMode ? 'Sell Tokens' : 'Short')),
+                                  ? (_isBasicMode
+                                        ? 'Place Bet'
+                                        : 'Place Multi Bets')
+                                  : (_isBasicMode ? 'Sell Tokens' : 'Short')),
                         style: TextStyle(
-                          color: (_selectedTab == 'buy' && (_betAmountController.text.isEmpty || pricingData == null)) ||
-                                  (_selectedTab == 'sell' && (_sellAmount == 0.0 || pricingData == null))
+                          color:
+                              (_selectedTab == 'buy' &&
+                                      (_betAmountController.text.isEmpty ||
+                                          pricingData == null)) ||
+                                  (_selectedTab == 'sell' &&
+                                      (_sellAmount == 0.0 ||
+                                          pricingData == null))
                               ? Colors.white.withValues(alpha: 0.5)
                               : Colors.white,
                           fontSize: 16,
@@ -1330,7 +1559,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? Colors.purple.withOpacity(0.3) : Colors.transparent,
+              color: isSelected
+                  ? Colors.purple.withValues(alpha: 0.3)
+                  : Colors.transparent,
               blurRadius: 8,
             ),
           ],
@@ -1375,7 +1606,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final buttonContent = Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: pricingData == null ? const Color(0xFF2A3544) : const Color(0xFF374151),
+        color: pricingData == null
+            ? const Color(0xFF2A3544)
+            : const Color(0xFF374151),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
@@ -1407,7 +1640,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 setState(() {
                   final currentAmount =
                       double.tryParse(_betAmountController.text) ?? 0.0;
-                  final newAmount = label == 'Max' ? amount : currentAmount + amount;
+                  final newAmount = label == 'Max'
+                      ? amount
+                      : currentAmount + amount;
                   _betAmountController.text = newAmount.toStringAsFixed(0);
                   _calculateWinnings(_betAmountController.text, pricingData);
                 });
@@ -1417,7 +1652,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildSellHoldingsSection(Map<String, dynamic>? eventData, Map<String, dynamic>? pricingData) {
+  Widget _buildSellHoldingsSection(
+    Map<String, dynamic>? eventData,
+    Map<String, dynamic>? pricingData,
+  ) {
     final userId = ref.watch(userIdProvider).value;
     if (userId == null) {
       return const Center(
@@ -1586,10 +1824,14 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
       );
     }
 
-    final homeTeam = (eventData!['home_team'] as List?)?.first?['team_name'] ??
-        eventData['home_team_name'] ?? 'Home';
-    final awayTeam = (eventData['away_team'] as List?)?.first?['team_name'] ??
-        eventData['away_team_name'] ?? 'Away';
+    final homeTeam =
+        (eventData!['home_team'] as List?)?.first?['team_name'] ??
+        eventData['home_team_name'] ??
+        'Home';
+    final awayTeam =
+        (eventData['away_team'] as List?)?.first?['team_name'] ??
+        eventData['away_team_name'] ??
+        'Away';
 
     return Column(
       children: [
@@ -1614,7 +1856,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   pricingData,
                 ),
               ),
-            if (marketHoldings['draw']! > 0 && marketHoldings['away']! > 0) const SizedBox(width: 8),
+            if (marketHoldings['draw']! > 0 && marketHoldings['away']! > 0)
+              const SizedBox(width: 8),
             if (marketHoldings['away']! > 0)
               Expanded(
                 child: _buildSellHoldingOption(
@@ -1737,7 +1980,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final eventId = eventData?['id']?.toString() ?? widget.eventId;
     final marketHoldings = _getHoldingsForMarket(holdings, eventId);
     final maxAmountTokens = marketHoldings[_selectedSellOutcome] ?? 0.0;
-    final maxAmountShares = maxAmountTokens / 1000000;
+    final maxAmountShares =
+        maxAmountTokens /
+        1000000000000000000; // Convert from wei to human readable (18 decimals)
 
     return Row(
       children: [
@@ -1752,7 +1997,11 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildSellAmountButton(String label, double amount, Map<String, dynamic>? pricingData) {
+  Widget _buildSellAmountButton(
+    String label,
+    double amount,
+    Map<String, dynamic>? pricingData,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -1811,7 +2060,9 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected ? Colors.purple.withOpacity(0.3) : Colors.transparent,
+              color: isSelected
+                  ? Colors.purple.withValues(alpha: 0.3)
+                  : Colors.transparent,
               blurRadius: 8,
             ),
           ],
@@ -1828,7 +2079,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              '${(holdingAmount / 1000000).toStringAsFixed(2)}',
+              (holdingAmount / 1000000).toStringAsFixed(2),
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 13,

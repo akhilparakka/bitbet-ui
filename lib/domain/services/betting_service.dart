@@ -197,8 +197,8 @@ class BettingService {
       // Calculate how many shares the user can buy
       final shares = betAmount / sharePrice;
       debugPrint('Calculated shares: $shares');
-      // Outcome tokens have 18 decimals, so convert shares to wei using 18 decimals
-      final sharesWei = BigInt.from(shares * pow(10, 18));
+       // Outcome tokens have 6 decimals, so convert shares to wei using 6 decimals
+       final sharesWei = BigInt.from(shares * pow(10, 6));
       debugPrint('Shares in wei: $sharesWei');
 
       onStatusUpdate?.call('Checking price and balance...');
@@ -543,15 +543,9 @@ class BettingService {
         EthereumAddress.fromHex(outcomeTokenAddress),
       );
 
-      // Get outcome token decimals to convert properly
-      final decimalsFunction = outcomeTokenContract.function('decimals');
-      final decimalsResult = await web3Client.call(
-        contract: outcomeTokenContract,
-        function: decimalsFunction,
-        params: [],
-      );
-      final tokenDecimals = (decimalsResult.first as BigInt).toInt();
-      debugPrint('Outcome token decimals: $tokenDecimals');
+       // Outcome tokens use 6 decimals (hardcoded for contract compatibility)
+       final tokenDecimals = 6;
+       debugPrint('Outcome token decimals: $tokenDecimals (hardcoded)');
 
       // Convert human-readable amount to wei using token decimals
       final tokenCountWei = BigInt.from(tokenCountNum * pow(10, tokenDecimals));

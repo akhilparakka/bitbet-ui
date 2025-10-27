@@ -1982,7 +1982,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final maxAmountTokens = marketHoldings[_selectedSellOutcome] ?? 0.0;
     final maxAmountShares =
         maxAmountTokens /
-        1000000000000000000; // Convert from wei to human readable (18 decimals)
+        1000000; // Convert from wei to human readable (6 decimals)
 
     return Row(
       children: [

@@ -14,12 +14,10 @@ class AllGamesSection extends StatefulWidget {
   State<AllGamesSection> createState() => _AllGamesSectionState();
 }
 
-class _AllGamesSectionState extends State<AllGamesSection>
-    with SingleTickerProviderStateMixin {
+class _AllGamesSectionState extends State<AllGamesSection> {
   Map<String, bool> favoriteMap = {};
   int selectedIconIndex = 0;
   String selectedSportGroup = 'Soccer';
-  late AnimationController _animationController;
 
   String formatEventDateTime(String? dateTimeStr) {
     if (dateTimeStr == null) return '';
@@ -61,20 +59,7 @@ class _AllGamesSectionState extends State<AllGamesSection>
     }
    }
 
-   @override
-   void initState() {
-     super.initState();
-     _animationController = AnimationController(
-       duration: const Duration(milliseconds: 800),
-       vsync: this,
-     )..forward();
-   }
 
-   @override
-   void dispose() {
-     _animationController.dispose();
-     super.dispose();
-   }
 
    @override
    Widget build(BuildContext context) {
@@ -212,41 +197,13 @@ class _AllGamesSectionState extends State<AllGamesSection>
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                             return SingleChildScrollView(
-                               child: Column(
-                                 children: pageMatches.asMap().entries.map(
-                                   (entry) {
-                                     final index = entry.key;
-                                     final match = entry.value;
-                                     return AnimatedBuilder(
-                                       animation: _animationController,
-                                       builder: (context, child) {
-                                         final delay = index * 0.1;
-                                         final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-                                           CurvedAnimation(
-                                             parent: _animationController,
-                                             curve: Interval(delay, 1.0, curve: Curves.easeOut),
-                                           ),
-                                         );
-                                         return FadeTransition(
-                                           opacity: animation,
-                                           child: SlideTransition(
-                                             position: animation.drive(
-                                               Tween<Offset>(
-                                                 begin: const Offset(0, 0.1),
-                                                 end: Offset.zero,
-                                               ),
-                                             ),
-                                             child: child,
-                                           ),
-                                         );
-                                       },
-                                       child: _buildQuickPickItem(match, ref),
-                                     );
-                                   },
-                                 ).toList(),
-                               ),
-                             );
+                              return SingleChildScrollView(
+                                child: Column(
+                                  children: pageMatches.map(
+                                    (match) => _buildQuickPickItem(match, ref),
+                                  ).toList(),
+                                ),
+                              );
                           },
                         ),
                       );

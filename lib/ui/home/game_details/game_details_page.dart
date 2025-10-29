@@ -20,7 +20,7 @@ class GameDetailsPage extends ConsumerStatefulWidget {
   ConsumerState<GameDetailsPage> createState() => _GameDetailsPageState();
 }
 
-class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
+class _GameDetailsPageState extends ConsumerState<GameDetailsPage> with TickerProviderStateMixin {
   Timer? _pricingTimer;
   Timer? _liveTimer;
   bool _hasInvalidated = false;
@@ -313,23 +313,69 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         _isPlacingBet = false;
       });
 
-      // Show preview bottom sheet
+      // Show preview bottom sheet with fluid animation
       if (mounted) {
+        final animationController = AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 600),
+        );
+
         final shouldProceed = await showModalBottomSheet<bool>(
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           isDismissible: true,
           enableDrag: false,
+          transitionAnimationController: animationController,
           builder: (context) => GestureDetector(
             onTap: () => Navigator.pop(context, false),
             behavior: HitTestBehavior.opaque,
             child: GestureDetector(
               onTap: () {},
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.25,
-                ),
+              child: AnimatedBuilder(
+                animation: animationController,
+                builder: (context, child) {
+                  // Water-like multi-phase emergence: slide up + scale + fade
+                  final slideAnimation = Tween<Offset>(
+                    begin: const Offset(0.0, 1.0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.easeOutBack, // Spring bounce
+                  ));
+
+                  final scaleAnimation = Tween<double>(
+                    begin: 0.8,
+                    end: 1.0,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.elasticOut, // Elastic settling
+                  ));
+
+                  final fadeAnimation = Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.easeOut,
+                  ));
+
+                  return FadeTransition(
+                    opacity: fadeAnimation,
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: ScaleTransition(
+                        scale: scaleAnimation,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).size.height * 0.25,
+                          ),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  );
+                },
                 child: SellTransactionPreviewSheet(
                   preview: preview,
                   onProceed: () => Navigator.pop(context, true),
@@ -339,6 +385,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             ),
           ),
         );
+
+        animationController.dispose();
 
         // If user cancelled, return
         if (shouldProceed != true) {
@@ -539,24 +587,69 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         _isPlacingBet = false;
       });
 
-      // Show preview bottom sheet
+      // Show preview bottom sheet with fluid animation
       if (mounted) {
-        final shouldProceed = await showModalBottomSheet<bool>(
+        final animationController = AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 600),
+        );
+
+        final shouldProceedBuy = await showModalBottomSheet<bool>(
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           isDismissible: true, // Allow dismissing by tapping outside
           enableDrag: false,
+          transitionAnimationController: animationController,
           builder: (context) => GestureDetector(
-            onTap: () =>
-                Navigator.pop(context, false), // Close on background tap
+            onTap: () => Navigator.pop(context, false), // Close on background tap
             behavior: HitTestBehavior.opaque,
             child: GestureDetector(
               onTap: () {}, // Prevent tap from bubbling up from the sheet
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.25,
-                ),
+              child: AnimatedBuilder(
+                animation: animationController,
+                builder: (context, child) {
+                  // Water-like multi-phase emergence: slide up + scale + fade
+                  final slideAnimation = Tween<Offset>(
+                    begin: const Offset(0.0, 1.0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.easeOutBack, // Spring bounce
+                  ));
+
+                  final scaleAnimation = Tween<double>(
+                    begin: 0.8,
+                    end: 1.0,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.elasticOut, // Elastic settling
+                  ));
+
+                  final fadeAnimation = Tween<double>(
+                    begin: 0.0,
+                    end: 1.0,
+                  ).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Curves.easeOut,
+                  ));
+
+                  return FadeTransition(
+                    opacity: fadeAnimation,
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: ScaleTransition(
+                        scale: scaleAnimation,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).size.height * 0.25,
+                          ),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  );
+                },
                 child: TransactionPreviewSheet(
                   preview: preview,
                   onProceed: () => Navigator.pop(context, true),
@@ -567,8 +660,39 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ),
         );
 
+        final shouldProceed = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          isDismissible: true, // Allow dismissing by tapping outside
+          enableDrag: false,
+          transitionAnimationController: animationController,
+          builder: (context) => GestureDetector(
+            onTap: () =>
+                Navigator.pop(context, false), // Close on background tap
+            behavior: HitTestBehavior.opaque,
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap from bubbling up from the sheet
+              child: AnimatedPadding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.25,
+                ),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                child: TransactionPreviewSheet(
+                  preview: preview,
+                  onProceed: () => Navigator.pop(context, true),
+                  onCancel: () => Navigator.pop(context, false),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        animationController.dispose();
+
         // If user cancelled, return
-        if (shouldProceed != true) {
+        if (shouldProceedBuy != true) {
           return;
         }
 
@@ -799,19 +923,22 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 child: Column(
                   children: [
                     if (homeTeamLogo != null && homeTeamLogo.isNotEmpty)
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Image.network(
-                          homeTeamLogo,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.sports_soccer, size: 40),
+                      Hero(
+                        tag: 'home_logo_${widget.eventId}',
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Image.network(
+                            homeTeamLogo,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.sports_soccer, size: 40),
+                          ),
                         ),
                       )
                     else
@@ -877,19 +1004,22 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                 child: Column(
                   children: [
                     if (awayTeamLogo != null && awayTeamLogo.isNotEmpty)
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Image.network(
-                          awayTeamLogo,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.sports_soccer, size: 40),
+                      Hero(
+                        tag: 'away_logo_${widget.eventId}',
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Image.network(
+                            awayTeamLogo,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.sports_soccer, size: 40),
+                          ),
                         ),
                       )
                     else
@@ -1162,35 +1292,75 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          // Team Selection Buttons or Holdings Display
-          if (_selectedTab == 'buy')
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTeamOption(
-                    homeTeam.substring(0, 3).toUpperCase(),
-                    'home',
-                    homeData,
-                    pricingData,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTeamOption('DRW', 'draw', drawData, pricingData),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTeamOption(
-                    awayTeam.substring(0, 3).toUpperCase(),
-                    'away',
-                    awayData,
-                    pricingData,
-                  ),
-                ),
-              ],
-            )
-          else
-            _buildSellHoldingsSection(eventData, pricingData),
+           // Team Selection Buttons or Holdings Display
+           AnimatedSwitcher(
+             duration: const Duration(milliseconds: 550),
+             transitionBuilder: (child, animation) {
+               // Water-like multi-phase animation: fade in + spring slide + subtle scale + gentle rotation
+               return FadeTransition(
+                 opacity: animation,
+                 child: SlideTransition(
+                   position: Tween<Offset>(
+                     begin: const Offset(0.0, 0.2),
+                     end: Offset.zero,
+                   ).animate(CurvedAnimation(
+                     parent: animation,
+                     curve: Curves.easeOutBack, // Spring-like bounce
+                   )),
+                   child: ScaleTransition(
+                     scale: Tween<double>(
+                       begin: 0.9,
+                       end: 1.0,
+                     ).animate(CurvedAnimation(
+                       parent: animation,
+                       curve: Curves.elasticOut, // Elastic settling
+                     )),
+                     child: RotationTransition(
+                       turns: Tween<double>(
+                         begin: -0.02, // Subtle counter-clockwise rotation
+                         end: 0.0,
+                       ).animate(CurvedAnimation(
+                         parent: animation,
+                         curve: Curves.easeOutCubic,
+                       )),
+                       child: child,
+                     ),
+                   ),
+                 ),
+               );
+             },
+             child: _selectedTab == 'buy'
+                 ? Row(
+                     key: const ValueKey('buy_tab'),
+                     children: [
+                       Expanded(
+                         child: _buildTeamOption(
+                           homeTeam.substring(0, 3).toUpperCase(),
+                           'home',
+                           homeData,
+                           pricingData,
+                         ),
+                       ),
+                       const SizedBox(width: 8),
+                       Expanded(
+                         child: _buildTeamOption('DRW', 'draw', drawData, pricingData),
+                       ),
+                       const SizedBox(width: 8),
+                       Expanded(
+                         child: _buildTeamOption(
+                           awayTeam.substring(0, 3).toUpperCase(),
+                           'away',
+                           awayData,
+                           pricingData,
+                         ),
+                       ),
+                     ],
+                   )
+                 : Container(
+                     key: const ValueKey('sell_tab'),
+                     child: _buildSellHoldingsSection(eventData, pricingData),
+                   ),
+           ),
           const SizedBox(height: 20),
           // Amount Section
           if (_selectedTab == 'buy') ...[
@@ -1206,14 +1376,44 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  _betAmountController.text.isEmpty
-                      ? '\$0'
-                      : '\$${_betAmountController.text}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 32,
-                    fontWeight: FontWeight.w300,
+                 AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  transitionBuilder: (child, animation) {
+                    // Water-like amount change: spring scale + gentle fade
+                    return ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.85,
+                        end: 1.0,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.elasticOut, // Spring-like bounce
+                      )),
+                      child: FadeTransition(
+                        opacity: Tween<double>(
+                          begin: 0.7,
+                          end: 1.0,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOut,
+                        )),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Text(
+                    _betAmountController.text.isEmpty
+                        ? '\$0'
+                        : '\$${_betAmountController.text}',
+                    key: ValueKey<String>(
+                      _betAmountController.text.isEmpty
+                          ? '\$0'
+                          : '\$${_betAmountController.text}',
+                    ),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 32,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                 ),
               ],
@@ -1239,16 +1439,48 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  _sellAmount == 0.0
-                      ? '0'
-                      : _sellAmount < 0.01
-                      ? _sellAmount.toStringAsExponential(2)
-                      : _sellAmount.toStringAsFixed(2),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 32,
-                    fontWeight: FontWeight.w300,
+                 AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  transitionBuilder: (child, animation) {
+                    // Water-like amount change: spring scale + gentle fade
+                    return ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.85,
+                        end: 1.0,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.elasticOut, // Spring-like bounce
+                      )),
+                      child: FadeTransition(
+                        opacity: Tween<double>(
+                          begin: 0.7,
+                          end: 1.0,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOut,
+                        )),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Text(
+                    _sellAmount == 0.0
+                        ? '0'
+                        : _sellAmount < 0.01
+                            ? _sellAmount.toStringAsExponential(2)
+                            : _sellAmount.toStringAsFixed(2),
+                    key: ValueKey<String>(
+                      _sellAmount == 0.0
+                          ? '0'
+                          : _sellAmount < 0.01
+                              ? _sellAmount.toStringAsExponential(2)
+                              : _sellAmount.toStringAsFixed(2),
+                    ),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 32,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                 ),
               ],
@@ -1307,14 +1539,39 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (child, animation) {
-                          return ScaleTransition(
-                            scale: animation,
-                            child: child,
-                          );
-                        },
+                       AnimatedSwitcher(
+                         duration: const Duration(milliseconds: 450),
+                         transitionBuilder: (child, animation) {
+                           // Water-like winnings animation: spring scale + fade + subtle slide
+                           return FadeTransition(
+                             opacity: Tween<double>(
+                               begin: 0.6,
+                               end: 1.0,
+                             ).animate(CurvedAnimation(
+                               parent: animation,
+                               curve: Curves.easeOut,
+                             )),
+                             child: SlideTransition(
+                               position: Tween<Offset>(
+                                 begin: const Offset(0.0, 0.1),
+                                 end: Offset.zero,
+                               ).animate(CurvedAnimation(
+                                 parent: animation,
+                                 curve: Curves.easeOutCubic,
+                               )),
+                               child: ScaleTransition(
+                                 scale: Tween<double>(
+                                   begin: 0.8,
+                                   end: 1.0,
+                                 ).animate(CurvedAnimation(
+                                   parent: animation,
+                                   curve: Curves.elasticOut, // Spring bounce
+                                 )),
+                                 child: child,
+                               ),
+                             ),
+                           );
+                         },
                         child: Text(
                           () {
                             final amount = _selectedTab == 'buy'
@@ -1381,9 +1638,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             onTapDown: (_) => setState(() => _isButtonPressed = true),
             onTapUp: (_) => setState(() => _isButtonPressed = false),
             onTapCancel: () => setState(() => _isButtonPressed = false),
-            child: AnimatedScale(
-              scale: _isButtonPressed ? 0.95 : 1.0,
-              duration: const Duration(milliseconds: 100),
+             child: AnimatedScale(
+               scale: _isButtonPressed ? 0.92 : 1.0,
+               duration: const Duration(milliseconds: 150),
+               curve: _isButtonPressed ? Curves.easeIn : Curves.elasticOut, // Spring back
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),

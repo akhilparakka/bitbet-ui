@@ -420,19 +420,48 @@ class _AllGamesSectionState extends State<AllGamesSection>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    GameDetailsPage(eventId: match['id']),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                transitionDuration: const Duration(milliseconds: 200),
-              ),
-            );
-          },
+            onTap: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      GameDetailsPage(eventId: match['id']),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        // Water-like flowing animation with spring physics
+                        const begin = Offset(1.0, 0.0);
+                        const end = Offset.zero;
+
+                        // Multi-phase water flow: accelerate → overshoot → settle
+                        final curve = Curves.easeOutBack; // Spring-like bounce
+
+                        var tween = Tween(begin: begin, end: end)
+                            .chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+
+                        // Add subtle scale animation for water ripple effect
+                        final scaleAnimation = Tween<double>(
+                          begin: 0.95,
+                          end: 1.0,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.elasticOut,
+                        ));
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              scale: scaleAnimation,
+                              child: child,
+                            ),
+                          ),
+                        );
+                      },
+                  transitionDuration: const Duration(milliseconds: 400),
+                ),
+              );
+            },
           splashColor: Colors.white.withValues(alpha: 0.1),
           highlightColor: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
@@ -895,9 +924,19 @@ class _AllGamesSectionState extends State<AllGamesSection>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (homeTeamLogo != null)
-              Expanded(child: _buildSingleLogo(homeTeamLogo)),
+              Expanded(
+                child: Hero(
+                  tag: 'home_logo_${match['id']}',
+                  child: _buildSingleLogo(homeTeamLogo),
+                ),
+              ),
             if (awayTeamLogo != null)
-              Expanded(child: _buildSingleLogo(awayTeamLogo)),
+              Expanded(
+                child: Hero(
+                  tag: 'away_logo_${match['id']}',
+                  child: _buildSingleLogo(awayTeamLogo),
+                ),
+              ),
           ],
         ),
       );

@@ -82,14 +82,14 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
       child: AnimatedScale(
         scale: _isPressed ? 0.95 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2D2D2D) : Colors.transparent,
-            borderRadius: BorderRadius.circular(26),
-          ),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.white : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+            ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -98,7 +98,7 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
                 width: 20,
                 height: 20,
                 colorFilter: ColorFilter.mode(
-                  isSelected ? Colors.white : const Color(0xFF666666),
+                  isSelected ? Colors.black : const Color(0xFF666666),
                   BlendMode.srcIn,
                 ),
               ),
@@ -107,7 +107,7 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 300),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),

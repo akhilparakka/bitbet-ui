@@ -384,38 +384,13 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       GameDetailsPage(eventId: match['id']),
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
-                        // Water-like flowing animation with spring physics
-                        const begin = Offset(1.0, 0.0);
-                        const end = Offset.zero;
-
-                        // Multi-phase water flow: accelerate → overshoot → settle
-                        final curve = Curves.easeOutBack; // Spring-like bounce
-
-                        var tween = Tween(begin: begin, end: end)
-                            .chain(CurveTween(curve: curve));
-                        var offsetAnimation = animation.drive(tween);
-
-                        // Add subtle scale animation for water ripple effect
-                        final scaleAnimation = Tween<double>(
-                          begin: 0.95,
-                          end: 1.0,
-                        ).animate(CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.elasticOut,
-                        ));
-
-                        return SlideTransition(
-                          position: offsetAnimation,
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: scaleAnimation,
-                              child: child,
-                            ),
-                          ),
+                        // Simple fade in animation when image moves into place
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
                         );
                       },
-                  transitionDuration: const Duration(milliseconds: 400),
+                  transitionDuration: const Duration(milliseconds: 300),
                 ),
               );
             },
@@ -881,14 +856,18 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (homeTeamLogo != null)
-              Expanded(
+              SizedBox(
+                width: 30,
+                height: 30,
                 child: Hero(
                   tag: 'home_logo_${match['id']}',
                   child: _buildSingleLogo(homeTeamLogo),
                 ),
               ),
             if (awayTeamLogo != null)
-              Expanded(
+              SizedBox(
+                width: 30,
+                height: 30,
                 child: Hero(
                   tag: 'away_logo_${match['id']}',
                   child: _buildSingleLogo(awayTeamLogo),

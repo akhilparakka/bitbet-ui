@@ -6,8 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/transaction_preview.dart';
 
 class BettingService {
-  // USDT always has 6 decimals - hardcoded for performance
-  static const int USDT_DECIMALS = 6;
+  // Both collateral token (DAI/USDT) and outcome tokens use 18 decimals
+  static const int TOKEN_DECIMALS = 18;
 
   // ABI cache - loaded once at app start for performance
   static final Map<String, String> _abiCache = {};
@@ -88,7 +88,7 @@ class BettingService {
       // Calculate shares from bet amount and share price
       // User wants to spend betAmount USDT, calculate how many shares they get
       final shares = betAmount / sharePrice;
-      final sharesWei = BigInt.from(shares * pow(10, USDT_DECIMALS));
+      final sharesWei = BigInt.from(shares * pow(10, TOKEN_DECIMALS));
 
       // Get price quote for the calculated shares
       final estimatedCost = await _getQuote(
@@ -102,8 +102,8 @@ class BettingService {
 
       // Calculate potential payout and profit
       final estimatedCostDecimal =
-          estimatedCost.toDouble() / pow(10, USDT_DECIMALS);
-      final maxCostDecimal = maxCost.toDouble() / pow(10, USDT_DECIMALS);
+          estimatedCost.toDouble() / pow(10, TOKEN_DECIMALS);
+      final maxCostDecimal = maxCost.toDouble() / pow(10, TOKEN_DECIMALS);
       final potentialPayout = shares; // Each share pays 1 USDT if it wins
       final netProfit =
           potentialPayout -
@@ -133,7 +133,7 @@ class BettingService {
         estimatedGas: estimatedGas,
         gasPrice: gasPriceGwei,
         estimatedGasCost: estimatedGasCost,
-        decimals: USDT_DECIMALS,
+        decimals: TOKEN_DECIMALS,
       );
     } catch (e) {
       debugPrint('Error simulating bet: $e');
@@ -187,8 +187,10 @@ class BettingService {
       );
       debugPrint('Contract instances created');
 
-      // Use hardcoded USDT decimals (no RPC call needed)
-      debugPrint('Using USDT decimals: $USDT_DECIMALS (hardcoded)');
+      // Use hardcoded token decimals (no RPC call needed)
+      debugPrint(
+        'Using token decimals: $TOKEN_DECIMALS (hardcoded - both collateral and outcome tokens)',
+      );
 
       final betAmount = double.parse(betAmountUSDC);
       debugPrint('User wants to spend: $betAmount USDC');
@@ -197,8 +199,8 @@ class BettingService {
       // Calculate how many shares the user can buy
       final shares = betAmount / sharePrice;
       debugPrint('Calculated shares: $shares');
-       // Outcome tokens have 6 decimals, so convert shares to wei using 6 decimals
-       final sharesWei = BigInt.from(shares * pow(10, 6));
+      // Outcome tokens have 18 decimals, so convert shares to wei using 18 decimals
+      final sharesWei = BigInt.from(shares * pow(10, TOKEN_DECIMALS));
       debugPrint('Shares in wei: $sharesWei');
 
       onStatusUpdate?.call('Checking price and balance...');
@@ -225,25 +227,25 @@ class BettingService {
       final estimatedCost = results[2];
 
       debugPrint(
-        'User balance: ${balance / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'User balance: ${balance / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
       debugPrint(
-        'Current allowance: ${currentAllowance / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'Current allowance: ${currentAllowance / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
       debugPrint(
-        'On-chain quote: ${estimatedCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'On-chain quote: ${estimatedCost / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
 
       // Calculate maxCost with 5% slippage buffer
       final maxCost = (estimatedCost * BigInt.from(105)) ~/ BigInt.from(100);
       debugPrint(
-        'Max cost (with slippage): ${maxCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'Max cost (with slippage): ${maxCost / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
 
       // Check if balance covers the cost
       if (balance < maxCost) {
         throw Exception(
-          'Insufficient balance. You have ${balance / BigInt.from(pow(10, USDT_DECIMALS))} USDT, need ${maxCost / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+          'Insufficient balance. You have ${balance / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT, need ${maxCost / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
         );
       }
 
@@ -498,8 +500,10 @@ class BettingService {
         EthereumAddress.fromHex(eventContractAddress),
       );
 
-      // Use hardcoded USDT decimals (no RPC call needed)
-      debugPrint('Using USDT decimals: $USDT_DECIMALS (hardcoded)');
+      // Use hardcoded token decimals (no RPC call needed)
+      debugPrint(
+        'Using token decimals: $TOKEN_DECIMALS (hardcoded - both collateral and outcome tokens)',
+      );
 
       final tokenCountNum = double.parse(tokenCount);
       debugPrint('User wants to sell: $tokenCountNum outcome tokens');
@@ -543,18 +547,19 @@ class BettingService {
         EthereumAddress.fromHex(outcomeTokenAddress),
       );
 
-       // Outcome tokens use 6 decimals (hardcoded for contract compatibility)
-       final tokenDecimals = 6;
-       debugPrint('Outcome token decimals: $tokenDecimals (hardcoded)');
+      // Use hardcoded 18 decimals for outcome tokens (no RPC call needed)
+      debugPrint('Using outcome token decimals: $TOKEN_DECIMALS (hardcoded)');
 
-      // Convert human-readable amount to wei using token decimals
-      final tokenCountWei = BigInt.from(tokenCountNum * pow(10, tokenDecimals));
+      // Convert human-readable amount to wei using 18 decimals
+      final tokenCountWei = BigInt.from(
+        tokenCountNum * pow(10, TOKEN_DECIMALS),
+      );
       debugPrint('Token count in wei: $tokenCountWei');
 
       // Check outcome token balance
       final tokenBalance = await _getBalance(outcomeTokenContract, userAddress);
       final tokenBalanceHuman =
-          tokenBalance.toDouble() / pow(10, tokenDecimals);
+          tokenBalance.toDouble() / pow(10, TOKEN_DECIMALS);
       debugPrint(
         'Outcome token balance: $tokenBalance (raw), $tokenBalanceHuman (human readable)',
       );
@@ -580,10 +585,10 @@ class BettingService {
           BigInt.from(100);
 
       debugPrint(
-        'Estimated profit: ${estimatedProfit / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'Estimated profit: ${estimatedProfit / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
       debugPrint(
-        'Min profit (with $slippagePercent% slippage): ${minProfit / BigInt.from(pow(10, USDT_DECIMALS))} USDT',
+        'Min profit (with $slippagePercent% slippage): ${minProfit / BigInt.from(pow(10, TOKEN_DECIMALS))} USDT',
       );
 
       // Check and approve outcome tokens

@@ -75,23 +75,44 @@ class _SplashPageState extends State<SplashPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1F2937), // Darker blue-gray
-              Color(0xFF253342), // Darker lighter
-              Color(0xFF1F2937), // Back to dark
-              Color(0xFF0F1419), // Even darker at bottom
+              Color(0xFF415CC0), // Blue from Figma
+              Color(0xFF2BBEBD), // Cyan/turquoise from Figma
             ],
-            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
-        child: Center(
-          child: Image.asset(
-            "assets/Logo/bitbet-logo.png",
-            width: 250,
-            height: 218,
-          ),
+        child: Stack(
+          children: [
+            // Decorative circle/ellipse background
+            Positioned(
+              left: 51,
+              top: 243,
+              child: Container(
+                width: 597,
+                height: 597,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Logo centered
+            Center(
+              child: Image.asset(
+                "assets/Logo/bidibet-logo.png",
+                width: 229,
+                height: 331,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ],
         ),
       ),
     );

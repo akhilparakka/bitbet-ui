@@ -1,15 +1,8 @@
-String formatUSDT(String microAmount) {
-  try {
-    final amount = int.parse(microAmount) / 1000000;
-    return '\$${amount.toStringAsFixed(3)}';
-  } catch (e) {
-    return '\$0.000';
-  }
-}
-
 String formatDate(String timestamp) {
   try {
-    final date = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp) * 1000);
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      int.parse(timestamp) * 1000,
+    );
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     final year = date.year;
@@ -38,4 +31,33 @@ String getOutcomeName(int outcomeIndex, List<String> outcomes) {
     return outcomes[outcomeIndex];
   }
   return 'Unknown';
+}
+
+// Format wei amounts (18 decimals) to human-readable format
+String formatWeiAmount(String weiAmount) {
+  try {
+    final amount = BigInt.parse(weiAmount).toDouble() / 1e18;
+    return amount.toStringAsFixed(6);
+  } catch (e) {
+    return '0.000000';
+  }
+}
+
+// Format wei amounts as currency (18 decimals)
+String formatWeiToCurrency(String weiAmount) {
+  try {
+    final amount = BigInt.parse(weiAmount).toDouble() / 1e18;
+    return '\$${amount.toStringAsFixed(2)}';
+  } catch (e) {
+    return '\$0.00';
+  }
+}
+
+// Convert wei string to double (18 decimals)
+double weiToDouble(String weiAmount) {
+  try {
+    return BigInt.parse(weiAmount).toDouble() / 1e18;
+  } catch (e) {
+    return 0.0;
+  }
 }

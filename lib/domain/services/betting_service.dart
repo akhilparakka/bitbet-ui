@@ -303,21 +303,91 @@ class BettingService {
     DeployedContract marketMaker,
     String marketAddress,
     int outcomeIndex,
-    BigInt amount,
-  ) async {
+    BigInt amount, {
+    bool isSell = false,
+  }) async {
     final calcNetCostFunction = marketMaker.function('calcNetCost');
 
     // Build outcome amounts array [0, 0, amount] for outcomeIndex
+    // For selling, use negative amount to get sell proceeds from LMSR
     final outcomeAmounts = List<BigInt>.filled(3, BigInt.zero);
-    outcomeAmounts[outcomeIndex] = amount;
+    outcomeAmounts[outcomeIndex] = isSell ? -amount : amount;
 
-    final result = await web3Client.call(
-      contract: marketMaker,
-      function: calcNetCostFunction,
-      params: [EthereumAddress.fromHex(marketAddress), outcomeAmounts],
+    debugPrint('');
+    debugPrint('╔════════════════════════════════════════════════════════════');
+    debugPrint('║ LMSR calcNetCost() CALL - FOR SMART CONTRACT TEAM');
+    debugPrint('╠════════════════════════════════════════════════════════════');
+    debugPrint('║ Market Maker Address: ${marketMaker.address.hex}');
+    debugPrint('║ Market Address: $marketAddress');
+    debugPrint('║ Outcome Index: $outcomeIndex');
+    debugPrint(
+      '║ Amount (decimal): ${amount.toDouble() / pow(10, TOKEN_DECIMALS)}',
     );
+    debugPrint('║ Amount (wei): $amount');
+    debugPrint('║ Is Sell Operation: $isSell');
+    debugPrint('║');
+    debugPrint('║ Outcome Amounts Array (int256[3]):');
+    debugPrint('║   outcomeTokenAmounts[0] = ${outcomeAmounts[0]}');
+    debugPrint('║   outcomeTokenAmounts[1] = ${outcomeAmounts[1]}');
+    debugPrint('║   outcomeTokenAmounts[2] = ${outcomeAmounts[2]}');
+    debugPrint('║');
+    debugPrint('║ Solidity call equivalent:');
+    debugPrint('║   calcNetCost(');
+    debugPrint('║     market: $marketAddress,');
+    debugPrint(
+      '║     outcomeTokenAmounts: [${outcomeAmounts[0]}, ${outcomeAmounts[1]}, ${outcomeAmounts[2]}]',
+    );
+    debugPrint('║   )');
+    debugPrint('╚════════════════════════════════════════════════════════════');
 
-    return (result.first as BigInt).abs(); // Return absolute value
+    try {
+      final result = await web3Client.call(
+        contract: marketMaker,
+        function: calcNetCostFunction,
+        params: [EthereumAddress.fromHex(marketAddress), outcomeAmounts],
+      );
+
+      final netCost = result.first as BigInt;
+      debugPrint('');
+      debugPrint(
+        '╔════════════════════════════════════════════════════════════',
+      );
+      debugPrint('║ LMSR calcNetCost() RESULT');
+      debugPrint(
+        '╠════════════════════════════════════════════════════════════',
+      );
+      debugPrint('║ Raw netCost: $netCost');
+      debugPrint('║ Absolute value: ${netCost.abs()}');
+      debugPrint(
+        '║ Human readable: ${netCost.abs().toDouble() / pow(10, TOKEN_DECIMALS)} USDT',
+      );
+      debugPrint(
+        '╚════════════════════════════════════════════════════════════',
+      );
+      debugPrint('');
+
+      return netCost.abs(); // Return absolute value
+    } catch (e) {
+      debugPrint('');
+      debugPrint(
+        '╔════════════════════════════════════════════════════════════',
+      );
+      debugPrint('║ LMSR calcNetCost() ERROR');
+      debugPrint(
+        '╠════════════════════════════════════════════════════════════',
+      );
+      debugPrint('║ Error: $e');
+      debugPrint('║');
+      debugPrint('║ QUESTION FOR SMART CONTRACT TEAM:');
+      debugPrint('║ Is this the correct way to estimate sell proceeds?');
+      debugPrint('║ Should we use negative amounts in the array for selling?');
+      debugPrint('║ Or is there a different function to call?');
+      debugPrint(
+        '╚════════════════════════════════════════════════════════════',
+      );
+      debugPrint('');
+      rethrow;
+    }
   }
 
   /// Get token allowance

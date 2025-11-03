@@ -1982,7 +1982,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     final maxAmountTokens = marketHoldings[_selectedSellOutcome] ?? 0.0;
     final maxAmountShares =
         maxAmountTokens /
-        1000000; // Convert from wei to human readable (6 decimals)
+        1e18; // Convert from wei to human readable (18 decimals)
 
     return Row(
       children: [
@@ -2079,7 +2079,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              (holdingAmount / 1000000).toStringAsFixed(2),
+              (holdingAmount / 1e18).toStringAsFixed(2),
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 13,

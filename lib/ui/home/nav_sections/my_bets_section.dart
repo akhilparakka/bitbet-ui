@@ -141,8 +141,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
     Map<String, dynamic> totals,
     List<HoldingModel> holdings,
   ) {
-    final totalSpent = double.parse(totals['totalSpent'] ?? '0') / 1e6;
-    final totalReceived = double.parse(totals['totalReceived'] ?? '0') / 1e6;
+    final totalSpent = weiToDouble(totals['totalSpent'] ?? '0');
+    final totalReceived = weiToDouble(totals['totalReceived'] ?? '0');
     final pnl = totalReceived - totalSpent;
     final pnlPercent = totalSpent > 0 ? (pnl / totalSpent * 100) : 0.0;
 
@@ -398,7 +398,7 @@ class _MyBetsSectionState extends State<MyBetsSection> {
     // Calculate total for this event
     double totalInvested = 0;
     for (final holding in holdings) {
-      totalInvested += double.parse(holding.totalSpent) / 1e6;
+      totalInvested += weiToDouble(holding.totalSpent);
     }
 
     return Container(
@@ -567,8 +567,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
 
   Widget _buildHoldingRow(HoldingModel holding, EventModel event) {
     final outcomeName = getOutcomeName(holding.outcomeIndex, event.outcomes);
-    final shares = double.parse(holding.shares) / 1e6;
-    final invested = double.parse(holding.totalSpent) / 1e6;
+    final shares = weiToDouble(holding.shares);
+    final invested = weiToDouble(holding.totalSpent);
     final potential = shares; // Each share worth $1 if wins
 
     return Container(
@@ -671,8 +671,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
     final outcomeName = event != null
         ? getOutcomeName(bet.outcomeIndex, event.outcomes)
         : 'Unknown';
-    final cost = double.parse(bet.costOrProfit) / 1e6;
-    final shares = double.parse(bet.shares) / 1e6;
+    final cost = weiToDouble(bet.costOrProfit);
+    final shares = weiToDouble(bet.shares);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

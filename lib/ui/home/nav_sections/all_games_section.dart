@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/providers/odds_provider.dart';
 import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
@@ -14,12 +15,10 @@ class AllGamesSection extends StatefulWidget {
   State<AllGamesSection> createState() => _AllGamesSectionState();
 }
 
-class _AllGamesSectionState extends State<AllGamesSection>
-    with SingleTickerProviderStateMixin {
+class _AllGamesSectionState extends State<AllGamesSection> {
   Map<String, bool> favoriteMap = {};
   int selectedIconIndex = 0;
   String selectedSportGroup = 'Soccer';
-  late AnimationController _animationController;
 
   String formatEventDateTime(String? dateTimeStr) {
     if (dateTimeStr == null) return '';
@@ -61,20 +60,7 @@ class _AllGamesSectionState extends State<AllGamesSection>
     }
    }
 
-   @override
-   void initState() {
-     super.initState();
-     _animationController = AnimationController(
-       duration: const Duration(milliseconds: 800),
-       vsync: this,
-     )..forward();
-   }
 
-   @override
-   void dispose() {
-     _animationController.dispose();
-     super.dispose();
-   }
 
    @override
    Widget build(BuildContext context) {
@@ -85,7 +71,7 @@ class _AllGamesSectionState extends State<AllGamesSection>
           // Quick picks header
            SliverToBoxAdapter(
              child: Container(
-               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16.0),
+               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -97,81 +83,14 @@ class _AllGamesSectionState extends State<AllGamesSection>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          selectedIconIndex = 0;
-                          selectedSportGroup = 'Soccer';
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.sports_soccer,
-                            color: selectedIconIndex == 0
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          selectedIconIndex = 1;
-                          selectedSportGroup = 'Cricket';
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: SvgPicture.asset(
-                            'assets/svg/games.svg',
-                            width: 16,
-                            height: 16,
-                            colorFilter: ColorFilter.mode(
-                              selectedIconIndex == 1
-                                  ? Colors.white
-                                  : Colors.grey.shade600,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          selectedIconIndex = 2;
-                          selectedSportGroup = 'Soccer';
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.sports_soccer,
-                            color: selectedIconIndex == 2
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          selectedIconIndex = 3;
-                          selectedSportGroup = 'Soccer';
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(
-                            Icons.sports_soccer,
-                            color: selectedIconIndex == 3
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ],
+                  _SportNavigationIcons(
+                    selectedIconIndex: selectedIconIndex,
+                    onSportSelected: (index, sportGroup) {
+                      setState(() {
+                        selectedIconIndex = index;
+                        selectedSportGroup = sportGroup;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -212,39 +131,16 @@ class _AllGamesSectionState extends State<AllGamesSection>
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                             return SingleChildScrollView(
-                               child: Column(
-                                 children: pageMatches.asMap().entries.map(
-                                   (entry) {
-                                     final index = entry.key;
-                                     final match = entry.value;
-                                     return AnimatedBuilder(
-                                       animation: _animationController,
-                                       builder: (context, child) {
-                                         final delay = index * 0.1;
-                                         final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-                                           CurvedAnimation(
-                                             parent: _animationController,
-                                             curve: Interval(delay, 1.0, curve: Curves.easeOut),
-                                           ),
-                                         );
-                                         return FadeTransition(
-                                           opacity: animation,
-                                           child: SlideTransition(
-                                             position: animation.drive(
-                                               Tween<Offset>(
-                                                 begin: const Offset(0, 0.1),
-                                                 end: Offset.zero,
-                                               ),
-                                             ),
-                                             child: child,
-                                           ),
-                                         );
-                                       },
-                                       child: _buildQuickPickItem(match, ref),
-                                     );
-                                   },
-                                 ).toList(),
+                             return Padding(
+                               padding: const EdgeInsets.only(right: 12),
+                               child: ClipRect(
+                                 child: SingleChildScrollView(
+                                   child: Column(
+                                      children: pageMatches.map(
+                                        (match) => _buildQuickPickItem(match, ref),
+                                      ).toList(),
+                                   ),
+                                 ),
                                ),
                              );
                           },
@@ -271,25 +167,18 @@ class _AllGamesSectionState extends State<AllGamesSection>
           ),
 
           // Consistent spacing between sections
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Popular leagues',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: const Text(
+                'Popular leagues',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -331,26 +220,19 @@ class _AllGamesSectionState extends State<AllGamesSection>
           ),
 
           // Consistent spacing between sections
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           // Other sports header
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Other sports',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: const Text(
+                'Other sports',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -711,50 +593,41 @@ class _AllGamesSectionState extends State<AllGamesSection>
     final imageUrl = league['image'] as String;
 
     return Container(
-      width: 140,
+      width: 120,
       margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.network(
-            imageUrl,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: 120,
+        height: 120,
+        fit: BoxFit.contain,
+        placeholder: (context, url) => Container(
+          width: 120,
+          height: 120,
+          color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: (context, url, error) {
+          return Container(
             width: 120,
             height: 120,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 120,
-                height: 120,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFF34495E).withValues(alpha: 0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Icon(
-                  Icons.sports,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 40,
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          Text(
-            league['name'],
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFF34495E).withValues(alpha: 0.4),
+                width: 1,
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
+            child: Icon(
+              Icons.sports,
+              color: Colors.white.withValues(alpha: 0.7),
+              size: 40,
+            ),
+          );
+        },
       ),
     );
   }
@@ -914,10 +787,15 @@ class _AllGamesSectionState extends State<AllGamesSection>
   Widget _buildSingleLogo(String logoUrl) {
     // Check if it's a network URL or local asset
     if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-      return Image.network(
-        logoUrl,
+      return CachedNetworkImage(
+        imageUrl: logoUrl,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
+        placeholder: (context, url) => const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 1.5),
+        ),
+        errorWidget: (context, url, error) {
           return Icon(
             Icons.sports_soccer,
             color: Colors.white.withValues(alpha: 0.8),
@@ -984,6 +862,69 @@ class _AllGamesSectionState extends State<AllGamesSection>
           ),
         ),
       ],
+    );
+  }
+}
+
+// Extracted sport navigation widget to prevent unnecessary rebuilds
+class _SportNavigationIcons extends StatelessWidget {
+  final int selectedIconIndex;
+  final Function(int index, String sportGroup) onSportSelected;
+
+  const _SportNavigationIcons({
+    required this.selectedIconIndex,
+    required this.onSportSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _buildSportIcon(0, Icons.sports_soccer, 'Soccer'),
+        const SizedBox(width: 6),
+        _buildSvgSportIcon(1, 'assets/svg/games.svg', 'Cricket'),
+        const SizedBox(width: 6),
+        _buildSportIcon(2, Icons.sports_soccer, 'Soccer'),
+        const SizedBox(width: 6),
+        _buildSportIcon(3, Icons.sports_soccer, 'Soccer'),
+      ],
+    );
+  }
+
+  Widget _buildSportIcon(int index, IconData icon, String sportGroup) {
+    return GestureDetector(
+      onTap: () => onSportSelected(index, sportGroup),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: Icon(
+          icon,
+          color: selectedIconIndex == index
+              ? Colors.white
+              : Colors.grey.shade600,
+          size: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSvgSportIcon(int index, String assetPath, String sportGroup) {
+    return GestureDetector(
+      onTap: () => onSportSelected(index, sportGroup),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: SvgPicture.asset(
+          assetPath,
+          width: 16,
+          height: 16,
+          colorFilter: ColorFilter.mode(
+            selectedIconIndex == index
+                ? Colors.white
+                : Colors.grey.shade600,
+            BlendMode.srcIn,
+          ),
+          cacheColorFilter: true,
+        ),
+      ),
     );
   }
 }

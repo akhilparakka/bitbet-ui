@@ -69,6 +69,7 @@ class OblongButton extends StatelessWidget {
                           mIconPath!,
                           width: iconSize,
                           height: iconSize,
+                          cacheColorFilter: true,
                         ),
                       ),
                     Text(

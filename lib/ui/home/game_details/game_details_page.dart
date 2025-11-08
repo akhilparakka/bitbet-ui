@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/providers/event_provider.dart';
 import '../../../domain/providers/user_bets_provider.dart';
 import '../../../domain/providers/user_provider.dart';
@@ -807,10 +808,13 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.all(8),
-                        child: Image.network(
-                          homeTeamLogo,
+                        child: CachedNetworkImage(
+                          imageUrl: homeTeamLogo,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          errorWidget: (context, url, error) =>
                               const Icon(Icons.sports_soccer, size: 40),
                         ),
                       )
@@ -885,10 +889,13 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.all(8),
-                        child: Image.network(
-                          awayTeamLogo,
+                        child: CachedNetworkImage(
+                          imageUrl: awayTeamLogo,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          errorWidget: (context, url, error) =>
                               const Icon(Icons.sports_soccer, size: 40),
                         ),
                       )

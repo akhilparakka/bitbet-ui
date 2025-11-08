@@ -15,8 +15,8 @@ class CustomNavigationSidebar extends StatelessWidget {
       {'name': 'All Games', 'icon': 'assets/svg/games.svg'},
       {'name': 'Favorites', 'icon': 'assets/svg/favorites.svg'},
       {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
-      {'name': 'Discover', 'icon': 'assets/svg/discover.svg'},
-      {'name': 'Leaderboards', 'icon': 'assets/svg/leaderboard.svg'},
+      {'name': 'Search', 'icon': 'assets/svg/discover.svg'},
+      {'name': 'Top', 'icon': 'assets/svg/leaderboard.svg'},
     ],
   });
 
@@ -92,6 +92,7 @@ class CustomNavigationSidebar extends StatelessWidget {
                                 Colors.transparent,
                                 BlendMode.srcIn,
                               ),
+                        cacheColorFilter: true,
                       ),
                     ),
                   ),

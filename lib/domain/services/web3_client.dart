@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/enums.dart';
@@ -101,25 +100,25 @@ class Web3BetClient {
   }
 
   Future<Color?> getDominantColor() async {
+    // Return cached dominant color if available
     if (_dominantColorHex != null) {
       return Color(int.parse(_dominantColorHex!, radix: 16));
     }
-    if (_profileImage == null || _profileImage!.isEmpty) {
-      return null;
-    }
-    try {
-      final palette = await PaletteGenerator.fromImageProvider(
-        NetworkImage(_profileImage!),
-        size: const Size(200, 200),
-      );
-      final color = palette.dominantColor?.color ?? Colors.blueGrey;
-      _dominantColorHex = color.toARGB32().toRadixString(16).padLeft(8, '0');
+
+    // Return a default color based on user info
+    // This is much faster and doesn't require image processing
+    if (_userEmail != null && _userEmail!.isNotEmpty) {
+      // Generate a consistent color from email hash
+      final hash = _userEmail!.hashCode.abs();
+      final hue = (hash % 360).toDouble();
+      final color = HSVColor.fromAHSV(1.0, hue, 0.6, 0.7).toColor();
+      _dominantColorHex = color.value.toRadixString(16).padLeft(8, '0');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dominantColor', _dominantColorHex!);
       return color;
-    } catch (e) {
-      return Colors.blueGrey;
     }
+
+    return Colors.blueGrey;
   }
 
   Future<EtherAmount> getBalance() async {

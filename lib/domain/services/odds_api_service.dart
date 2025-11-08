@@ -13,7 +13,12 @@ class OddsApiService {
       '$_baseUrl/quick_pics${sportGroup != null ? '?sport_group=$sportGroup' : ''}',
     );
 
-    final response = await http.get(url);
+    final response = await http.get(url).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        throw Exception('Request timeout: Failed to fetch odds within 10 seconds');
+      },
+    );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = jsonDecode(response.body);

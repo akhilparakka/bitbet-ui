@@ -1,9 +1,11 @@
 import 'package:bitbet/ui/home/nav_sections/all_games_section.dart';
 import 'package:bitbet/ui/home/nav_sections/favorites_section.dart';
+import 'package:bitbet/ui/home/nav_sections/leaderboard_section.dart';
 import 'package:bitbet/ui/home/nav_sections/my_bets_section.dart';
 import 'package:bitbet/ui/custom_widgets/floating_navigation.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
 import 'package:bitbet/ui/search/search_page.dart';
+import 'package:bitbet/ui/common/app_styles.dart';
 import 'package:bitbet/domain/services/web3_client.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -15,20 +17,12 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> {
   String selectedSection = 'Home';
-  late AnimationController _slideController;
-  bool _isAnimating = false;
-  String? _outgoingSection;
 
   @override
   void initState() {
     super.initState();
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _slideController.value = 1.0;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Web3BetClient().loadUserData();
@@ -40,16 +34,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     'Home': const AllGamesSection(),
     'Favorites': const FavoritesSection(),
     'My Bets': const MyBetsSection(),
-    'Discover': const Text(
-      "Discover Section\nFind new and trending games",
-      style: TextStyle(color: Colors.white, fontSize: 18),
-      textAlign: TextAlign.center,
-    ),
-    'Leaderboards': const Text(
-      "Leaderboards Section\nSee top players and rankings",
-      style: TextStyle(color: Colors.white, fontSize: 18),
-      textAlign: TextAlign.center,
-    ),
+    'Top': const LeaderboardSection(),
   };
 
   @override
@@ -135,74 +120,69 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       height: double.infinity,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: AnimatedBuilder(
-          animation: _slideController,
-          builder: (context, child) {
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, animation) {
             final scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-              CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+              CurvedAnimation(parent: animation, curve: Curves.easeOut),
             );
 
-            return Stack(
-              children: [
-                if (_outgoingSection != null && _isAnimating)
-                  Opacity(
-                    opacity: 1.0 - _slideController.value,
-                    child: _sectionWidgets[_outgoingSection!],
-                  ),
-
-                ScaleTransition(
-                  scale: _isAnimating && _outgoingSection != null
-                      ? scaleAnimation
-                      : const AlwaysStoppedAnimation(1.0),
-                  child: Opacity(
-                    opacity: _isAnimating && _outgoingSection != null
-                        ? _slideController.value
-                        : 1.0,
-                    child:
-                        _sectionWidgets[section] ??
-                        Center(
-                          child: Text(
-                            "Section '$section' not found",
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                  ),
-                ),
-              ],
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: scaleAnimation,
+                child: child,
+              ),
             );
           },
+          child: KeyedSubtree(
+            key: ValueKey(section),
+            child: _sectionWidgets[section] ??
+                Center(
+                  child: Text(
+                    "Section '$section' not found",
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+          ),
         ),
       ),
     );
   }
 
   Future<void> _onSectionChanged(String section) async {
-    if (_isAnimating || selectedSection == section) return;
+    if (selectedSection == section) return;
+
+    if (section == 'Search') {
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SearchPage(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 200),
+        ),
+      );
+      return;
+    }
 
     setState(() {
-      _isAnimating = true;
-      _outgoingSection = selectedSection;
       selectedSection = section;
-    });
-
-    _slideController.value = 0.0;
-    await _slideController.animateTo(
-      1.0,
-      duration: const Duration(milliseconds: 300),
-    );
-
-    setState(() {
-      _isAnimating = false;
-      _outgoingSection = null;
     });
   }
 
   @override
   void dispose() {
-    _slideController.dispose();
     super.dispose();
   }
 }
@@ -223,11 +203,7 @@ class CustomHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppStyles.headerLarge.copyWith(fontSize: 28),
           ),
         ],
       ),

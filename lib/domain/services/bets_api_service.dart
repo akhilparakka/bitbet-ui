@@ -11,7 +11,10 @@ class BetsApiService {
   Future<Map<String, dynamic>> fetchUserBets(String userId) async {
     try {
       final url = Uri.parse('$_baseUrl/users/$userId/bets');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
 
       if (response.statusCode != 200) {
         throw Exception('API Error: ${response.statusCode}');

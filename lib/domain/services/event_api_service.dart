@@ -8,7 +8,10 @@ class EventApiService {
   Future<Map<String, dynamic>?> fetchEventDetails(String eventId) async {
     try {
       final url = Uri.parse('$_baseUrl/events/$eventId');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -28,7 +31,10 @@ class EventApiService {
   Future<Map<String, dynamic>?> fetchTeamForm(String eventId) async {
     try {
       final url = Uri.parse('$_baseUrl/events/$eventId/team-form');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -43,7 +49,10 @@ class EventApiService {
   Future<Map<String, dynamic>?> fetchEventPricing(String eventId) async {
     try {
       final url = Uri.parse('$_baseUrl/events/$eventId/pricing');
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);

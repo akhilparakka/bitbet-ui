@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/providers/event_provider.dart';
 import '../../custom_widgets/navigation_sidebar.dart';
 
@@ -229,10 +230,13 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Image.network(
-                    teamBadge,
+                  child: CachedNetworkImage(
+                    imageUrl: teamBadge,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    errorWidget: (context, url, error) {
                       return const Icon(Icons.sports_soccer, size: 40);
                     },
                   ),
@@ -627,10 +631,13 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Image.network(
-                    opponentBadge,
+                  child: CachedNetworkImage(
+                    imageUrl: opponentBadge,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(strokeWidth: 1.5),
+                    ),
+                    errorWidget: (context, url, error) {
                       return const Icon(Icons.sports_soccer, size: 20);
                     },
                   ),

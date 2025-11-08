@@ -22,8 +22,8 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
     {'name': 'Home', 'icon': 'assets/svg/home.svg'},
     {'name': 'Favorites', 'icon': 'assets/svg/favorites.svg'},
     {'name': 'My Bets', 'icon': 'assets/svg/ticket.svg'},
-    {'name': 'Discover', 'icon': 'assets/svg/discover.svg'},
-    {'name': 'Profile', 'icon': 'assets/svg/user.svg'},
+    {'name': 'Search', 'icon': 'assets/svg/discover.svg'},
+    {'name': 'Top', 'icon': 'assets/svg/leaderboard.svg'},
   ];
 
   @override
@@ -119,6 +119,7 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
                 isSelected ? const Color(0xFF539DF3) : const Color(0xFF676D75),
                 BlendMode.srcIn,
               ),
+              cacheColorFilter: true,
             ),
             const SizedBox(height: 4),
             Text(

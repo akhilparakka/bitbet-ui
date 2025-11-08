@@ -99,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
           width: 50,
           height: 50,
           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          cacheColorFilter: true,
         ),
         msPacer(),
         const Text(

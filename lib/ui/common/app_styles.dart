@@ -150,10 +150,10 @@ class AppStyles {
   // BOX DECORATIONS - Cards
   // ============================================================================
   static final BoxDecoration cardDecoration = BoxDecoration(
-    color: cardBackground.withOpacity(0.6),
+    color: cardBackground.withValues(alpha: 0.6),
     borderRadius: BorderRadius.circular(12),
     border: Border.all(
-      color: borderColor.withOpacity(0.4),
+      color: borderColor.withValues(alpha: 0.4),
       width: 1,
     ),
   );
@@ -162,12 +162,12 @@ class AppStyles {
     color: cardBackground,
     borderRadius: BorderRadius.circular(12),
     border: Border.all(
-      color: borderColor.withOpacity(0.6),
+      color: borderColor.withValues(alpha: 0.6),
       width: 1,
     ),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withValues(alpha: 0.2),
         blurRadius: 8,
         offset: const Offset(0, 4),
       ),
@@ -175,10 +175,10 @@ class AppStyles {
   );
 
   static final BoxDecoration cardDecorationSmall = BoxDecoration(
-    color: cardBackground.withOpacity(0.6),
+    color: cardBackground.withValues(alpha: 0.6),
     borderRadius: BorderRadius.circular(8),
     border: Border.all(
-      color: borderColor.withOpacity(0.4),
+      color: borderColor.withValues(alpha: 0.4),
       width: 1,
     ),
   );
@@ -192,7 +192,7 @@ class AppStyles {
   );
 
   static final BoxDecoration buttonSecondary = BoxDecoration(
-    color: borderColor.withOpacity(0.6),
+    color: borderColor.withValues(alpha: 0.6),
     borderRadius: BorderRadius.circular(8),
     border: Border.all(
       color: borderColor,
@@ -213,16 +213,16 @@ class AppStyles {
   // BOX DECORATIONS - Input Fields
   // ============================================================================
   static final BoxDecoration inputDecoration = BoxDecoration(
-    color: cardBackground.withOpacity(0.4),
+    color: cardBackground.withValues(alpha: 0.4),
     borderRadius: BorderRadius.circular(8),
     border: Border.all(
-      color: borderColor.withOpacity(0.6),
+      color: borderColor.withValues(alpha: 0.6),
       width: 1,
     ),
   );
 
   static final BoxDecoration inputDecorationFocused = BoxDecoration(
-    color: cardBackground.withOpacity(0.6),
+    color: cardBackground.withValues(alpha: 0.6),
     borderRadius: BorderRadius.circular(8),
     border: Border.all(
       color: accentBlue,
@@ -234,7 +234,7 @@ class AppStyles {
   // BOX DECORATIONS - Badges
   // ============================================================================
   static final BoxDecoration badgeSuccess = BoxDecoration(
-    color: successGreen.withOpacity(0.2),
+    color: successGreen.withValues(alpha: 0.2),
     borderRadius: BorderRadius.circular(4),
     border: Border.all(
       color: successGreen,
@@ -243,7 +243,7 @@ class AppStyles {
   );
 
   static final BoxDecoration badgeError = BoxDecoration(
-    color: errorRed.withOpacity(0.2),
+    color: errorRed.withValues(alpha: 0.2),
     borderRadius: BorderRadius.circular(4),
     border: Border.all(
       color: errorRed,
@@ -252,7 +252,7 @@ class AppStyles {
   );
 
   static final BoxDecoration badgeNeutral = BoxDecoration(
-    color: borderColor.withOpacity(0.3),
+    color: borderColor.withValues(alpha: 0.3),
     borderRadius: BorderRadius.circular(4),
     border: Border.all(
       color: borderColor,

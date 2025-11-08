@@ -5,6 +5,7 @@ import 'package:bitbet/domain/services/web3_client.dart';
 import 'package:bitbet/ui/custom_widgets/oblong_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../common/app_styles.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -102,12 +103,10 @@ class _LoginPageState extends State<LoginPage> {
           cacheColorFilter: true,
         ),
         msPacer(),
-        const Text(
+        Text(
           "bitbet odds. \nSmarter betting.",
-          style: TextStyle(
-            color: Colors.white,
+          style: AppStyles.headerMedium.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
           textAlign: TextAlign.center,
         ),
@@ -147,12 +146,10 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () {
             debugPrint('Manual login tapped');
           },
-          child: const Text(
+          child: Text(
             "Login",
-            style: TextStyle(
-              color: Colors.white,
+            style: AppStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
             ),
           ),
         ),

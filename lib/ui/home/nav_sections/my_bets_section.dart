@@ -7,6 +7,7 @@ import '../../../core/utils/formatting_utils.dart';
 import '../../../domain/models/bet_model.dart';
 import '../../../domain/models/holding_model.dart';
 import '../../../domain/models/event_model.dart';
+import '../../common/app_styles.dart';
 
 class MyBetsSection extends StatefulWidget {
   const MyBetsSection({super.key});
@@ -78,18 +79,15 @@ class _MyBetsSectionState extends State<MyBetsSection> {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: AppStyles.headerSmall.copyWith(
               fontSize: 20,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(
+            style: AppStyles.bodyMedium.copyWith(
               color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 14,
             ),
             textAlign: TextAlign.center,
           ),
@@ -160,11 +158,9 @@ class _MyBetsSectionState extends State<MyBetsSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Portfolio',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
+                style: AppStyles.headerSmall.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -181,11 +177,10 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                 ),
                 child: Text(
                   '${holdings.length} Active',
-                  style: TextStyle(
+                  style: AppStyles.bodySmall.copyWith(
                     color: holdings.isNotEmpty
                         ? const Color(0xFF6C63FF)
                         : Colors.grey,
-                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -242,17 +237,15 @@ class _MyBetsSectionState extends State<MyBetsSection> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: AppStyles.bodySmall.copyWith(
             color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 12,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(
+          style: AppStyles.bodyLarge.copyWith(
             color: color,
-            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -260,7 +253,9 @@ class _MyBetsSectionState extends State<MyBetsSection> {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 10),
+            style: AppStyles.captionSmall.copyWith(
+              color: color.withValues(alpha: 0.7),
+            ),
           ),
         ],
       ],
@@ -318,11 +313,10 @@ class _MyBetsSectionState extends State<MyBetsSection> {
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: AppStyles.bodyMedium.copyWith(
                 color: isSelected
                     ? Colors.white
                     : Colors.white.withValues(alpha: 0.6),
-                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -337,11 +331,10 @@ class _MyBetsSectionState extends State<MyBetsSection> {
               ),
               child: Text(
                 count.toString(),
-                style: TextStyle(
+                style: AppStyles.captionSmall.copyWith(
                   color: isSelected
                       ? Colors.white
                       : Colors.white.withValues(alpha: 0.6),
-                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -470,11 +463,10 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                     horizontal: 12,
                     vertical: 4,
                   ),
-                  child: const Text(
+                  child: Text(
                     'VS',
-                    style: TextStyle(
+                    style: AppStyles.bodySmall.copyWith(
                       color: Colors.white54,
-                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -550,17 +542,13 @@ class _MyBetsSectionState extends State<MyBetsSection> {
               children: [
                 Text(
                   'Total Invested',
-                  style: TextStyle(
+                  style: AppStyles.labelMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   '\$${totalInvested.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
+                  style: AppStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -608,9 +596,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                 const SizedBox(height: 4),
                 Text(
                   '${shares.toStringAsFixed(2)} shares',
-                  style: TextStyle(
+                  style: AppStyles.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -704,11 +691,10 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                 ),
                 child: Text(
                   bet.type == 'Purchase' ? 'BUY' : 'SELL',
-                  style: TextStyle(
+                  style: AppStyles.captionSmall.copyWith(
                     color: bet.type == 'Purchase'
                         ? const Color(0xFF10B981)
                         : const Color(0xFFEF4444),
-                    fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -745,9 +731,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                     const SizedBox(height: 4),
                     Text(
                       '${shares.toStringAsFixed(2)} shares',
-                      style: TextStyle(
+                      style: AppStyles.bodySmall.copyWith(
                         color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -767,9 +752,8 @@ class _MyBetsSectionState extends State<MyBetsSection> {
                   const SizedBox(height: 4),
                   Text(
                     formatDate(bet.blockTimestamp),
-                    style: TextStyle(
+                    style: AppStyles.captionSmall.copyWith(
                       color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 11,
                     ),
                   ),
                 ],

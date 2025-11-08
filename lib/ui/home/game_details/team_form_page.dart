@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/providers/event_provider.dart';
 import '../../custom_widgets/navigation_sidebar.dart';
+import '../../common/app_styles.dart';
 
 class TeamFormPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -89,10 +90,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                                 return const Center(
                                   child: Text(
                                     'Team form not available',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                    ),
+                                    style: AppStyles.headerSmall,
                                   ),
                                 );
                               }
@@ -167,7 +165,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
       return Center(
         child: Text(
           'No stats available for $selectedTeam',
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+          style: AppStyles.headerSmall,
         ),
       );
     }
@@ -267,8 +265,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                     const SizedBox(height: 4),
                     Text(
                       isHome ? 'Home Team' : 'Away Team',
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: AppStyles.bodyMedium.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
@@ -295,10 +292,9 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Overall Form (Last 5)',
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -357,10 +353,9 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Recent Matches',
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -447,9 +442,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
               const SizedBox(width: 4),
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                style: AppStyles.numberMedium.copyWith(
                   color: color,
                 ),
               ),
@@ -458,7 +451,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            style: AppStyles.bodySmall.copyWith(color: Colors.grey.shade700),
             textAlign: TextAlign.center,
           ),
         ],
@@ -511,12 +504,12 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
           const SizedBox(height: 8),
           Text(
             'P: $played | W: $won | D: $drawn | L: $lost',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            style: AppStyles.bodySmall.copyWith(color: Colors.grey.shade700),
           ),
           const SizedBox(height: 4),
           Text(
             'GF: $goalsScored | GA: $goalsConceded',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            style: AppStyles.bodySmall.copyWith(color: Colors.grey.shade700),
           ),
           const SizedBox(height: 8),
           Row(
@@ -659,17 +652,14 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                   children: [
                     Text(
                       'vs $opponent',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      style: AppStyles.labelSemiBold.copyWith(
                         color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       isHomeMatch ? 'Home' : 'Away',
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AppStyles.bodySmall.copyWith(
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -687,8 +677,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
                 ),
                 child: Text(
                   '$goalsFor - $goalsAgainst',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: AppStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -703,7 +692,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
               const SizedBox(width: 4),
               Text(
                 date,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: AppStyles.bodySmall.copyWith(color: Colors.grey.shade600),
               ),
               const SizedBox(width: 12),
               Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
@@ -711,7 +700,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
               Expanded(
                 child: Text(
                   venue,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: AppStyles.bodySmall.copyWith(color: Colors.grey.shade600),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -739,8 +728,7 @@ class CustomHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: AppStyles.headerLarge.copyWith(
               fontSize: 28,
               fontWeight: FontWeight.w700,
             ),

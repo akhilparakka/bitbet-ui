@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bitbet/ui/custom_widgets/navigation_sidebar.dart';
+import '../common/app_styles.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -21,12 +22,12 @@ class SearchPageState extends State<SearchPage> {
   final Map<String, Widget> _sectionWidgets = {
     'Leagues': const Text(
       "Leagues Section\nSearch for leagues",
-      style: TextStyle(color: Colors.white, fontSize: 18),
+      style: AppStyles.headerSmall,
       textAlign: TextAlign.center,
     ),
     'Sports': const Text(
       "Sports Section\nSearch for sports",
-      style: TextStyle(color: Colors.white, fontSize: 18),
+      style: AppStyles.headerSmall,
       textAlign: TextAlign.center,
     ),
   };
@@ -167,14 +168,13 @@ class CustomHeader extends StatelessWidget {
                 controller: searchController,
                 focusNode: searchFocusNode,
                 textAlign: TextAlign.right,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: AppStyles.headerLarge.copyWith(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                 ),
                 decoration: InputDecoration(
                   hintText: title,
-                  hintStyle: TextStyle(
+                  hintStyle: AppStyles.headerLarge.copyWith(
                     color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 28,
                     fontWeight: FontWeight.w700,

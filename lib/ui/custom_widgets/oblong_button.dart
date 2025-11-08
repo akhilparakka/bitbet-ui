@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../common/app_styles.dart';
 
 class OblongButton extends StatelessWidget {
   final VoidCallback? onTap;
@@ -74,7 +75,7 @@ class OblongButton extends StatelessWidget {
                       ),
                     Text(
                       text,
-                      style: TextStyle(
+                      style: AppStyles.bodyMedium.copyWith(
                         color: textColor,
                         fontSize: fontSize,
                         fontWeight: fontWeight,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bitbet/domain/services/web3_client.dart';
 import 'package:web3dart/web3dart.dart';
+import '../common/app_styles.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -76,12 +77,10 @@ class _ProfilePageState extends State<ProfilePage> {
                              size: 40,
                            ),
                            const SizedBox(height: 8),
-                           const Text(
+                           Text(
                              "Pocket",
-                             style: TextStyle(
-                               fontSize: 16,
+                             style: AppStyles.bodyLarge.copyWith(
                                color: Colors.black87,
-                               fontWeight: FontWeight.w500,
                              ),
                            ),
                            const SizedBox(height: 8),
@@ -100,8 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                      : _error != null
                                          ? Text(
                                              "Error: $_error",
-                                             style: const TextStyle(
-                                               fontSize: 16,
+                                             style: AppStyles.bodyLarge.copyWith(
                                                color: Colors.red,
                                              ),
                                            )
@@ -109,9 +107,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                              _balance != null
                                                  ? "${_balance!.getValueInUnit(EtherUnit.ether).toStringAsFixed(4)} ETH"
                                                  : "0.0000 ETH",
-                                             style: const TextStyle(
+                                             style: AppStyles.numberLarge.copyWith(
                                                fontSize: 34,
-                                               fontWeight: FontWeight.bold,
                                                color: Colors.black,
                                              ),
                                            ),
@@ -133,10 +130,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.black,
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 "Deposit",
-                                style: TextStyle(
+                                style: AppStyles.bodyMedium.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -152,10 +149,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.grey.shade900,
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 "Withdraw",
-                                style: TextStyle(
+                                style: AppStyles.bodyMedium.copyWith(
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w600,
                                 ),

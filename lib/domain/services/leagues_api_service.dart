@@ -47,30 +47,7 @@ class LeaguesApiService {
       // Error fetching leagues: $e
     }
 
-    // Return diverse leagues from different sports
-    return [
-      {
-        'name': 'La Liga',
-        'image': 'assets/leagues/La Liga.png',
-        'sport': 'Soccer',
-      },
-      {
-        'name': 'Serie A',
-        'image': 'assets/leagues/Serie A.png',
-        'sport': 'Soccer',
-      },
-      {
-        'name': 'Bundesliga',
-        'image': 'assets/leagues/Bundesliga.png',
-        'sport': 'Soccer',
-      },
-      {'name': 'NBA', 'image': 'assets/leagues/NBA.png', 'sport': 'Basketball'},
-      {'name': 'NFL', 'image': 'assets/leagues/NFL.png', 'sport': 'Football'},
-      {
-        'name': 'WNBA',
-        'image': 'assets/leagues/WNBA.png',
-        'sport': 'Basketball',
-      },
-    ];
+    // Return empty array if API fails (all league images come from API)
+    return [];
   }
 }

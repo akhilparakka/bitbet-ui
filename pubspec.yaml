@@ -69,7 +69,6 @@ flutter:
     - assets/images/
     - assets/svg/
     - assets/Logo/
-    - assets/leagues/
     - assets/frontend_abis/
     - .env
 

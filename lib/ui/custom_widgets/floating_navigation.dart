@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../common/app_styles.dart';
 
 class FloatingNavigation extends StatefulWidget {
   final String selectedSection;
@@ -124,9 +125,8 @@ class _FloatingNavigationState extends State<FloatingNavigation> {
             const SizedBox(height: 4),
             Text(
               section,
-              style: TextStyle(
+              style: AppStyles.bodySmall.copyWith(
                 color: isSelected ? const Color(0xFF539DF3) : const Color(0xFF676D75),
-                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                 fontFamily: 'Poppins',
               ),

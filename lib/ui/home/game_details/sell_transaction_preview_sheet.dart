@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../domain/models/transaction_preview.dart';
+import '../../common/app_styles.dart';
 
 class SellTransactionPreviewSheet extends StatelessWidget {
   final TransactionPreview preview;
@@ -91,9 +92,8 @@ class SellTransactionPreviewSheet extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Platform fees will be deducted from your proceeds.',
-                    style: const TextStyle(
+                    style: AppStyles.bodySmall.copyWith(
                       color: Colors.white70,
-                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -116,11 +116,10 @@ class SellTransactionPreviewSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(
+                    style: AppStyles.bodyLarge.copyWith(
                       color: Colors.white70,
-                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -137,11 +136,10 @@ class SellTransactionPreviewSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Sell Tokens',
-                    style: TextStyle(
+                    style: AppStyles.bodyLarge.copyWith(
                       color: Colors.white,
-                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

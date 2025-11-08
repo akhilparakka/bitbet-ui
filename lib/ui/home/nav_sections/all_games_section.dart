@@ -7,6 +7,7 @@ import '../../../domain/providers/leagues_provider.dart';
 import '../../../domain/providers/sports_provider.dart';
 import '../../../domain/providers/user_provider.dart';
 import '../game_details/game_details_page.dart';
+import '../../common/app_styles.dart';
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -77,11 +78,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                 children: [
                   const Text(
                     'Quick picks',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppStyles.headerMedium,
                   ),
                   _SportNavigationIcons(
                     selectedIconIndex: selectedIconIndex,
@@ -174,11 +171,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               child: const Text(
                 'Popular leagues',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppStyles.headerMedium,
               ),
             ),
           ),
@@ -228,11 +221,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               child: const Text(
                 'Other sports',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppStyles.headerMedium,
               ),
             ),
           ),
@@ -359,9 +348,8 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                         children: [
                           Text(
                             match['league'],
-                            style: TextStyle(
+                            style: AppStyles.bodySmall.copyWith(
                               color: Colors.grey[400],
-                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -721,11 +709,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
         const SizedBox(height: 12),
         Text(
           sport['name'],
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppStyles.labelMedium,
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,

@@ -112,7 +112,7 @@ class Web3BetClient {
       final hash = _userEmail!.hashCode.abs();
       final hue = (hash % 360).toDouble();
       final color = HSVColor.fromAHSV(1.0, hue, 0.6, 0.7).toColor();
-      _dominantColorHex = color.value.toRadixString(16).padLeft(8, '0');
+      _dominantColorHex = color.toARGB32().toRadixString(16).padLeft(8, '0');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('dominantColor', _dominantColorHex!);
       return color;

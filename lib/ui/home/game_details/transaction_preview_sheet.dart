@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../domain/models/transaction_preview.dart';
+import '../../common/app_styles.dart';
 
 class TransactionPreviewSheet extends StatelessWidget {
   final TransactionPreview preview;
@@ -39,11 +40,7 @@ class TransactionPreviewSheet extends StatelessWidget {
                 const SizedBox(width: 12),
                 const Text(
                   'Confirm Transaction',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppStyles.headerSmall,
                 ),
                 const Spacer(),
                 IconButton(
@@ -103,9 +100,8 @@ class TransactionPreviewSheet extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Market: ${preview.shortMarketAddress}',
-                          style: TextStyle(
+                          style: AppStyles.bodySmall.copyWith(
                             color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -133,11 +129,10 @@ class TransactionPreviewSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancel',
-                      style: TextStyle(
+                      style: AppStyles.bodyLarge.copyWith(
                         color: Colors.white70,
-                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -165,11 +160,9 @@ class TransactionPreviewSheet extends StatelessWidget {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             'Confirm',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
+                            style: AppStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -194,14 +187,14 @@ class TransactionPreviewSheet extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: AppStyles.bodyMedium.copyWith(
             color: Colors.white.withValues(alpha: 0.7),
             fontSize: 15,
           ),
         ),
         Text(
           value,
-          style: TextStyle(
+          style: AppStyles.bodyMedium.copyWith(
             color:
                 valueColor ??
                 (highlight ? const Color(0xFF6C63FF) : Colors.white),

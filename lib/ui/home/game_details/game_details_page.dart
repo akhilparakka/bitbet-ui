@@ -9,6 +9,7 @@ import '../../../domain/providers/user_provider.dart';
 import '../../../domain/services/web3_client.dart';
 import '../../../domain/models/transaction_preview.dart';
 import '../../custom_widgets/shimmer_widget.dart';
+import '../../common/app_styles.dart';
 import 'transaction_preview_sheet.dart';
 import 'sell_transaction_preview_sheet.dart';
 
@@ -928,9 +929,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           const SizedBox(height: 12),
           Text(
             'Round ${eventData['event_round'] ?? 'N/A'}',
-            style: TextStyle(
+            style: AppStyles.bodyMedium.copyWith(
               color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 14,
             ),
           ),
         ],
@@ -1065,10 +1065,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFF2A3544), width: 1),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'Betting not available',
-            style: TextStyle(color: Colors.white70),
+            style: AppStyles.bodyMedium.copyWith(color: Colors.white70),
           ),
         ),
       );
@@ -1111,11 +1111,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   children: [
                     Text(
                       _getBuyTabLabel(),
-                      style: TextStyle(
+                      style: AppStyles.bodyMedium.copyWith(
                         color: _selectedTab == 'buy'
                             ? Colors.white
                             : const Color(0xFF6B7280),
-                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1137,11 +1136,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   children: [
                     Text(
                       _getSellTabLabel(),
-                      style: TextStyle(
+                      style: AppStyles.bodyMedium.copyWith(
                         color: _selectedTab == 'sell'
                             ? Colors.white
                             : const Color(0xFF6B7280),
-                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1206,10 +1204,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               children: [
                 Text(
                   'Amount',
-                  style: TextStyle(
+                  style: AppStyles.bodyMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
@@ -1217,7 +1213,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                   _betAmountController.text.isEmpty
                       ? '\$0'
                       : '\$${_betAmountController.text}',
-                  style: TextStyle(
+                  style: AppStyles.numberMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 32,
                     fontWeight: FontWeight.w300,
@@ -1228,9 +1224,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             const SizedBox(height: 4),
             Text(
               'Balance \$${_userBalance.toStringAsFixed(2)}',
-              style: TextStyle(
+              style: AppStyles.caption.copyWith(
                 color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
               ),
             ),
           ] else ...[
@@ -1239,10 +1234,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               children: [
                 Text(
                   'Amount',
-                  style: TextStyle(
+                  style: AppStyles.bodyMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
@@ -1252,7 +1245,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                       : _sellAmount < 0.01
                       ? _sellAmount.toStringAsExponential(2)
                       : _sellAmount.toStringAsFixed(2),
-                  style: TextStyle(
+                  style: AppStyles.numberMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 32,
                     fontWeight: FontWeight.w300,
@@ -1263,9 +1256,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             const SizedBox(height: 4),
             Text(
               'shares',
-              style: TextStyle(
+              style: AppStyles.caption.copyWith(
                 color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 12,
               ),
             ),
           ],
@@ -1346,9 +1338,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                           children: [
                             Text(
                               'Profit: ',
-                              style: TextStyle(
+                              style: AppStyles.caption.copyWith(
                                 color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 12,
                               ),
                             ),
                             Text(
@@ -1361,9 +1352,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                             ),
                             Text(
                               ' (${(_netProfit / (double.tryParse(_betAmountController.text) ?? 1) * 100).toStringAsFixed(1)}%)',
-                              style: TextStyle(
+                              style: AppStyles.caption.copyWith(
                                 color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -1454,7 +1444,7 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
                                         ? 'Place Bet'
                                         : 'Place Multi Bets')
                                   : (_isBasicMode ? 'Sell Tokens' : 'Short')),
-                        style: TextStyle(
+                        style: AppStyles.bodyMedium.copyWith(
                           color:
                               (_selectedTab == 'buy' &&
                                       (_betAmountController.text.isEmpty ||
@@ -1586,17 +1576,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             const SizedBox(height: 4),
             Text(
               '${multiplier.toStringAsFixed(1)}x',
-              style: TextStyle(
+              style: AppStyles.labelMedium.copyWith(
                 color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 13,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               '${probability.toStringAsFixed(0)}%',
-              style: TextStyle(
+              style: AppStyles.captionSmall.copyWith(
                 color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 11,
               ),
             ),
           ],
@@ -1665,10 +1653,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
   ) {
     final userId = ref.watch(userIdProvider).value;
     if (userId == null) {
-      return const Center(
+      return Center(
         child: Text(
           'Please login to view holdings',
-          style: TextStyle(color: Colors.white70),
+          style: AppStyles.bodyMedium.copyWith(color: Colors.white70),
         ),
       );
     }
@@ -1822,10 +1810,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           color: const Color(0xFF2A3544),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             'No tokens to sell',
-            style: TextStyle(color: Colors.white70),
+            style: AppStyles.bodyMedium.copyWith(color: Colors.white70),
           ),
         ),
       );
@@ -2087,17 +2075,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
             const SizedBox(height: 4),
             Text(
               (holdingAmount / 1e18).toStringAsFixed(2),
-              style: TextStyle(
+              style: AppStyles.labelMedium.copyWith(
                 color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 13,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               'shares',
-              style: TextStyle(
+              style: AppStyles.captionSmall.copyWith(
                 color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 11,
               ),
             ),
           ],
@@ -2125,9 +2111,8 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: AppStyles.captionSmall.copyWith(
             color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
-            fontSize: 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

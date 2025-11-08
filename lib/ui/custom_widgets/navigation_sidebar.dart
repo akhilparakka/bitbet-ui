@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bitbet/ui/profile/profile_page.dart';
+import '../common/app_styles.dart';
 
 class CustomNavigationSidebar extends StatelessWidget {
   final String selectedSection;
@@ -29,13 +30,12 @@ class CustomNavigationSidebar extends StatelessWidget {
         children: [
           const SizedBox(height: 135),
           Expanded(
-            child: ListView(
-              children: navData
-                  .map(
-                    (item) =>
-                        _buildNavItem(item['name']!, item['icon']!, context),
-                  )
-                  .toList(),
+            child: ListView.builder(
+              itemCount: navData.length,
+              itemBuilder: (context, index) {
+                final item = navData[index];
+                return _buildNavItem(item['name']!, item['icon']!, context);
+              },
             ),
           ),
         ],
@@ -103,11 +103,10 @@ class CustomNavigationSidebar extends StatelessWidget {
                         quarterTurns: 3,
                         child: Text(
                           section,
-                          style: TextStyle(
+                          style: AppStyles.labelMedium.copyWith(
                             color: isSelected
                                 ? Colors.white
                                 : const Color(0xFF666666),
-                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,

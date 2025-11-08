@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/providers/user_provider.dart';
+import '../../common/app_styles.dart';
 
 class FavoritesSection extends StatefulWidget {
   const FavoritesSection({super.key});
@@ -112,11 +113,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
             const SizedBox(height: 16),
             const Text(
               'No favorites yet',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppStyles.headerSmall,
             ),
             const SizedBox(height: 8),
           ],
@@ -194,11 +191,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                     Expanded(
                       child: Text(
                         sportGroup,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppStyles.headerSmall,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -210,7 +203,7 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                 // Count of favorites
                 Text(
                   '$count favorite${count == 1 ? '' : 's'}',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                  style: AppStyles.bodyMedium.copyWith(color: Colors.grey[400]),
                 ),
 
                 const Spacer(),
@@ -221,7 +214,9 @@ class _FavoritesSectionState extends State<FavoritesSection> {
                     Expanded(
                       child: Text(
                         'Tap to view',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        style: AppStyles.captionSmall.copyWith(
+                          color: Colors.grey[500],
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),

@@ -142,9 +142,10 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               : 0.0);
     if (sharePrice <= 0) return;
 
-    // For selling, estimate proceeds based on current share price
-    // TODO: This should use proper LMSR sell calculation, not just sharePrice * amount
-    // For now, this gives a reasonable estimate
+    // Estimate sell proceeds using share price from pricing API
+    // The pricing API returns LMSR-calculated share prices
+    // For selling, proceeds are approximately sharePrice * shares
+    // (actual precise LMSR calculation is done in simulateSell() when user confirms)
     final estimatedProceeds = sellAmount * sharePrice;
 
     setState(() {
@@ -291,23 +292,15 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
           ? 'Draw'
           : 'Away Win';
 
-      // Create transaction preview (simplified for sell)
-      final preview = TransactionPreview(
+      // Simulate sell transaction to get accurate pricing and gas estimates
+      final preview = await bettingService.simulateSell(
         eventName: eventData['event_name'] ?? 'Unknown Event',
         betType: outcomeDisplay,
-        betAmount: _sellAmount, // This is tokens, not USDT
-        estimatedCost: 0.0, // Not applicable for sell
-        maxCost: 0.0, // Not applicable for sell
-        shares: _sellAmount,
-        potentialPayout: _sellWinnings,
-        netProfit: _sellWinnings, // Simplified
+        outcomeIndex: outcomeIndex,
+        tokenCount: _sellAmount.toString(),
         marketAddress: marketAddress,
-        collateralTokenAddress: '', // Not needed for sell
-        marketMakerAddress: '', // Not needed for sell
-        estimatedGas: 300000,
-        gasPrice: 20.0, // Placeholder
-        estimatedGasCost: 0.006, // Placeholder
-        decimals: 6,
+        marketMakerAddress: marketMakerAddress,
+        eventContractAddress: eventContractAddress,
       );
 
       // Hide loading state for preview

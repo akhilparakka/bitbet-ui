@@ -141,6 +141,98 @@ class BettingService {
     }
   }
 
+  /// Simulate a sell transaction and return preview details
+  Future<TransactionPreview> simulateSell({
+    required String eventName,
+    required String betType,
+    required int outcomeIndex,
+    required String tokenCount, // Human-readable shares to sell (e.g., "100")
+    required String marketAddress,
+    required String marketMakerAddress,
+    required String eventContractAddress,
+  }) async {
+    try {
+      debugPrint('=== SIMULATING SELL ===');
+      debugPrint('Token Count: $tokenCount shares');
+      debugPrint('Outcome Index: $outcomeIndex');
+      debugPrint('Market Address: $marketAddress');
+      debugPrint('Market Maker Address: $marketMakerAddress');
+
+      // Get cached ABIs
+      final marketMakerAbi = _getAbi('LMSRMarketMaker');
+
+      final marketMaker = DeployedContract(
+        ContractAbi.fromJson(marketMakerAbi, 'LMSRMarketMaker'),
+        EthereumAddress.fromHex(marketMakerAddress),
+      );
+
+      final tokenCountNum = double.parse(tokenCount);
+
+      // Convert human-readable amount to wei using 18 decimals
+      final tokenCountWei = BigInt.from(tokenCountNum * pow(10, tokenDecimals));
+
+      debugPrint('Token count in wei: $tokenCountWei');
+
+      // Get LMSR quote for selling (using isSell: true to pass negative amounts)
+      final estimatedProceeds = await _getQuote(
+        marketMaker,
+        marketAddress,
+        outcomeIndex,
+        tokenCountWei,
+        isSell: true,
+      );
+
+      debugPrint(
+        'Estimated proceeds from LMSR: ${estimatedProceeds.toDouble() / pow(10, tokenDecimals)} USDT',
+      );
+
+      // Calculate min proceeds with slippage protection (10% slippage tolerance)
+      final minProceeds =
+          (estimatedProceeds * BigInt.from(90)) ~/ BigInt.from(100);
+
+      // Get gas price
+      final gasPrice = await web3Client.getGasPrice();
+      final gasPriceGwei = gasPrice.getInWei.toDouble() / 1e9;
+
+      debugPrint('Gas price: $gasPriceGwei gwei');
+
+      // Estimate gas (approve outcome tokens + sell)
+      final estimatedGas = 100000 + 300000; // Approve + Sell
+      final estimatedGasCost =
+          (estimatedGas * gasPrice.getInWei.toDouble()) / 1e18;
+
+      debugPrint('Estimated gas: $estimatedGas');
+      debugPrint('Estimated gas cost: $estimatedGasCost ETH');
+
+      // Convert proceeds to human-readable
+      final estimatedProceedsDecimal =
+          estimatedProceeds.toDouble() / pow(10, tokenDecimals);
+      final minProceedsDecimal =
+          minProceeds.toDouble() / pow(10, tokenDecimals);
+
+      return TransactionPreview(
+        eventName: eventName,
+        betType: betType,
+        betAmount: tokenCountNum, // This is shares, not USDT
+        estimatedCost: 0.0, // Not applicable for sell
+        maxCost: minProceedsDecimal, // Min proceeds after slippage
+        shares: tokenCountNum,
+        potentialPayout: estimatedProceedsDecimal, // What you'll receive
+        netProfit: estimatedProceedsDecimal, // Same as payout for sell
+        marketAddress: marketAddress,
+        collateralTokenAddress: '', // Not needed for sell preview
+        marketMakerAddress: marketMakerAddress,
+        estimatedGas: estimatedGas,
+        gasPrice: gasPriceGwei,
+        estimatedGasCost: estimatedGasCost,
+        decimals: tokenDecimals,
+      );
+    } catch (e) {
+      debugPrint('Error simulating sell: $e');
+      rethrow;
+    }
+  }
+
   /// Main function to place a bet
   Future<String> buyOutcome({
     required String eventId,
@@ -621,9 +713,7 @@ class BettingService {
       debugPrint('Using outcome token decimals: $tokenDecimals (hardcoded)');
 
       // Convert human-readable amount to wei using 18 decimals
-      final tokenCountWei = BigInt.from(
-        tokenCountNum * pow(10, tokenDecimals),
-      );
+      final tokenCountWei = BigInt.from(tokenCountNum * pow(10, tokenDecimals));
       debugPrint('Token count in wei: $tokenCountWei');
 
       // Check outcome token balance

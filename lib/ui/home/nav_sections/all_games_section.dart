@@ -8,6 +8,10 @@ import '../../../domain/providers/sports_provider.dart';
 import '../../../domain/providers/user_provider.dart';
 import '../game_details/game_details_page.dart';
 import '../../common/app_styles.dart';
+import '../widgets/quick_pick_game_card.dart';
+import '../widgets/quick_pick_skeleton.dart';
+import '../widgets/league_card_skeleton.dart';
+import '../widgets/sport_card_skeleton.dart';
 
 class AllGamesSection extends StatefulWidget {
   const AllGamesSection({super.key});
@@ -59,27 +63,22 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     } catch (e) {
       return '';
     }
-   }
+  }
 
-
-
-   @override
-   Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: Colors.transparent,
       child: CustomScrollView(
         slivers: [
           // Quick picks header
-           SliverToBoxAdapter(
-             child: Container(
-               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-               child: Row(
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Quick picks',
-                    style: AppStyles.headerMedium,
-                  ),
+                  const Text('Quick picks', style: AppStyles.headerMedium),
                   _SportNavigationIcons(
                     selectedIconIndex: selectedIconIndex,
                     onSportSelected: (index, sportGroup) {
@@ -128,18 +127,21 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                               start,
                               end > matches.length ? matches.length : end,
                             );
-                             return Padding(
-                               padding: const EdgeInsets.only(right: 12),
-                               child: ClipRect(
-                                 child: SingleChildScrollView(
-                                   child: Column(
-                                      children: pageMatches.map(
-                                        (match) => _buildQuickPickItem(match, ref),
-                                      ).toList(),
-                                   ),
-                                 ),
-                               ),
-                             );
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: ClipRect(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: pageMatches
+                                        .map(
+                                          (match) =>
+                                              _buildQuickPickItem(match, ref),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
                       );
@@ -149,7 +151,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       child: Column(
                         children: List.generate(
                           4,
-                          (index) => _buildQuickPickSkeleton(),
+                          (index) => const QuickPickSkeleton(),
                         ),
                       ),
                     ),
@@ -197,7 +199,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: 3,
                       itemBuilder: (context, index) {
-                        return _buildLeagueCardSkeleton();
+                        return const LeagueCardSkeleton();
                       },
                     ),
                     error: (error, stack) => Center(
@@ -219,10 +221,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: const Text(
-                'Other sports',
-                style: AppStyles.headerMedium,
-              ),
+              child: const Text('Other sports', style: AppStyles.headerMedium),
             ),
           ),
 
@@ -262,7 +261,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
                       itemBuilder: (context, index) {
                         return Container(
                           margin: const EdgeInsets.only(right: 16),
-                          child: _buildSportCardSkeleton(),
+                          child: const SportCardSkeleton(),
                         );
                       },
                     ),
@@ -285,275 +284,63 @@ class _AllGamesSectionState extends State<AllGamesSection> {
   }
 
   Widget _buildQuickPickItem(Map<String, dynamic> match, WidgetRef ref) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 70),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    GameDetailsPage(eventId: match['id']),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                transitionDuration: const Duration(milliseconds: 200),
-              ),
-            );
-          },
-          splashColor: Colors.white.withValues(alpha: 0.1),
-          highlightColor: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    _buildTeamLogoContainer(match),
-                    if (match['isLive'])
-                      Positioned(
-                        top: -2,
-                        right: -2,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${match['homeTeam']} vs ${match['awayTeam']}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            match['league'],
-                            style: AppStyles.bodySmall.copyWith(
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 4),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () async {
-                    final eventId = match['id'] as String;
-                    final isCurrentlyFavorite = favoriteMap[eventId] ?? false;
-                    setState(() {
-                      favoriteMap[eventId] = !isCurrentlyFavorite;
-                    });
-                    final userId = await ref.read(userIdProvider.future);
-                    if (!mounted) return;
-                    if (userId == null) {
-                      setState(() {
-                        favoriteMap[eventId] = isCurrentlyFavorite;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please log in to manage favorites'),
-                        ),
-                      );
-                      return;
-                    }
-                    final userService = ref.read(userApiServiceProvider);
-                    bool success;
-                    if (isCurrentlyFavorite) {
-                      success = await userService.removeFavorite(
-                        userId,
-                        eventId,
-                      );
-                    } else {
-                      success = await userService.addFavorite(userId, eventId);
-                    }
-                    if (success) {
-                      // Invalidate providers to refresh cached data with server state
-                      ref.invalidate(favoritesProvider);
-                      ref.invalidate(
-                        quickPicsWithFavoritesProvider(selectedSportGroup),
-                      );
-                      ref.invalidate(fullFavoritesProvider);
-                    } else {
-                      if (!mounted) return;
-                      // Revert on failure
-                      setState(() {
-                        favoriteMap[eventId] = isCurrentlyFavorite;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to update favorite'),
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      (favoriteMap[match['id']] ?? false)
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: (favoriteMap[match['id']] ?? false)
-                          ? Colors.yellow
-                          : Colors.grey[600],
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return QuickPickGameCard(
+      match: match,
+      isFavorite: favoriteMap[match['id']] ?? false,
+      onFavoriteToggle: (eventId, isCurrentlyFavorite) async {
+        setState(() {
+          favoriteMap[eventId] = !isCurrentlyFavorite;
+        });
+        final userId = await ref.read(userIdProvider.future);
+        if (!mounted) return;
+        if (userId == null) {
+          setState(() {
+            favoriteMap[eventId] = isCurrentlyFavorite;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please log in to manage favorites')),
+          );
+          return;
+        }
+        final userService = ref.read(userApiServiceProvider);
+        bool success;
+        if (isCurrentlyFavorite) {
+          success = await userService.removeFavorite(userId, eventId);
+        } else {
+          success = await userService.addFavorite(userId, eventId);
+        }
+        if (success) {
+          // Invalidate providers to refresh cached data with server state
+          ref.invalidate(favoritesProvider);
+          ref.invalidate(quickPicsWithFavoritesProvider(selectedSportGroup));
+          ref.invalidate(fullFavoritesProvider);
+        } else {
+          if (!mounted) return;
+          // Revert on failure
+          setState(() {
+            favoriteMap[eventId] = isCurrentlyFavorite;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update favorite')),
+          );
+        }
+      },
+      onTap: () {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                GameDetailsPage(eventId: match['id']),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+            transitionDuration: const Duration(milliseconds: 200),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildQuickPickSkeleton() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      constraints: const BoxConstraints(minHeight: 70),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF34495E).withValues(alpha: 0.5),
-                      const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                      const Color(0xFF34495E).withValues(alpha: 0.5),
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-              ),
-              // Space for potential live indicator
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 32,
-                  width: 180,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF34495E).withValues(alpha: 0.5),
-                        const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                        const Color(0xFF34495E).withValues(alpha: 0.5),
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      height: 14,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(4),
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF34495E).withValues(alpha: 0.5),
-                            const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                            const Color(0xFF34495E).withValues(alpha: 0.5),
-                          ],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    // Space for potential LIVE badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      width: 30,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF34495E).withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // Widget _buildOddsChip(String odds) {
   //   return Container(
@@ -592,9 +379,7 @@ class _AllGamesSectionState extends State<AllGamesSection> {
           width: 120,
           height: 120,
           color: const Color(0xFF2C3E50).withValues(alpha: 0.3),
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
         errorWidget: (context, url, error) {
           return Container(
@@ -620,70 +405,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     );
   }
 
-  Widget _buildLeagueCardSkeleton() {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: 16,
-            width: 120,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(4),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            height: 14,
-            width: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(4),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                  const Color(0xFF2C3E50).withValues(alpha: 0.6),
-                  const Color(0xFF34495E).withValues(alpha: 0.5),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSportCard(Map<String, dynamic> sport) {
     return Column(
@@ -718,136 +439,6 @@ class _AllGamesSectionState extends State<AllGamesSection> {
     );
   }
 
-  Widget _buildTeamLogoContainer(Map<String, dynamic> match) {
-    final homeTeamLogo = match['homeTeamLogo'] as String?;
-    final awayTeamLogo = match['awayTeamLogo'] as String?;
-    final hasLogos = homeTeamLogo != null || awayTeamLogo != null;
-
-    return Container(
-      width: hasLogos ? 60 : 50,
-      height: hasLogos ? 60 : 50,
-      decoration: hasLogos
-          ? null
-          : BoxDecoration(
-              color: const Color(0xFF2C3E50).withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF34495E).withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-      child: _buildTeamLogo(match, hasLogos),
-    );
-  }
-
-  Widget _buildTeamLogo(Map<String, dynamic> match, bool hasLogos) {
-    final homeTeamLogo = match['homeTeamLogo'] as String?;
-    final awayTeamLogo = match['awayTeamLogo'] as String?;
-
-    // If we have logos, show them side by side
-    if (hasLogos) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (homeTeamLogo != null)
-              Expanded(child: _buildSingleLogo(homeTeamLogo)),
-            if (awayTeamLogo != null)
-              Expanded(child: _buildSingleLogo(awayTeamLogo)),
-          ],
-        ),
-      );
-    }
-
-    // Default fallback icon
-    return Icon(
-      Icons.sports_soccer,
-      color: Colors.white.withValues(alpha: 0.8),
-      size: 20,
-    );
-  }
-
-  Widget _buildSingleLogo(String logoUrl) {
-    // Check if it's a network URL or local asset
-    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-      return CachedNetworkImage(
-        imageUrl: logoUrl,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 1.5),
-        ),
-        errorWidget: (context, url, error) {
-          return Icon(
-            Icons.sports_soccer,
-            color: Colors.white.withValues(alpha: 0.8),
-            size: 20,
-          );
-        },
-      );
-    } else {
-      return Image.asset(
-        logoUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(
-            Icons.sports_soccer,
-            color: Colors.white.withValues(alpha: 0.8),
-            size: 20,
-          );
-        },
-      );
-    }
-  }
-
-  Widget _buildSportCardSkeleton() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2C3E50).withValues(alpha: 0.6),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF34495E).withValues(alpha: 0.3),
-              width: 2,
-            ),
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF2C3E50).withValues(alpha: 0.5),
-                const Color(0xFF34495E).withValues(alpha: 0.7),
-                const Color(0xFF2C3E50).withValues(alpha: 0.5),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          height: 16,
-          width: 65,
-          decoration: BoxDecoration(
-            color: const Color(0xFF34495E).withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF2C3E50).withValues(alpha: 0.5),
-                const Color(0xFF34495E).withValues(alpha: 0.7),
-                const Color(0xFF2C3E50).withValues(alpha: 0.5),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // Extracted sport navigation widget to prevent unnecessary rebuilds
@@ -901,12 +492,9 @@ class _SportNavigationIcons extends StatelessWidget {
           width: 16,
           height: 16,
           colorFilter: ColorFilter.mode(
-            selectedIconIndex == index
-                ? Colors.white
-                : Colors.grey.shade600,
+            selectedIconIndex == index ? Colors.white : Colors.grey.shade600,
             BlendMode.srcIn,
           ),
-          cacheColorFilter: true,
         ),
       ),
     );

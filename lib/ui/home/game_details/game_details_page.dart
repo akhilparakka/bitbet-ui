@@ -12,6 +12,7 @@ import '../../custom_widgets/shimmer_widget.dart';
 import '../../common/app_styles.dart';
 import 'transaction_preview_sheet.dart';
 import 'sell_transaction_preview_sheet.dart';
+import '../widgets/sell_holdings_selector.dart';
 
 class GameDetailsPage extends ConsumerStatefulWidget {
   final String eventId;
@@ -1188,7 +1189,20 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               ],
             )
           else
-            _buildSellHoldingsSection(eventData, pricingData),
+            SellHoldingsSelector(
+              eventData: eventData,
+              pricingData: pricingData,
+              selectedOutcome: _selectedSellOutcome,
+              onOutcomeSelected: (outcome, amount) {
+                setState(() {
+                  _selectedSellOutcome = outcome;
+                  _sellAmount = 0.0;
+                  _sellWinnings = 0.0;
+                });
+              },
+              userId: ref.watch(userIdProvider).value,
+              eventId: eventData?['id']?.toString() ?? widget.eventId,
+            ),
           const SizedBox(height: 20),
           // Amount Section
           if (_selectedTab == 'buy') ...[
@@ -1640,227 +1654,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
     );
   }
 
-  Widget _buildSellHoldingsSection(
-    Map<String, dynamic>? eventData,
-    Map<String, dynamic>? pricingData,
-  ) {
-    final userId = ref.watch(userIdProvider).value;
-    if (userId == null) {
-      return Center(
-        child: Text(
-          'Please login to view holdings',
-          style: AppStyles.bodyMedium.copyWith(color: Colors.white70),
-        ),
-      );
-    }
-
-    final userBetsAsync = ref.watch(userBetsProvider(userId));
-
-    // Show skeleton loaders while loading
-    if (userBetsAsync.isLoading) {
-      return Row(
-        children: [
-          Expanded(
-            child: ShimmerWidget(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A3544),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 18,
-                      width: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 17,
-                      width: 35,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      height: 14,
-                      width: 25,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ShimmerWidget(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A3544),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 18,
-                      width: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 17,
-                      width: 35,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      height: 14,
-                      width: 25,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ShimmerWidget(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A3544),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 18,
-                      width: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 17,
-                      width: 35,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      height: 14,
-                      width: 25,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3A4554),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    final holdings = userBetsAsync.value?['holdings'] as List<dynamic>?;
-
-    final eventId = eventData?['id']?.toString() ?? widget.eventId;
-    final marketHoldings = _getHoldingsForMarket(holdings, eventId);
-
-    final hasAnyHoldings = marketHoldings.values.any((holding) => holding > 0);
-
-    if (!hasAnyHoldings) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A3544),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            'No tokens to sell',
-            style: AppStyles.bodyMedium.copyWith(color: Colors.white70),
-          ),
-        ),
-      );
-    }
-
-    final homeTeam =
-        (eventData!['home_team'] as List?)?.first?['team_name'] ??
-        eventData['home_team_name'] ??
-        'Home';
-    final awayTeam =
-        (eventData['away_team'] as List?)?.first?['team_name'] ??
-        eventData['away_team_name'] ??
-        'Away';
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            if (marketHoldings['home']! > 0)
-              Expanded(
-                child: _buildSellHoldingOption(
-                  homeTeam.substring(0, 3).toUpperCase(),
-                  'home',
-                  marketHoldings['home']!,
-                  pricingData,
-                ),
-              ),
-            if (marketHoldings['home']! > 0) const SizedBox(width: 8),
-            if (marketHoldings['draw']! > 0)
-              Expanded(
-                child: _buildSellHoldingOption(
-                  'DRW',
-                  'draw',
-                  marketHoldings['draw']!,
-                  pricingData,
-                ),
-              ),
-            if (marketHoldings['draw']! > 0 && marketHoldings['away']! > 0)
-              const SizedBox(width: 8),
-            if (marketHoldings['away']! > 0)
-              Expanded(
-                child: _buildSellHoldingOption(
-                  awayTeam.substring(0, 3).toUpperCase(),
-                  'away',
-                  marketHoldings['away']!,
-                  pricingData,
-                ),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildSellQuickAmountButtons(Map<String, dynamic>? pricingData) {
     final userId = ref.watch(userIdProvider).value;
     if (userId == null) return const SizedBox.shrink();
@@ -2014,72 +1807,6 @@ class _GameDetailsPageState extends ConsumerState<GameDetailsPage> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSellHoldingOption(
-    String teamAbbr,
-    String outcome,
-    double holdingAmount,
-    Map<String, dynamic>? pricingData,
-  ) {
-    final isSelected = _selectedSellOutcome == outcome;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSellOutcome = outcome;
-          // Reset sell amount when changing outcome
-          _sellAmount = 0.0;
-          _sellWinnings = 0.0;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C63FF) : const Color(0xFF2A3544),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? Colors.white24 : Colors.transparent,
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? Colors.purple.withValues(alpha: 0.3)
-                  : Colors.transparent,
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              teamAbbr,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              (holdingAmount / 1e18).toStringAsFixed(2),
-              style: AppStyles.labelMedium.copyWith(
-                color: Colors.white.withValues(alpha: 0.7),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'shares',
-              style: AppStyles.captionSmall.copyWith(
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
         ),
       ),
     );

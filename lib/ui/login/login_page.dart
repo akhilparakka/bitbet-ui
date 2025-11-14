@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     if (result.success) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.followLeague);
     } else {
       // Show error dialog (same as before)
       if (mounted) {
@@ -90,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     if (result.success) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.followLeague);
     } else {
       showDialog(
         context: context,
@@ -110,16 +110,24 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Scrollable content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          // Navigate back to onboarding page instead of closing app
+          Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF1C1C1E),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 28),
@@ -183,6 +191,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

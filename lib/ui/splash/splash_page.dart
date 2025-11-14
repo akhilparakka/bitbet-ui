@@ -27,10 +27,22 @@ class _SplashPageState extends State<SplashPage> {
     await _initWeb3Auth();
 
     final prefs = await SharedPreferences.getInstance();
-    String? privKey = prefs.getString('privateKey');
-    String route = (privKey != null && privKey.isNotEmpty)
-        ? AppRoutes.home
-        : AppRoutes.login;
+
+    // Check if user has seen onboarding
+    bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+    // Determine navigation route
+    String route;
+    if (!hasSeenOnboarding) {
+      // First-time user - show onboarding
+      route = AppRoutes.onboarding;
+    } else {
+      // Returning user - check if logged in
+      String? privKey = prefs.getString('privateKey');
+      route = (privKey != null && privKey.isNotEmpty)
+          ? AppRoutes.home
+          : AppRoutes.login;
+    }
 
     Timer(const Duration(seconds: 1), () {
       if (mounted) {
@@ -71,45 +83,35 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF415CC0), // Blue from Figma
-              Color(0xFF2BBEBD), // Cyan/turquoise from Figma
-            ],
-          ),
-        ),
-        child: Stack(
+      backgroundColor: const Color(0xFFFF2882), // Vibrant pink from Figma
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Decorative circle/ellipse background
-            Positioned(
-              left: 51,
-              top: 243,
-              child: Container(
-                width: 597,
-                height: 597,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.1),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
+            // Logo container with semi-transparent background
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: const Icon(
+                Icons.scoreboard_outlined,
+                size: 40,
+                color: Colors.white,
               ),
             ),
-            // Logo centered
-            Center(
-              child: Image.asset(
-                "assets/Logo/bidibet-logo.png",
-                width: 229,
-                height: 331,
-                fit: BoxFit.contain,
+            const SizedBox(height: 8),
+            // App name text
+            const Text(
+              'ScoreBoard',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.09,
+                height: 26 / 18,
               ),
             ),
           ],

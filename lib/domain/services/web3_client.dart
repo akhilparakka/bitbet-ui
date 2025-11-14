@@ -86,6 +86,62 @@ class Web3BetClient {
     }
   }
 
+  Future<LoginResult> loginWithEmail(String email) async {
+    try {
+      final res = await Web3AuthFlutter.login(
+        LoginParams(
+          loginProvider: Provider.email_passwordless,
+          extraLoginOptions: ExtraLoginOptions(
+            login_hint: email,
+          ),
+          mfaLevel: MFALevel.NONE,
+        ),
+      );
+
+      final credentials = EthPrivateKey.fromHex(res.privKey!);
+      final address = credentials.address;
+
+      _credentials = credentials;
+      _address = address;
+      _userEmail = res.userInfo?.email ?? email;
+      _userName = res.userInfo?.name;
+      _profileImage = res.userInfo?.profileImage;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('privateKey', res.privKey ?? "");
+      await prefs.setString('address', address.toString());
+      await prefs.setString('email', _userEmail ?? "");
+      await prefs.setString('name', _userName ?? "");
+      await prefs.setString('profileImage', _profileImage ?? "");
+
+      debugPrint('=== EMAIL LOGIN: Saving user to database ===');
+      debugPrint('Address: ${address.toString()}');
+      debugPrint('Email: $email');
+
+      final userService = UserApiService();
+      final apiSuccess = await userService.saveUserData(
+        publicKey: address.toString(),
+        imageUrl: res.userInfo?.profileImage ?? '',
+        address: address.toString(),
+      );
+
+      debugPrint('=== EMAIL LOGIN: API Save Result: $apiSuccess ===');
+
+      if (apiSuccess) {
+        debugPrint('=== EMAIL LOGIN: User successfully saved to database ===');
+        return LoginResult.success(address);
+      } else {
+        debugPrint('=== EMAIL LOGIN ERROR: Failed to save user data to database ===');
+        return LoginResult.failure("Failed to save user data");
+      }
+    } on UserCancelledException {
+      return LoginResult.failure('Login cancelled by user');
+    } catch (e) {
+      debugPrint('Email login error: $e');
+      return LoginResult.failure(e.toString());
+    }
+  }
+
   Future<void> loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     _address = prefs.getString('address');

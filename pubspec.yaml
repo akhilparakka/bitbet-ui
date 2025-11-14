@@ -71,6 +71,7 @@ flutter:
     - assets/Logo/
     - assets/frontend_abis/
     - assets/onboarding/
+    - assets/icons/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
